@@ -1,0 +1,63 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ===== Virtualenv =====
+venv/
+.venv/
+env/
+ENV/
+
+# ===== Pytest =====
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ===== Debug / profiling =====
+*.log
+*.prof
+
+# ===== Build / dist =====
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ===== IDE / edytory =====
+.vscode/
+.idea/
+*.iml
+
+# ===== System =====
+.DS_Store
+Thumbs.db
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== Mypy / type checking =====
+.mypy_cache/
+.dmypy.json
+
+# ===== Ruff / pylint / flake8 =====
+.ruff_cache/
+.pylint.d/
+.flake8
+
+# ===== PyCharm =====
+*.swp
+
+# ===== Data =====
+data/
+data/input/
+output/
+reports/
+
+# ===== Single Files and Folders=====
+test_utils_date_time.py
+utils
+pytree_exclude.txt
+
+
