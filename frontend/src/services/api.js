@@ -1,0 +1,77 @@
+import axios from "axios";
+
+// Automatycznie używa proxy z package.json w dev mode
+// W produkcji (desktop) komunikuje się z localhost:8000
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Files API
+export const filesAPI = {
+  uploadFile: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post("/api/files/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  getAllFiles: async () => {
+    const response = await api.get("/api/files/");
+    return response.data;
+  },
+
+  getFileDetails: async (fileId) => {
+    const response = await api.get(`/api/files/${fileId}`);
+    return response.data;
+  },
+
+  deleteFile: async (fileId) => {
+    const response = await api.delete(`/api/files/${fileId}`);
+    return response.data;
+  },
+
+  getFilePreview: async (fileId) => {
+    const response = await api.get(`/api/files/${fileId}/preview`);
+    return response.data;
+  },
+};
+
+// Data API
+export const dataAPI = {
+  getRecords: async (params = {}) => {
+    const response = await api.get("/api/data/records", { params });
+    return response.data;
+  },
+
+  getRecord: async (recordId) => {
+    const response = await api.get(`/api/data/records/${recordId}`);
+    return response.data;
+  },
+
+  updateRecord: async (recordId, data) => {
+    const response = await api.put(`/api/data/records/${recordId}`, data);
+    return response.data;
+  },
+
+  deleteRecord: async (recordId) => {
+    const response = await api.delete(`/api/data/records/${recordId}`);
+    return response.data;
+  },
+
+  getStatistics: async () => {
+    const response = await api.get("/api/data/statistics");
+    return response.data;
+  },
+};
+
+export default api;
