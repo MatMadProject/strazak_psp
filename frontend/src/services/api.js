@@ -74,4 +74,37 @@ export const dataAPI = {
   },
 };
 
+// Firefighters API
+export const firefightersAPI = {
+  getAllFirefighters: async (params = {}) => {
+    const response = await api.get("/api/firefighters/", { params });
+    return response.data;
+  },
+
+  getFirefighter: async (firefighterId) => {
+    const response = await api.get(`/api/firefighters/${firefighterId}`);
+    return response.data;
+  },
+
+  createFirefighter: async (data) => {
+    const response = await api.post("/api/firefighters/", data);
+    return response.data;
+  },
+
+  updateFirefighter: async (firefighterId, data) => {
+    const response = await api.put(`/api/firefighters/${firefighterId}`, data);
+    return response.data;
+  },
+
+  deleteFirefighter: async (firefighterId) => {
+    const response = await api.delete(`/api/firefighters/${firefighterId}`);
+    return response.data;
+  },
+
+  getStatistics: async () => {
+    const response = await api.get("/api/firefighters/statistics");
+    return response.data;
+  },
+};
+
 export default api;

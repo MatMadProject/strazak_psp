@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FileUpload from "./components/FileUpload";
 import DataTable from "./components/DataTable";
 import DataEditor from "./components/DataEditor";
+import Firefighters from "./components/Firefighters";
 import { dataAPI } from "./services/api";
 import "./App.css";
 
@@ -128,21 +129,7 @@ function App() {
             />
           )}
 
-          {activeTab === "firefighters" && (
-            <div className="placeholder-content">
-              <div className="placeholder-icon">👨‍🚒</div>
-              <h2>Moduł Strażacy</h2>
-              <p>Ta funkcjonalność będzie dostępna wkrótce...</p>
-              <div className="placeholder-features">
-                <div className="feature-item">✓ Lista strażaków</div>
-                <div className="feature-item">
-                  ✓ Zarządzanie danymi osobowymi
-                </div>
-                <div className="feature-item">✓ Historia udziałów</div>
-                <div className="feature-item">✓ Statystyki</div>
-              </div>
-            </div>
-          )}
+          {activeTab === "firefighters" && <Firefighters />}
         </main>
       </div>
 

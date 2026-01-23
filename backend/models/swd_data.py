@@ -69,3 +69,31 @@ class SWDRecord(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+    
+class Firefighter(Base):
+    """
+    Model dla danych o strażaku.
+    """
+    __tablename__ = "firefighters"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    nazwisko_imie = Column(String(255), nullable=False)
+    stopien = Column(String(100), nullable=False)
+    stanowisko = Column(String(100), nullable=False)
+    jednostka = Column(String(100), nullable=False)
+
+    # Metadane - te są automatyczne
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        """Konwersja do słownika dla API"""
+        return {
+            "id": self.id,
+            "nazwisko_imie": self.nazwisko_imie,
+            "stopien": self.stopien,
+            "stanowisko": self.stanowisko,
+            "jednostka": self.jednostka,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }

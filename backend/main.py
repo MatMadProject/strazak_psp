@@ -9,7 +9,7 @@ sys.path.append(str(Path(__file__).parent))
 
 from config import settings
 from database import init_db
-from routes import files, data
+from routes import files, data,firefighters
 
 # Inicjalizacja bazy danych
 init_db()
@@ -33,6 +33,7 @@ app.add_middleware(
 # Rejestracja routerów
 app.include_router(files.router)
 app.include_router(data.router)
+app.include_router(firefighters.router)
 
 # Health check endpoint
 @app.get("/")
