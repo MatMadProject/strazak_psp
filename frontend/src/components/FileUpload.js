@@ -89,7 +89,7 @@ function FileUpload({ onUploadSuccess }) {
             <span className="upload-icon">⬆️</span>
             <p>Przeciągnij plik Excel tutaj</p>
             <p className="drop-zone-hint">lub kliknij aby wybrać plik</p>
-            <p className="file-types">Akceptowane: .xlsx, .xls</p>
+            <p className="file-types">Akceptowane formaty: .xlsx</p>
           </div>
         )}
       </div>

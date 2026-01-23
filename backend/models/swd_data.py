@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, Text, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import sys
@@ -27,24 +27,25 @@ class ImportedFile(Base):
 class SWDRecord(Base):
     """
     Model dla pojedynczego rekordu z zestawienia udziału SWD
-    Dostosuj pola do struktury danych z biblioteki zestawienie-udzialu-swd
+    Dostosowany do rzeczywistej struktury danych
     """
     __tablename__ = "swd_records"
     
     id = Column(Integer, primary_key=True, index=True)
     file_id = Column(Integer, ForeignKey("imported_files.id"), nullable=False)
     
-    # Przykładowe pola - dostosuj do rzeczywistej struktury danych
-    # z biblioteki zestawienie-udzialu-swd
-    nazwa_swd = Column(String(255))
-    kod_swd = Column(String(100))
-    kategoria = Column(String(100))
-    wartosc = Column(Float)
-    jednostka = Column(String(50))
-    data_pomiaru = Column(String(100))
-    uwagi = Column(Text)
+    # Dane z pliku Excel - DOSTOSOWANE DO TWOJEJ STRUKTURY
+    nazwisko_imie = Column(String(255))
+    stopien = Column(String(100))
+    p = Column(String(10))  # String bo może być "1" lub inna wartość
+    mz = Column(String(10))
+    af = Column(String(10))
+    zaliczono_do_emerytury = Column(String(10))
+    nr_meldunku = Column(String(100))
+    czas_rozp_zdarzenia = Column(String(100))  # ZMIENIONE NA STRING zamiast DateTime
+    funkcja = Column(String(100))
     
-    # Metadane
+    # Metadane - te są automatyczne
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -56,13 +57,15 @@ class SWDRecord(Base):
         return {
             "id": self.id,
             "file_id": self.file_id,
-            "nazwa_swd": self.nazwa_swd,
-            "kod_swd": self.kod_swd,
-            "kategoria": self.kategoria,
-            "wartosc": self.wartosc,
-            "jednostka": self.jednostka,
-            "data_pomiaru": self.data_pomiaru,
-            "uwagi": self.uwagi,
+            "nazwisko_imie": self.nazwisko_imie,
+            "stopien": self.stopien,
+            "p": self.p,
+            "mz": self.mz,
+            "af": self.af,
+            "zaliczono_do_emerytury": self.zaliczono_do_emerytury,
+            "nr_meldunku": self.nr_meldunku,
+            "czas_rozp_zdarzenia": self.czas_rozp_zdarzenia,
+            "funkcja": self.funkcja,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

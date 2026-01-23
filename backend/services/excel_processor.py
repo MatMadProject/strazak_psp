@@ -1,26 +1,28 @@
 import pandas as pd
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Dict, Any
 import sys
 
-# Import biblioteki zestawienie-udzialu-swd
-# Dostosuj import w zależności od struktury biblioteki
+# Import biblioteki zestawienie-swd
 try:
-    # Przykładowy import - dostosuj do rzeczywistej biblioteki
-    # from zestawienie_udzialu_swd import process_file, parse_data
-    pass
-except ImportError:
-    print("UWAGA: Biblioteka zestawienie-udzialu-swd nie jest zainstalowana")
+    from zestawienie_swd import import_zestawienie, CollectionZestawienieWiersz
+    ZESTAWIENIE_SWD_AVAILABLE = True
+    print("✅ Biblioteka zestawienie_swd załadowana pomyślnie")
+except ImportError as e:
+    ZESTAWIENIE_SWD_AVAILABLE = False
+    print("❌ UWAGA: Biblioteka zestawienie-swd nie jest zainstalowana")
     print("Zainstaluj: pip install git+https://github.com/MatMadProject/zestawienie-udzialu-swd.git")
+    print(f"Błąd importu: {e}")
 
 class ExcelProcessor:
     """
     Klasa do przetwarzania plików Excel z wykorzystaniem
-    biblioteki zestawienie-udzialu-swd
+    biblioteki zestawienie-swd
     """
     
     def __init__(self):
-        pass
+        if not ZESTAWIENIE_SWD_AVAILABLE:
+            print("⚠️ ExcelProcessor działa w trybie awaryjnym (bez zestawienie_swd)")
     
     def validate_file(self, file_path: Path) -> tuple[bool, str]:
         """
@@ -32,72 +34,64 @@ class ExcelProcessor:
                 return False, "Plik nie istnieje"
             
             if file_path.suffix.lower() not in ['.xlsx', '.xls']:
-                return False, "Nieprawidłowe rozszerzenie pliku"
+                return False, "Nieprawidłowe rozszerzenie pliku (wymagany .xlsx)"
             
             # Sprawdź czy plik można otworzyć
-            df = pd.read_excel(file_path, nrows=1)
+            try:
+                df = pd.read_excel(file_path, nrows=1)
+                if df.empty:
+                    return False, "Plik Excel jest pusty"
+            except Exception as e:
+                return False, f"Nie można odczytać pliku Excel: {str(e)}"
             
             return True, ""
         except Exception as e:
             return False, f"Błąd walidacji: {str(e)}"
     
-    def process_excel_file(self, file_path: Path) -> List[Dict[str, Any]]:
+    def process_excel_file(self, file_path: Path) -> CollectionZestawienieWiersz:
         """
-        Przetwarza plik Excel używając biblioteki zestawienie-udzialu-swd
+        Przetwarza plik Excel używając biblioteki zestawienie-swd
         
-        Returns: Lista słowników z danymi do zapisu w bazie
+        Returns: CollectionZestawienieWiersz z danymi do zapisu w bazie
         """
+        import traceback
+        
         try:
+            print(f"🔍 [EXCEL PROCESSOR] Rozpoczynam przetwarzanie: {file_path}")
+            
             # KROK 1: Walidacja
+            print(f"🔍 [EXCEL PROCESSOR] Walidacja pliku...")
             is_valid, error = self.validate_file(file_path)
             if not is_valid:
+                print(f"❌ [EXCEL PROCESSOR] Walidacja nieudana: {error}")
                 raise ValueError(error)
+            print(f"✅ [EXCEL PROCESSOR] Walidacja OK")
             
-            # KROK 2: Przetwarzanie z użyciem biblioteki zestawienie-udzialu-swd
-            # TODO: Dostosuj do rzeczywistego API biblioteki
-            # Przykładowe użycie (do modyfikacji):
-            """
-            from zestawienie_udzialu_swd import process_file
-            result = process_file(str(file_path))
-            processed_data = result.get_data()
-            """
+            # KROK 2: Sprawdź czy biblioteka jest dostępna
+            if not ZESTAWIENIE_SWD_AVAILABLE:
+                raise ImportError(
+                    "Biblioteka zestawienie_swd nie jest zainstalowana. "
+                    "Zainstaluj: pip install git+https://github.com/MatMadProject/zestawienie-udzialu-swd.git"
+                )
             
-            # TYMCZASOWE ROZWIĄZANIE: Odczyt bezpośredni z pandas
-            # Zamień to na użycie biblioteki zestawienie-udzialu-swd
-            df = pd.read_excel(file_path)
+            # KROK 3: Przetwarzanie z biblioteką zestawienie-swd
+            print(f"🔍 [EXCEL PROCESSOR] Importowanie zestawienia...")
+            result = import_zestawienie(str(file_path)).get_zestawienie_szkodliwosci()
             
-            records = []
-            for _, row in df.iterrows():
-                record = self._parse_row_to_record(row)
-                if record:
-                    records.append(record)
+            print(f"✅ [EXCEL PROCESSOR] Przetworzono {len(result.items)} rekordów")
             
-            return records
+            # Debug: pokaż pierwsze 3 rekordy
+            if result.items:
+                for i, item in enumerate(result.items[:3]):
+                    print(f"📝 [EXCEL PROCESSOR] Rekord {i}: {item.nazwisko_imie} - {item.funkcja}")
+            
+            return result
             
         except Exception as e:
+            print(f"❌ [EXCEL PROCESSOR] BŁĄD: {str(e)}")
+            print(f"❌ [EXCEL PROCESSOR] Typ błędu: {type(e).__name__}")
+            traceback.print_exc()
             raise Exception(f"Błąd przetwarzania pliku: {str(e)}")
-    
-    def _parse_row_to_record(self, row: pd.Series) -> Dict[str, Any]:
-        """
-        Parsuje wiersz pandas Series do słownika dla modelu SWDRecord
-        
-        DOSTOSUJ TO DO STRUKTURY DANYCH Z BIBLIOTEKI zestawienie-udzialu-swd
-        """
-        try:
-            # Przykładowe mapowanie kolumn - DOSTOSUJ!
-            record = {
-                "nazwa_swd": str(row.get('Nazwa', '')),
-                "kod_swd": str(row.get('Kod', '')),
-                "kategoria": str(row.get('Kategoria', '')),
-                "wartosc": float(row.get('Wartość', 0)) if pd.notna(row.get('Wartość')) else None,
-                "jednostka": str(row.get('Jednostka', '')),
-                "data_pomiaru": str(row.get('Data', '')),
-                "uwagi": str(row.get('Uwagi', ''))
-            }
-            return record
-        except Exception as e:
-            print(f"Błąd parsowania wiersza: {e}")
-            return None
     
     def get_file_summary(self, file_path: Path) -> Dict[str, Any]:
         """Zwraca podsumowanie pliku Excel"""

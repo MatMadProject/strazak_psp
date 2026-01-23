@@ -4,26 +4,30 @@ import "./DataEditor.css";
 
 function DataEditor({ record, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    nazwa_swd: "",
-    kod_swd: "",
-    kategoria: "",
-    wartosc: "",
-    jednostka: "",
-    data_pomiaru: "",
-    uwagi: "",
+    nazwisko_imie: "",
+    stopien: "",
+    funkcja: "",
+    nr_meldunku: "",
+    czas_rozp_zdarzenia: "",
+    p: "",
+    mz: "",
+    af: "",
+    zaliczono_do_emerytury: "",
   });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (record) {
       setFormData({
-        nazwa_swd: record.nazwa_swd || "",
-        kod_swd: record.kod_swd || "",
-        kategoria: record.kategoria || "",
-        wartosc: record.wartosc || "",
-        jednostka: record.jednostka || "",
-        data_pomiaru: record.data_pomiaru || "",
-        uwagi: record.uwagi || "",
+        nazwisko_imie: record.nazwisko_imie || "",
+        stopien: record.stopien || "",
+        funkcja: record.funkcja || "",
+        nr_meldunku: record.nr_meldunku || "",
+        czas_rozp_zdarzenia: record.czas_rozp_zdarzenia || "",
+        p: record.p || "",
+        mz: record.mz || "",
+        af: record.af || "",
+        zaliczono_do_emerytury: record.zaliczono_do_emerytury || "",
       });
     }
   }, [record]);
@@ -41,13 +45,7 @@ function DataEditor({ record, onClose, onSave }) {
     setSaving(true);
 
     try {
-      // Konwertuj wartość na liczbę
-      const updateData = {
-        ...formData,
-        wartosc: formData.wartosc ? parseFloat(formData.wartosc) : null,
-      };
-
-      await dataAPI.updateRecord(record.id, updateData);
+      await dataAPI.updateRecord(record.id, formData);
       alert("Rekord zaktualizowany pomyślnie");
       onSave();
     } catch (error) {
@@ -72,36 +70,12 @@ function DataEditor({ record, onClose, onSave }) {
 
         <form onSubmit={handleSubmit} className="editor-form">
           <div className="form-group">
-            <label htmlFor="nazwa_swd">Nazwa SWD</label>
+            <label htmlFor="nazwisko_imie">Nazwisko i Imię</label>
             <input
               type="text"
-              id="nazwa_swd"
-              name="nazwa_swd"
-              value={formData.nazwa_swd}
-              onChange={handleChange}
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="kod_swd">Kod SWD</label>
-            <input
-              type="text"
-              id="kod_swd"
-              name="kod_swd"
-              value={formData.kod_swd}
-              onChange={handleChange}
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="kategoria">Kategoria</label>
-            <input
-              type="text"
-              id="kategoria"
-              name="kategoria"
-              value={formData.kategoria}
+              id="nazwisko_imie"
+              name="nazwisko_imie"
+              value={formData.nazwisko_imie}
               onChange={handleChange}
               className="form-input"
             />
@@ -109,25 +83,24 @@ function DataEditor({ record, onClose, onSave }) {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="wartosc">Wartość</label>
+              <label htmlFor="stopien">Stopień</label>
               <input
-                type="number"
-                step="0.01"
-                id="wartosc"
-                name="wartosc"
-                value={formData.wartosc}
+                type="text"
+                id="stopien"
+                name="stopien"
+                value={formData.stopien}
                 onChange={handleChange}
                 className="form-input"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="jednostka">Jednostka</label>
+              <label htmlFor="funkcja">Funkcja</label>
               <input
                 type="text"
-                id="jednostka"
-                name="jednostka"
-                value={formData.jednostka}
+                id="funkcja"
+                name="funkcja"
+                value={formData.funkcja}
                 onChange={handleChange}
                 className="form-input"
               />
@@ -135,27 +108,81 @@ function DataEditor({ record, onClose, onSave }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="data_pomiaru">Data pomiaru</label>
+            <label htmlFor="nr_meldunku">Nr meldunku</label>
             <input
               type="text"
-              id="data_pomiaru"
-              name="data_pomiaru"
-              value={formData.data_pomiaru}
+              id="nr_meldunku"
+              name="nr_meldunku"
+              value={formData.nr_meldunku}
               onChange={handleChange}
               className="form-input"
-              placeholder="np. 2024-01-15"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="uwagi">Uwagi</label>
-            <textarea
-              id="uwagi"
-              name="uwagi"
-              value={formData.uwagi}
+            <label htmlFor="czas_rozp_zdarzenia">
+              Czas rozpoczęcia zdarzenia
+            </label>
+            <input
+              type="text"
+              id="czas_rozp_zdarzenia"
+              name="czas_rozp_zdarzenia"
+              value={formData.czas_rozp_zdarzenia}
               onChange={handleChange}
-              className="form-textarea"
-              rows="3"
+              className="form-input"
+              placeholder="np. 2024-08-26 05:04"
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="p">P</label>
+              <input
+                type="text"
+                id="p"
+                name="p"
+                value={formData.p}
+                onChange={handleChange}
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="mz">MZ</label>
+              <input
+                type="text"
+                id="mz"
+                name="mz"
+                value={formData.mz}
+                onChange={handleChange}
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="af">AF</label>
+              <input
+                type="text"
+                id="af"
+                name="af"
+                value={formData.af}
+                onChange={handleChange}
+                className="form-input"
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="zaliczono_do_emerytury">
+              Zaliczono do emerytury
+            </label>
+            <input
+              type="text"
+              id="zaliczono_do_emerytury"
+              name="zaliczono_do_emerytury"
+              value={formData.zaliczono_do_emerytury}
+              onChange={handleChange}
+              className="form-input"
             />
           </div>
 

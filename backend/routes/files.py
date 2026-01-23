@@ -48,7 +48,7 @@ async def upload_file(
             filename=unique_filename,
             original_filename=file.filename,
             file_path=str(file_path),
-            rows_count=len(records_data)
+            rows_count=records_data.count
         )
         
         # Zapisz rekordy do bazy

@@ -1,10 +1,16 @@
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Union
 import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 from models.swd_data import SWDRecord, ImportedFile
+
+# Import dla type hinting
+try:
+    from zestawienie_swd import CollectionZestawienieWiersz
+except ImportError:
+    CollectionZestawienieWiersz = None
 
 class DataService:
     """Serwis do zarządzania danymi SWD"""
@@ -71,19 +77,54 @@ class DataService:
         return db.query(SWDRecord).filter(SWDRecord.id == record_id).first()
     
     @staticmethod
-    def create_records(db: Session, file_id: int, records_data: List[dict]) -> int:
-        """Utwórz wiele rekordów na raz"""
+    def create_records(db: Session, file_id: int, records_data) -> int:
+        """
+        Utwórz wiele rekordów na raz
+        Akceptuje zarówno CollectionZestawienieWiersz jak i listę słowników
+        """
         created_count = 0
-        for record_data in records_data:
-            record = SWDRecord(
-                file_id=file_id,
-                **record_data
-            )
-            db.add(record)
-            created_count += 1
         
-        db.commit()
-        return created_count
+        try:
+            # Sprawdź czy to CollectionZestawienieWiersz z biblioteki
+            if hasattr(records_data, 'items'):
+                # To jest CollectionZestawienieWiersz
+                print(f"📝 [DATA SERVICE] Tworzenie {len(records_data.items)} rekordów z CollectionZestawienieWiersz")
+                
+                for record_data in records_data.items:
+                    record = SWDRecord(
+                        file_id=file_id,
+                        nazwisko_imie=str(record_data.nazwisko_imie) if record_data.nazwisko_imie else None,
+                        stopien=str(record_data.stopien) if record_data.stopien else None,
+                        p=str(record_data.p) if record_data.p else None,
+                        mz=str(record_data.mz) if record_data.mz else None,
+                        af=str(record_data.af) if record_data.af else None,
+                        zaliczono_do_emerytury=str(record_data.zaliczono_do_emerytury) if record_data.zaliczono_do_emerytury else None,
+                        nr_meldunku=str(record_data.nr_meldunku) if record_data.nr_meldunku else None,
+                        czas_rozp_zdarzenia=str(record_data.czas_rozp_zdarzenia) if record_data.czas_rozp_zdarzenia else None,
+                        funkcja=str(record_data.funkcja) if record_data.funkcja else None
+                    )
+                    db.add(record)
+                    created_count += 1
+            else:
+                # To jest lista słowników (fallback dla starszego kodu)
+                print(f"📝 [DATA SERVICE] Tworzenie {len(records_data)} rekordów ze słowników")
+                
+                for record_data in records_data:
+                    record = SWDRecord(
+                        file_id=file_id,
+                        **record_data
+                    )
+                    db.add(record)
+                    created_count += 1
+            
+            db.commit()
+            print(f"✅ [DATA SERVICE] Utworzono {created_count} rekordów")
+            return created_count
+            
+        except Exception as e:
+            print(f"❌ [DATA SERVICE] Błąd tworzenia rekordów: {e}")
+            db.rollback()
+            raise
     
     @staticmethod
     def update_record(db: Session, record_id: int, update_data: dict) -> Optional[SWDRecord]:
@@ -112,9 +153,9 @@ class DataService:
         """Wyszukaj rekordy"""
         return db.query(SWDRecord)\
             .filter(
-                (SWDRecord.nazwa_swd.contains(query)) |
-                (SWDRecord.kod_swd.contains(query)) |
-                (SWDRecord.kategoria.contains(query))
+                (SWDRecord.nazwisko_imie.contains(query)) |
+                (SWDRecord.nr_meldunku.contains(query)) |
+                (SWDRecord.funkcja.contains(query))
             )\
             .offset(skip)\
             .limit(limit)\

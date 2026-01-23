@@ -31,6 +31,8 @@ function DataTable({ onEditRecord, refreshTrigger }) {
 
   const loadRecords = async () => {
     setLoading(true);
+    console.log(currentPage);
+    console.log("records.length", records.length);
     try {
       const params = {
         skip: currentPage * itemsPerPage,
@@ -46,6 +48,7 @@ function DataTable({ onEditRecord, refreshTrigger }) {
       }
 
       const data = await dataAPI.getRecords(params);
+
       setRecords(data.records || []);
     } catch (error) {
       console.error("Błąd ładowania rekordów:", error);
@@ -167,24 +170,28 @@ function DataTable({ onEditRecord, refreshTrigger }) {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Nazwa SWD</th>
-                  <th>Kod</th>
-                  <th>Kategoria</th>
-                  <th>Wartość</th>
-                  <th>Jednostka</th>
-                  <th>Data pomiaru</th>
+                  <th>Nazwisko i Imię</th>
+                  <th>Funkcja</th>
+                  <th>Nr meldunku</th>
+                  <th>Czas rozpoczęcia</th>
+                  <th>P</th>
+                  <th>MZ</th>
+                  <th>AF</th>
+                  <th>Zaliczono do 0.5%</th>
                   <th>Akcje</th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((record) => (
                   <tr key={record.id}>
-                    <td>{record.nazwa_swd}</td>
-                    <td>{record.kod_swd}</td>
-                    <td>{record.kategoria}</td>
-                    <td className="numeric">{record.wartosc}</td>
-                    <td>{record.jednostka}</td>
-                    <td>{record.data_pomiaru}</td>
+                    <td>{record.nazwisko_imie}</td>
+                    <td>{record.funkcja}</td>
+                    <td>{record.nr_meldunku}</td>
+                    <td>{record.czas_rozp_zdarzenia}</td>
+                    <td className="numeric">{record.p}</td>
+                    <td className="numeric">{record.mz}</td>
+                    <td className="numeric">{record.af}</td>
+                    <td>{record.zaliczono_do_emerytury}</td>
                     <td className="actions">
                       <button
                         onClick={() => onEditRecord(record)}
@@ -209,6 +216,13 @@ function DataTable({ onEditRecord, refreshTrigger }) {
 
           <div className="pagination">
             <button
+              onClick={() => setCurrentPage(0)}
+              disabled={currentPage === 0}
+              className="btn-page"
+            >
+              Pierwsza ←
+            </button>
+            <button
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
               className="btn-page"
@@ -222,6 +236,13 @@ function DataTable({ onEditRecord, refreshTrigger }) {
               className="btn-page"
             >
               Następna →
+            </button>
+            <button
+              onClick={() => setCurrentPage(records.length / itemsPerPage)}
+              disabled={records.length < itemsPerPage}
+              className="btn-page"
+            >
+              → Ostatnia
             </button>
           </div>
         </>
