@@ -6,10 +6,11 @@ import { dataAPI } from "./services/api";
 import "./App.css";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("data"); // 'upload' or 'data'
+  const [activeTab, setActiveTab] = useState("data"); // 'upload', 'data', 'firefighters'
   const [editingRecord, setEditingRecord] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [statistics, setStatistics] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     loadStatistics();
@@ -44,51 +45,106 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <div className="header-content">
-          <h1>📊 SWD Desktop App</h1>
-          <div className="header-stats">
-            {statistics && (
-              <>
-                <div className="stat-item">
-                  <span className="stat-label">Pliki:</span>
-                  <span className="stat-value">{statistics.total_files}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Rekordy:</span>
-                  <span className="stat-value">{statistics.total_records}</span>
-                </div>
-              </>
-            )}
+      {/* Sidebar */}
+      <aside className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
+        <div className="sidebar-header">
+          <div className="app-logo">
+            <span className="logo-icon">🚒</span>
+            {!sidebarCollapsed && <span className="logo-text">SWD App</span>}
           </div>
+          <button
+            className="sidebar-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? "Rozwiń menu" : "Zwiń menu"}
+          >
+            {sidebarCollapsed ? "»" : "«"}
+          </button>
         </div>
-      </header>
 
-      <nav className="app-nav">
-        <button
-          className={`nav-button ${activeTab === "data" ? "active" : ""}`}
-          onClick={() => setActiveTab("data")}
-        >
-          📋 Dane
-        </button>
-        <button
-          className={`nav-button ${activeTab === "upload" ? "active" : ""}`}
-          onClick={() => setActiveTab("upload")}
-        >
-          ⬆️ Import pliku
-        </button>
-      </nav>
+        <nav className="sidebar-nav">
+          <button
+            className={`nav-item ${activeTab === "data" ? "active" : ""}`}
+            onClick={() => setActiveTab("data")}
+            title="Dane SWD"
+          >
+            <span className="nav-icon">📋</span>
+            {!sidebarCollapsed && <span className="nav-text">Dane SWD</span>}
+          </button>
 
-      <main className="app-main">
-        {activeTab === "upload" ? (
-          <FileUpload onUploadSuccess={handleUploadSuccess} />
-        ) : (
-          <DataTable
-            onEditRecord={handleEditRecord}
-            refreshTrigger={refreshTrigger}
-          />
+          <button
+            className={`nav-item ${activeTab === "firefighters" ? "active" : ""}`}
+            onClick={() => setActiveTab("firefighters")}
+            title="Strażacy"
+          >
+            <span className="nav-icon">👨‍🚒</span>
+            {!sidebarCollapsed && <span className="nav-text">Strażacy</span>}
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === "upload" ? "active" : ""}`}
+            onClick={() => setActiveTab("upload")}
+            title="Import pliku"
+          >
+            <span className="nav-icon">⬆️</span>
+            {!sidebarCollapsed && (
+              <span className="nav-text">Import pliku</span>
+            )}
+          </button>
+        </nav>
+
+        {!sidebarCollapsed && statistics && (
+          <div className="sidebar-stats">
+            <div className="stat-box">
+              <div className="stat-label">Pliki</div>
+              <div className="stat-value">{statistics.total_files}</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-label">Rekordy</div>
+              <div className="stat-value">{statistics.total_records}</div>
+            </div>
+          </div>
         )}
-      </main>
+      </aside>
+
+      {/* Main Content */}
+      <div className="main-container">
+        <header className="app-header">
+          <h1>
+            {activeTab === "data" && "📊 Dane SWD"}
+            {activeTab === "firefighters" && "👨‍🚒 Strażacy"}
+            {activeTab === "upload" && "⬆️ Import pliku"}
+          </h1>
+        </header>
+
+        <main className="app-main">
+          {activeTab === "upload" && (
+            <FileUpload onUploadSuccess={handleUploadSuccess} />
+          )}
+
+          {activeTab === "data" && (
+            <DataTable
+              onEditRecord={handleEditRecord}
+              refreshTrigger={refreshTrigger}
+            />
+          )}
+
+          {activeTab === "firefighters" && (
+            <div className="placeholder-content">
+              <div className="placeholder-icon">👨‍🚒</div>
+              <h2>Moduł Strażacy</h2>
+              <p>Ta funkcjonalność będzie dostępna wkrótce...</p>
+              <div className="placeholder-features">
+                <div className="feature-item">✓ Lista strażaków</div>
+                <div className="feature-item">
+                  ✓ Zarządzanie danymi osobowymi
+                </div>
+                <div className="feature-item">✓ Historia udziałów</div>
+                <div className="feature-item">✓ Statystyki</div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
 
       {editingRecord && (
         <DataEditor

@@ -10,99 +10,258 @@ body {
     Arial, sans-serif;
   background: #f5f7fa;
   color: #333;
+  overflow: hidden;
 }
 
 .app {
-  min-height: 100vh;
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ==================== SIDEBAR ==================== */
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  color: white;
   display: flex;
   flex-direction: column;
+  transition: width 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 100;
 }
 
-/* Header */
-.app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.sidebar.collapsed {
+  width: 70px;
 }
 
-.header-content {
-  max-width: 1400px;
-  margin: 0 auto;
+.sidebar-header {
+  padding: 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.app-header h1 {
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
   font-size: 28px;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sidebar-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Sidebar Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 15px;
+  text-align: left;
+  position: relative;
+  width: 100%;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
   font-weight: 600;
 }
 
-.header-stats {
-  display: flex;
-  gap: 30px;
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #3498db;
 }
 
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.nav-icon {
+  font-size: 20px;
+  min-width: 24px;
+  text-align: center;
 }
 
-.stat-label {
-  font-size: 12px;
-  opacity: 0.9;
+.nav-text {
+  white-space: nowrap;
 }
 
-.stat-value {
-  font-size: 24px;
-  font-weight: 700;
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 14px;
 }
 
-/* Navigation */
-.app-nav {
-  background: white;
-  padding: 0 40px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.sidebar.collapsed .nav-text {
+  display: none;
+}
+
+/* Sidebar Stats */
+.sidebar-stats {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   gap: 10px;
 }
 
-.nav-button {
-  padding: 15px 25px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  color: #666;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s;
+.stat-box {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
 }
 
-.nav-button:hover {
-  color: #667eea;
-  background: #f5f7fa;
+.stat-box .stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 5px;
+  letter-spacing: 0.5px;
 }
 
-.nav-button.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
+.stat-box .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #3498db;
+}
+
+/* ==================== MAIN CONTAINER ==================== */
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.app-header {
+  background: white;
+  padding: 20px 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.app-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 /* Main content */
 .app-main {
   flex: 1;
-  max-width: 1400px;
-  width: 100%;
-  margin: 30px auto;
-  padding: 0 40px;
+  overflow-y: auto;
+  padding: 30px 40px;
+  background: #f5f7fa;
 }
 
-/* Buttons */
+/* ==================== PLACEHOLDER CONTENT ==================== */
+.placeholder-content {
+  background: white;
+  padding: 60px 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  max-width: 600px;
+  margin: 60px auto;
+}
+
+.placeholder-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.placeholder-content h2 {
+  font-size: 28px;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.placeholder-content p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.placeholder-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.feature-item {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #555;
+  border-left: 3px solid #3498db;
+}
+
+/* ==================== BUTTONS ==================== */
 .btn-primary {
-  background: #667eea;
+  background: #3498db;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -114,7 +273,7 @@ body {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #5568d3;
+  background: #2980b9;
 }
 
 .btn-primary:disabled {
@@ -138,7 +297,7 @@ body {
   background: #d0d0d0;
 }
 
-/* Loading */
+/* ==================== LOADING & EMPTY STATES ==================== */
 .loading {
   text-align: center;
   padding: 40px;
@@ -146,7 +305,6 @@ body {
   font-size: 16px;
 }
 
-/* No data */
 .no-data {
   text-align: center;
   padding: 60px 40px;
@@ -161,4 +319,47 @@ body {
 .no-data .hint {
   font-size: 14px;
   color: #bbb;
+}
+
+/* ==================== SCROLLBAR STYLING ==================== */
+.app-main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-main::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.app-main::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.app-main::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 70px;
+  }
+
+  .sidebar .nav-text,
+  .sidebar .logo-text,
+  .sidebar-stats {
+    display: none;
+  }
+
+  .app-main {
+    padding: 20px;
+  }
+
+  .app-header {
+    padding: 15px 20px;
+  }
+
+  .app-header h1 {
+    font-size: 20px;
+  }
 }
