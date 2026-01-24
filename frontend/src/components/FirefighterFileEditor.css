@@ -1,0 +1,211 @@
+.firefighter-file-modal {
+  max-width: 700px;
+  width: 90%;
+}
+
+.file-import-content {
+  padding: 30px;
+}
+
+/* Instrukcje */
+.import-instructions {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border-left: 4px solid #667eea;
+}
+
+.import-instructions h3 {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.import-instructions ol {
+  margin-left: 20px;
+  color: #666;
+}
+
+.import-instructions li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+/* Sekcja pobierania szablonu */
+.template-download-section {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.btn-download-template {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-download-template:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-download-template:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 3px dashed #ddd;
+  border-radius: 12px;
+  padding: 50px 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: #fafafa;
+  margin-bottom: 25px;
+}
+
+.drop-zone:hover {
+  border-color: #667eea;
+  background: #f5f7fa;
+}
+
+.drop-zone.drag-active {
+  border-color: #667eea;
+  background: #e8ecff;
+  transform: scale(1.02);
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-icon {
+  font-size: 48px;
+  opacity: 0.8;
+}
+
+.drop-zone p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.drop-zone-hint {
+  color: #999 !important;
+  font-size: 14px !important;
+}
+
+.file-types {
+  color: #bbb !important;
+  font-size: 12px !important;
+  margin-top: 8px !important;
+}
+
+/* File selected */
+.file-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-icon {
+  font-size: 48px;
+}
+
+.file-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  word-break: break-all;
+}
+
+.file-size {
+  font-size: 14px;
+  color: #999;
+}
+
+/* Przyciski akcji */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn-clear {
+  background: #ffc107;
+  color: #333;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-clear:hover:not(:disabled) {
+  background: #ffb300;
+}
+
+.btn-clear:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Animacja */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.firefighter-file-modal {
+  animation: slideInUp 0.3s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .firefighter-file-modal {
+    width: 95%;
+    max-width: none;
+  }
+
+  .file-import-content {
+    padding: 20px;
+  }
+
+  .drop-zone {
+    padding: 40px 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}

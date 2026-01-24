@@ -1,15 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-import sys
 from pathlib import Path
+import shutil
+import uuid
+import sys
 
 sys.path.append(str(Path(__file__).parent.parent))
 from database import get_db
+from config import settings
 from services.firefighter_service import FirefighterService
+from services.firefighter_excel_service import FirefighterExcelService
 
 router = APIRouter(prefix="/api/firefighters", tags=["firefighters"])
+
+# Inicjalizacja serwisu Excel
+excel_service = FirefighterExcelService()
 
 # Pydantic models
 class FirefighterCreate(BaseModel):
@@ -124,3 +132,95 @@ def delete_firefighter(firefighter_id: int, db: Session = Depends(get_db)):
         "success": True,
         "message": "Strażak został usunięty"
     }
+
+@router.get("/template/download")
+def download_template():
+    """Pobierz pusty szablon Excel do importu strażaków"""
+    try:
+        file_content = excel_service.create_template_file()
+        
+        return StreamingResponse(
+            file_content,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": "attachment; filename=szablon_strazacy.xlsx"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/import")
+async def import_from_excel(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Importuj strażaków z pliku Excel
+    """
+    try:
+        print(f"📁 Otrzymano plik: {file.filename}")
+        
+        # Walidacja rozszerzenia
+        file_ext = Path(file.filename).suffix.lower()
+        if file_ext not in ['.xlsx', '.xls']:
+            raise HTTPException(
+                status_code=400,
+                detail="Nieprawidłowe rozszerzenie pliku. Dozwolone: .xlsx, .xls"
+            )
+        
+        # Generuj unikalną nazwę pliku
+        unique_filename = f"{uuid.uuid4()}{file_ext}"
+        file_path = settings.UPLOAD_DIR / unique_filename
+        
+        # Zapisz plik
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        print(f"✅ Plik zapisany: {file_path}")
+        
+        # Przetwórz plik
+        firefighters_data = excel_service.process_excel_file(file_path)
+        
+        if not firefighters_data:
+            raise HTTPException(
+                status_code=400,
+                detail="Nie znaleziono prawidłowych danych w pliku"
+            )
+        
+        # Zapisz strażaków do bazy
+        created_count = 0
+        skipped_count = 0
+        errors = []
+        
+        for firefighter_data in firefighters_data:
+            try:
+                FirefighterService.create_firefighter(db, firefighter_data)
+                created_count += 1
+            except Exception as e:
+                skipped_count += 1
+                errors.append(f"{firefighter_data.get('nazwisko_imie', 'Unknown')}: {str(e)}")
+        
+        # Usuń plik po przetworzeniu
+        if file_path.exists():
+            file_path.unlink()
+        
+        return {
+            "success": True,
+            "message": f"Zaimportowano {created_count} strażaków",
+            "created_count": created_count,
+            "skipped_count": skipped_count,
+            "errors": errors if errors else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        # W przypadku błędu, usuń plik
+        if 'file_path' in locals() and file_path.exists():
+            file_path.unlink()
+        
+        print(f"❌ BŁĄD: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        raise HTTPException(status_code=500, detail=str(e))

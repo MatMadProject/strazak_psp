@@ -1,15 +1,21 @@
 import React, { useState } from "react";
 import FirefightersList from "./FirefightersList";
 import FirefighterEditor from "./FirefighterEditor";
+import FirefighterFileEditor from "./FirefighterFileEditor";
 import "./Firefighters.css";
 
 function Firefighters() {
   const [editingFirefighter, setEditingFirefighter] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleAddNew = () => {
     setIsAddingNew(true);
+  };
+
+  const handleImport = () => {
+    setIsImporting(true);
   };
 
   const handleEditFirefighter = (firefighter) => {
@@ -19,11 +25,13 @@ function Firefighters() {
   const handleCloseEditor = () => {
     setEditingFirefighter(null);
     setIsAddingNew(false);
+    setIsImporting(false);
   };
 
   const handleSave = () => {
     setEditingFirefighter(null);
     setIsAddingNew(false);
+    setIsImporting(false);
     setRefreshTrigger((prev) => prev + 1);
   };
 
@@ -34,15 +42,14 @@ function Firefighters() {
           <h1>👨‍🚒 Strażacy</h1>
           <p className="page-subtitle">Zarządzanie danymi strażaków</p>
         </div>
-        <button onClick={handleAddNew} className="btn-add-new">
-          📄 Export do pliku
-        </button>
-        <button onClick={handleAddNew} className="btn-add-new">
-          ✚ Dodaj z pliku
-        </button>
-        <button onClick={handleAddNew} className="btn-add-new">
-          ✚ Dodaj strażaka
-        </button>
+        <div className="header-buttons">
+          <button onClick={handleImport} className="btn-import">
+            📥 Import z Excel
+          </button>
+          <button onClick={handleAddNew} className="btn-add-new">
+            ✚ Dodaj strażaka
+          </button>
+        </div>
       </div>
 
       <FirefightersList
@@ -55,6 +62,13 @@ function Firefighters() {
           firefighter={editingFirefighter}
           onClose={handleCloseEditor}
           onSave={handleSave}
+        />
+      )}
+
+      {isImporting && (
+        <FirefighterFileEditor
+          onClose={handleCloseEditor}
+          onSuccess={handleSave}
         />
       )}
     </div>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { filesAPI } from "../services/api";
 import "./FileUpload.css";
 
-function FileUpload({ onUploadSuccess }) {
+function FileUpload({ onUploadSuccess, headerText }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -58,7 +58,7 @@ function FileUpload({ onUploadSuccess }) {
 
   return (
     <div className="file-upload-container">
-      <h2>Import pliku Excel</h2>
+      <h2>{headerText}</h2>
 
       <div
         className={`drop-zone ${dragActive ? "drag-active" : ""}`}
@@ -89,7 +89,7 @@ function FileUpload({ onUploadSuccess }) {
             <span className="upload-icon">⬆️</span>
             <p>Przeciągnij plik Excel tutaj</p>
             <p className="drop-zone-hint">lub kliknij aby wybrać plik</p>
-            <p className="file-types">Akceptowane formaty: .xlsx</p>
+            <p className="file-types">Akceptowany format: .xlsx</p>
           </div>
         )}
       </div>

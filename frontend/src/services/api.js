@@ -105,6 +105,25 @@ export const firefightersAPI = {
     const response = await api.get("/api/firefighters/statistics");
     return response.data;
   },
+
+  downloadTemplate: async () => {
+    const response = await api.get("/api/firefighters/template/download", {
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  importFromExcel: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post("/api/firefighters/import", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
 };
 
 export default api;

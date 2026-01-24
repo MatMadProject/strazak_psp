@@ -119,7 +119,10 @@ function App() {
 
         <main className="app-main">
           {activeTab === "upload" && (
-            <FileUpload onUploadSuccess={handleUploadSuccess} />
+            <FileUpload
+              onUploadSuccess={handleUploadSuccess}
+              headerText={"Import z pliku Excel"}
+            />
           )}
 
           {activeTab === "data" && (
