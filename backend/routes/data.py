@@ -13,13 +13,15 @@ router = APIRouter(prefix="/api/data", tags=["data"])
 
 # Pydantic models dla request/response
 class RecordUpdate(BaseModel):
-    nazwa_swd: Optional[str] = None
-    kod_swd: Optional[str] = None
-    kategoria: Optional[str] = None
-    wartosc: Optional[float] = None
-    jednostka: Optional[str] = None
-    data_pomiaru: Optional[str] = None
-    uwagi: Optional[str] = None
+    nazwisko_imie: Optional[str] = None
+    stopien: Optional[str] = None
+    p: Optional[str] = None
+    mz: Optional[str] = None
+    af: Optional[str] = None
+    zaliczono_do_emerytury: Optional[str] = None
+    nr_meldunku: Optional[str] = None
+    czas_rozp_zdarzenia: Optional[str] = None
+    funkcja: Optional[str] = None
 
 @router.get("/records")
 def get_records(
@@ -95,3 +97,37 @@ def get_statistics(db: Session = Depends(get_db)):
     """Pobierz statystyki aplikacji"""
     stats = DataService.get_statistics(db)
     return stats
+
+@router.get("/files/{file_id}/firefighters")
+def get_firefighters_in_file(file_id: int, db: Session = Depends(get_db)):
+    """Pobierz listę unikalnych strażaków z danego pliku"""
+    firefighters = DataService.get_unique_firefighters_in_file(db, file_id)
+    return {"firefighters": firefighters}
+
+@router.get("/files/{file_id}/records")
+def get_file_records(
+    file_id: int,
+    firefighter: Optional[str] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    db: Session = Depends(get_db)
+):
+    """
+    Pobierz rekordy z danego pliku
+    - firefighter: filtruj po strażaku (nazwisko_imie)
+    - skip, limit: paginacja
+    """
+    if firefighter:
+        records = DataService.get_records_by_file_and_firefighter(
+            db, file_id, firefighter, skip, limit
+        )
+    else:
+        records = DataService.get_records_by_file(db, file_id, skip, limit)
+    
+    return {
+        "records": [record.to_dict() for record in records],
+        "file_id": file_id,
+        "skip": skip,
+        "limit": limit,
+        "count": len(records)
+    }

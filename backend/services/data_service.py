@@ -63,6 +63,30 @@ class DataService:
             .all()
     
     @staticmethod
+    def get_records_by_file_and_firefighter(db: Session, file_id: int, 
+                                            nazwisko_imie: str,
+                                            skip: int = 0, limit: int = 100) -> List[SWDRecord]:
+        """Pobierz rekordy dla danego pliku i strażaka"""
+        return db.query(SWDRecord)\
+            .filter(
+                SWDRecord.file_id == file_id,
+                SWDRecord.nazwisko_imie == nazwisko_imie
+            )\
+            .offset(skip)\
+            .limit(limit)\
+            .all()
+    
+    @staticmethod
+    def get_unique_firefighters_in_file(db: Session, file_id: int) -> List[str]:
+        """Pobierz unikalne nazwiska strażaków z danego pliku"""
+        result = db.query(SWDRecord.nazwisko_imie)\
+            .filter(SWDRecord.file_id == file_id)\
+            .distinct()\
+            .order_by(SWDRecord.nazwisko_imie)\
+            .all()
+        return [r[0] for r in result if r[0]]
+    
+    @staticmethod
     def get_all_records(db: Session, skip: int = 0, limit: int = 100) -> List[SWDRecord]:
         """Pobierz wszystkie rekordy z paginacją"""
         return db.query(SWDRecord)\
