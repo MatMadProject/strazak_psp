@@ -72,6 +72,18 @@ export const dataAPI = {
     const response = await api.get("/api/data/statistics");
     return response.data;
   },
+
+  getFileRecords: async (fileId, params = {}) => {
+    const response = await api.get(`/api/data/files/${fileId}/records`, {
+      params,
+    });
+    return response.data;
+  },
+
+  getFirefightersInFile: async (fileId) => {
+    const response = await api.get(`/api/data/files/${fileId}/firefighters`);
+    return response.data;
+  },
 };
 
 // Firefighters API

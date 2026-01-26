@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { filesAPI } from "../services/api";
 import FileUpload from "./FileUpload";
+import DeparturesList from "./DeparturesList";
+import DataEditor from "./DataEditor";
 import "./Departures.css";
 
 function Departures({ refreshTrigger }) {
-  const [view, setView] = useState("menu"); // 'menu', 'import', 'file-list'
+  const [view, setView] = useState("menu"); // 'menu', 'import', 'file-list', 'departures-list'
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [editingRecord, setEditingRecord] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,10 +40,30 @@ function Departures({ refreshTrigger }) {
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
-    // Tutaj później przejdziemy do widoku listy wyjazdów
-    alert(
-      `Wybrano plik: ${file.filename}\n\nNastępny krok: Wyświetlenie listy wyjazdów (w przygotowaniu)`,
-    );
+    setView("departures-list");
+  };
+
+  const handleBackFromList = () => {
+    setSelectedFile(null);
+    setView("file-list");
+  };
+
+  const handleEditRecord = (record) => {
+    setEditingRecord(record);
+  };
+
+  const handleCloseEditor = () => {
+    setEditingRecord(null);
+  };
+
+  const handleSaveRecord = () => {
+    setEditingRecord(null);
+    // Odśwież listę wyjazdów jeśli jesteśmy w tym widoku
+    if (view === "departures-list") {
+      // Trigger refresh poprzez zmianę klucza komponentu
+      setView("departures-list-refresh");
+      setTimeout(() => setView("departures-list"), 0);
+    }
   };
 
   const handleDeleteFile = async (fileId, filename) => {
@@ -209,6 +232,27 @@ function Departures({ refreshTrigger }) {
           </div>
         )}
       </div>
+    );
+  }
+
+  // Widok listy wyjazdów
+  if (view === "departures-list" || view === "departures-list-refresh") {
+    return (
+      <>
+        <DeparturesList
+          file={selectedFile}
+          onBack={handleBackFromList}
+          onEditRecord={handleEditRecord}
+        />
+
+        {editingRecord && (
+          <DataEditor
+            record={editingRecord}
+            onClose={handleCloseEditor}
+            onSave={handleSaveRecord}
+          />
+        )}
+      </>
     );
   }
 
