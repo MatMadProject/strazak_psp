@@ -224,3 +224,101 @@ async def import_from_excel(
         traceback.print_exc()
         
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/export/excel")
+def export_to_excel(
+    search: Optional[str] = None,
+    jednostka: Optional[str] = None,
+    stopien: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Eksportuj strażaków do pliku Excel
+    Obsługuje te same filtry co endpoint listowania
+    """
+    try:
+        # Pobierz strażaków z filtrami (bez limitów paginacji)
+        if search:
+            firefighters = FirefighterService.search_firefighters(db, search, skip=0, limit=10000)
+        elif jednostka:
+            firefighters = FirefighterService.get_firefighters_by_unit(db, jednostka, skip=0, limit=10000)
+        elif stopien:
+            firefighters = FirefighterService.get_firefighters_by_rank(db, stopien, skip=0, limit=10000)
+        else:
+            firefighters = FirefighterService.get_all_firefighters(db, skip=0, limit=10000)
+        
+        if not firefighters:
+            raise HTTPException(status_code=404, detail="Brak danych do eksportu")
+        
+        # Konwertuj do słowników
+        firefighters_data = [ff.to_dict() for ff in firefighters]
+        
+        # Generuj plik Excel
+        file_content = excel_service.export_to_excel(firefighters_data)
+        
+        from datetime import datetime
+        filename = f"strazacy_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        
+        return StreamingResponse(
+            file_content,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ BŁĄD EKSPORTU EXCEL: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/export/csv")
+def export_to_csv(
+    search: Optional[str] = None,
+    jednostka: Optional[str] = None,
+    stopien: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Eksportuj strażaków do pliku CSV
+    Obsługuje te same filtry co endpoint listowania
+    """
+    try:
+        # Pobierz strażaków z filtrami (bez limitów paginacji)
+        if search:
+            firefighters = FirefighterService.search_firefighters(db, search, skip=0, limit=10000)
+        elif jednostka:
+            firefighters = FirefighterService.get_firefighters_by_unit(db, jednostka, skip=0, limit=10000)
+        elif stopien:
+            firefighters = FirefighterService.get_firefighters_by_rank(db, stopien, skip=0, limit=10000)
+        else:
+            firefighters = FirefighterService.get_all_firefighters(db, skip=0, limit=10000)
+        
+        if not firefighters:
+            raise HTTPException(status_code=404, detail="Brak danych do eksportu")
+        
+        # Konwertuj do słowników
+        firefighters_data = [ff.to_dict() for ff in firefighters]
+        
+        # Generuj plik CSV
+        file_content = excel_service.export_to_csv(firefighters_data)
+        
+        from datetime import datetime
+        filename = f"strazacy_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        
+        return StreamingResponse(
+            file_content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ BŁĄD EKSPORTU CSV: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

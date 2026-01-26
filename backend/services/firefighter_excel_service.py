@@ -227,3 +227,115 @@ class FirefighterExcelService:
             }
         except Exception as e:
             return {"error": str(e)}
+        
+    def export_to_excel(self, firefighters: List[Dict[str, Any]]) -> BytesIO:
+        """
+        Eksportuje listę strażaków do pliku Excel
+        
+        Args:
+            firefighters: Lista słowników z danymi strażaków
+        
+        Returns: BytesIO z plikiem Excel
+        """
+        # Utwórz workbook
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Strażacy"
+        
+        # Style nagłówków
+        header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        header_font = Font(name="Arial", bold=True, color="FFFFFF", size=11)
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        # Dodaj nagłówki
+        for col_idx, header in enumerate(self.HEADERS, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+        
+        # Dodaj dane strażaków
+        for row_idx, firefighter in enumerate(firefighters, start=2):
+            # Rozdziel nazwisko_imie na nazwisko i imię
+            nazwisko_imie = firefighter.get('nazwisko_imie', '')
+            parts = nazwisko_imie.split(' ', 1)
+            nazwisko = parts[0] if len(parts) > 0 else ''
+            imie = parts[1] if len(parts) > 1 else ''
+            
+            # Wypełnij wiersz
+            row_data = [
+                firefighter.get('id', row_idx - 1),
+                imie,
+                nazwisko,
+                firefighter.get('stopien', ''),
+                firefighter.get('stanowisko', ''),
+                firefighter.get('jednostka', '')
+            ]
+            
+            for col_idx, value in enumerate(row_data, start=1):
+                cell = ws.cell(row=row_idx, column=col_idx, value=value)
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+                cell.font = Font(name="Arial", size=10)
+        
+        # Dostosuj szerokość kolumn
+        column_widths = [8, 15, 20, 20, 25, 30]
+        for col_idx, width in enumerate(column_widths, start=1):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = width
+        
+        # Dodaj informacje o eksporcie
+        info_row = len(firefighters) + 3
+        ws.cell(row=info_row, column=1, value=f"Wyeksportowano: {len(firefighters)} strażaków")
+        ws.cell(row=info_row, column=1).font = Font(italic=True, size=9, color="666666")
+        
+        from datetime import datetime
+        ws.cell(row=info_row + 1, column=1, value=f"Data eksportu: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        ws.cell(row=info_row + 1, column=1).font = Font(italic=True, size=9, color="666666")
+
+        ws.cell(row=info_row + 2, column=1, value=f"Wyeksportowany przez: {self.user_service.get_current_user().get('name')} {self.user_service.get_current_user().get('last_name')}")
+        ws.cell(row=info_row + 2, column=1).font = Font(italic=True, size=9, color="666666")
+        
+        ws.cell(row=info_row + 2, column=1, value=f"app.straznica.com.pl 2026 wszelkie prawa zastrzeżone")
+        ws.cell(row=info_row + 2, column=1).font = Font(italic=True, size=9, color="666666")
+        # Zapisz do BytesIO
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        return output
+    
+    def export_to_csv(self, firefighters: List[Dict[str, Any]]) -> BytesIO:
+        """
+        Eksportuje listę strażaków do pliku CSV
+        
+        Args:
+            firefighters: Lista słowników z danymi strażaków
+        
+        Returns: BytesIO z plikiem CSV
+        """
+        # Przygotuj dane do DataFrame
+        data = []
+        for firefighter in firefighters:
+            # Rozdziel nazwisko_imie na nazwisko i imię
+            nazwisko_imie = firefighter.get('nazwisko_imie', '')
+            parts = nazwisko_imie.split(' ', 1)
+            nazwisko = parts[0] if len(parts) > 0 else ''
+            imie = parts[1] if len(parts) > 1 else ''
+            
+            data.append({
+                'Id': firefighter.get('id', ''),
+                'Imię': imie,
+                'Nazwisko': nazwisko,
+                'Stopień': firefighter.get('stopien', ''),
+                'Stanowisko': firefighter.get('stanowisko', ''),
+                'Jednostka Organizacyjna': firefighter.get('jednostka', '')
+            })
+        
+        # Utwórz DataFrame
+        df = pd.DataFrame(data)
+        
+        # Zapisz do BytesIO
+        output = BytesIO()
+        df.to_csv(output, index=False, encoding='utf-8-sig')  # utf-8-sig dla polskich znaków w Excel
+        output.seek(0)
+        
+        return output    
