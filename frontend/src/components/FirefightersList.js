@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { firefightersAPI } from "../services/api";
 import "./FirefightersList.css";
 
-function FirefightersList({ onEditFirefighter, refreshTrigger }) {
+function FirefightersList({
+  onEditFirefighter,
+  refreshTrigger,
+  onFiltersChange,
+}) {
   const [firefighters, setFirefighters] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,6 +24,17 @@ function FirefightersList({ onEditFirefighter, refreshTrigger }) {
     loadFirefighters();
     loadStatistics();
   }, [refreshTrigger, searchQuery, filterUnit, filterRank, currentPage]);
+
+  // Przekazuj filtry do komponentu rodzica
+  useEffect(() => {
+    if (onFiltersChange) {
+      const filters = {};
+      if (searchQuery) filters.search = searchQuery;
+      if (filterUnit) filters.jednostka = filterUnit;
+      if (filterRank) filters.stopien = filterRank;
+      onFiltersChange(filters);
+    }
+  }, [searchQuery, filterUnit, filterRank, onFiltersChange]);
 
   const loadFirefighters = async () => {
     setLoading(true);

@@ -124,6 +124,22 @@ export const firefightersAPI = {
     });
     return response.data;
   },
+
+  exportToExcel: async (filters = {}) => {
+    const response = await api.get("/api/firefighters/export/excel", {
+      params: filters,
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  exportToCSV: async (filters = {}) => {
+    const response = await api.get("/api/firefighters/export/csv", {
+      params: filters,
+      responseType: "blob",
+    });
+    return response.data;
+  },
 };
 
 export default api;

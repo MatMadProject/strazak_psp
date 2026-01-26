@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import FirefightersList from "./FirefightersList";
 import FirefighterEditor from "./FirefighterEditor";
 import FirefighterFileEditor from "./FirefighterFileEditor";
+import ExportButton from "./ExportButton";
 import "./Firefighters.css";
 
 function Firefighters() {
@@ -9,6 +10,7 @@ function Firefighters() {
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [currentFilters, setCurrentFilters] = useState({});
 
   const handleAddNew = () => {
     setIsAddingNew(true);
@@ -43,6 +45,7 @@ function Firefighters() {
           <p className="page-subtitle">Zarządzanie danymi strażaków</p>
         </div>
         <div className="header-buttons">
+          <ExportButton filters={currentFilters} />
           <button onClick={handleImport} className="btn-import">
             📥 Import z Excel
           </button>
