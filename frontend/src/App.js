@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
-import FileUpload from "./components/FileUpload";
-import DataTable from "./components/DataTable";
-import DataEditor from "./components/DataEditor";
 import Firefighters from "./components/Firefighters";
+import Departures from "./components/Departures";
 import { dataAPI } from "./services/api";
 import "./App.css";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("data"); // 'upload', 'data', 'firefighters'
-  const [editingRecord, setEditingRecord] = useState(null);
+  const [activeTab, setActiveTab] = useState("departures"); // 'departures', 'firefighters'
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [statistics, setStatistics] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -24,24 +21,6 @@ function App() {
     } catch (error) {
       console.error("Błąd ładowania statystyk:", error);
     }
-  };
-
-  const handleUploadSuccess = () => {
-    setRefreshTrigger((prev) => prev + 1);
-    setActiveTab("data");
-  };
-
-  const handleEditRecord = (record) => {
-    setEditingRecord(record);
-  };
-
-  const handleCloseEditor = () => {
-    setEditingRecord(null);
-  };
-
-  const handleSaveRecord = () => {
-    setEditingRecord(null);
-    setRefreshTrigger((prev) => prev + 1);
   };
 
   return (
@@ -64,12 +43,12 @@ function App() {
 
         <nav className="sidebar-nav">
           <button
-            className={`nav-item ${activeTab === "data" ? "active" : ""}`}
-            onClick={() => setActiveTab("data")}
-            title="Dane SWD"
+            className={`nav-item ${activeTab === "departures" ? "active" : ""}`}
+            onClick={() => setActiveTab("departures")}
+            title="Wyjazdy"
           >
-            <span className="nav-icon">📋</span>
-            {!sidebarCollapsed && <span className="nav-text">Dane SWD</span>}
+            <span className="nav-icon">🚨</span>
+            {!sidebarCollapsed && <span className="nav-text">Wyjazdy</span>}
           </button>
 
           <button
@@ -79,17 +58,6 @@ function App() {
           >
             <span className="nav-icon">👨‍🚒</span>
             {!sidebarCollapsed && <span className="nav-text">Strażacy</span>}
-          </button>
-
-          <button
-            className={`nav-item ${activeTab === "upload" ? "active" : ""}`}
-            onClick={() => setActiveTab("upload")}
-            title="Import pliku"
-          >
-            <span className="nav-icon">⬆️</span>
-            {!sidebarCollapsed && (
-              <span className="nav-text">Import pliku</span>
-            )}
           </button>
         </nav>
 
@@ -111,38 +79,19 @@ function App() {
       <div className="main-container">
         <header className="app-header">
           <h1>
-            {activeTab === "data" && "📊 Dane SWD"}
+            {activeTab === "departures" && "🚨 Wyjazdy"}
             {activeTab === "firefighters" && "👨‍🚒 Strażacy"}
-            {activeTab === "upload" && "⬆️ Import pliku"}
           </h1>
         </header>
 
         <main className="app-main">
-          {activeTab === "upload" && (
-            <FileUpload
-              onUploadSuccess={handleUploadSuccess}
-              headerText={"Import z pliku Excel"}
-            />
-          )}
-
-          {activeTab === "data" && (
-            <DataTable
-              onEditRecord={handleEditRecord}
-              refreshTrigger={refreshTrigger}
-            />
+          {activeTab === "departures" && (
+            <Departures refreshTrigger={refreshTrigger} />
           )}
 
           {activeTab === "firefighters" && <Firefighters />}
         </main>
       </div>
-
-      {editingRecord && (
-        <DataEditor
-          record={editingRecord}
-          onClose={handleCloseEditor}
-          onSave={handleSaveRecord}
-        />
-      )}
     </div>
   );
 }
