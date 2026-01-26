@@ -54,27 +54,43 @@ class DataService:
     
     @staticmethod
     def get_records_by_file(db: Session, file_id: int, 
-                           skip: int = 0, limit: int = 100) -> List[SWDRecord]:
-        """Pobierz rekordy dla danego pliku z paginacją"""
-        return db.query(SWDRecord)\
-            .filter(SWDRecord.file_id == file_id)\
-            .offset(skip)\
-            .limit(limit)\
-            .all()
+                           skip: int = 0, limit: int = 100,
+                           sort_by: str = None, sort_order: str = 'asc') -> List[SWDRecord]:
+        """Pobierz rekordy dla danego pliku z paginacją i sortowaniem"""
+        query = db.query(SWDRecord).filter(SWDRecord.file_id == file_id)
+        
+        # Sortowanie
+        if sort_by:
+            column = getattr(SWDRecord, sort_by, None)
+            if column is not None:
+                if sort_order == 'desc':
+                    query = query.order_by(column.desc())
+                else:
+                    query = query.order_by(column.asc())
+        
+        return query.offset(skip).limit(limit).all()
     
     @staticmethod
     def get_records_by_file_and_firefighter(db: Session, file_id: int, 
                                             nazwisko_imie: str,
-                                            skip: int = 0, limit: int = 100) -> List[SWDRecord]:
-        """Pobierz rekordy dla danego pliku i strażaka"""
-        return db.query(SWDRecord)\
-            .filter(
-                SWDRecord.file_id == file_id,
-                SWDRecord.nazwisko_imie == nazwisko_imie
-            )\
-            .offset(skip)\
-            .limit(limit)\
-            .all()
+                                            skip: int = 0, limit: int = 100,
+                                            sort_by: str = None, sort_order: str = 'asc') -> List[SWDRecord]:
+        """Pobierz rekordy dla danego pliku i strażaka z sortowaniem"""
+        query = db.query(SWDRecord).filter(
+            SWDRecord.file_id == file_id,
+            SWDRecord.nazwisko_imie == nazwisko_imie
+        )
+        
+        # Sortowanie
+        if sort_by:
+            column = getattr(SWDRecord, sort_by, None)
+            if column is not None:
+                if sort_order == 'desc':
+                    query = query.order_by(column.desc())
+                else:
+                    query = query.order_by(column.asc())
+        
+        return query.offset(skip).limit(limit).all()
     
     @staticmethod
     def get_unique_firefighters_in_file(db: Session, file_id: int) -> List[str]:

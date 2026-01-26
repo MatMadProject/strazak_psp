@@ -108,6 +108,8 @@ def get_firefighters_in_file(file_id: int, db: Session = Depends(get_db)):
 def get_file_records(
     file_id: int,
     firefighter: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    sort_order: Optional[str] = 'asc',
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db)
@@ -115,14 +117,18 @@ def get_file_records(
     """
     Pobierz rekordy z danego pliku
     - firefighter: filtruj po strażaku (nazwisko_imie)
+    - sort_by: sortuj po kolumnie (nazwisko_imie, funkcja, nr_meldunku, czas_rozp_zdarzenia, etc.)
+    - sort_order: kierunek sortowania (asc, desc)
     - skip, limit: paginacja
     """
     if firefighter:
         records = DataService.get_records_by_file_and_firefighter(
-            db, file_id, firefighter, skip, limit
+            db, file_id, firefighter, skip, limit, sort_by, sort_order
         )
     else:
-        records = DataService.get_records_by_file(db, file_id, skip, limit)
+        records = DataService.get_records_by_file(
+            db, file_id, skip, limit, sort_by, sort_order
+        )
     
     return {
         "records": [record.to_dict() for record in records],

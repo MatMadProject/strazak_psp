@@ -2,18 +2,22 @@ import React, { useState, useEffect } from "react";
 import { dataAPI } from "../services/api";
 import "./DeparturesList.css";
 
-function DeparturesList({ file, onBack, onEditRecord }) {
+function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
   const [records, setRecords] = useState([]);
   const [firefighters, setFirefighters] = useState([]);
   const [selectedFirefighter, setSelectedFirefighter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(100);
+  const [sortBy, setSortBy] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
     loadFirefighters();
     loadRecords();
-  }, [file.id, selectedFirefighter, currentPage]);
+  }, [file.id, selectedFirefighter, currentPage, sortBy, sortOrder]);
 
   const loadFirefighters = async () => {
     try {
@@ -36,6 +40,11 @@ function DeparturesList({ file, onBack, onEditRecord }) {
         params.firefighter = selectedFirefighter;
       }
 
+      if (sortBy) {
+        params.sort_by = sortBy;
+        params.sort_order = sortOrder;
+      }
+
       const data = await dataAPI.getFileRecords(file.id, params);
       setRecords(data.records || []);
     } catch (error) {
@@ -44,6 +53,18 @@ function DeparturesList({ file, onBack, onEditRecord }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      // Zmień kierunek sortowania
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      // Nowa kolumna - sortuj rosnąco
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+    setCurrentPage(0);
   };
 
   const handleDeleteRecord = async (recordId) => {
@@ -65,6 +86,23 @@ function DeparturesList({ file, onBack, onEditRecord }) {
     // TODO: Implementacja eksportu
   };
 
+  const handleCreateDocument = () => {
+    alert("Tworzenie dokumentu będzie dostępne wkrótce...");
+    // TODO: Implementacja tworzenia dokumentu
+  };
+
+  const handleApplyDateFilter = () => {
+    // TODO: Implementacja filtrowania po dacie
+    alert(
+      `Filtrowanie od ${dateFrom || "początku"} do ${dateTo || "końca"} będzie dostępne wkrótce...`,
+    );
+  };
+
+  const getSortIcon = (column) => {
+    if (sortBy !== column) return "↕️";
+    return sortOrder === "asc" ? "↑" : "↓";
+  };
+
   return (
     <div className="departures-list-container">
       <div className="list-header">
@@ -80,14 +118,22 @@ function DeparturesList({ file, onBack, onEditRecord }) {
             </p>
           </div>
         </div>
-        <button className="btn-export" onClick={handleExport}>
-          📤 Eksportuj do Excel
-        </button>
+        <div className="header-buttons">
+          <button className="btn-create-doc" onClick={handleCreateDocument}>
+            📄 Utwórz dokument
+          </button>
+          <button className="btn-export" onClick={handleExport}>
+            📤 Eksportuj
+          </button>
+          <button className="btn-add" onClick={onAddRecord}>
+            ✚ Dodaj zdarzenie
+          </button>
+        </div>
       </div>
 
       <div className="list-controls">
         <div className="control-group">
-          <label htmlFor="firefighter-filter">🔍 Filtruj po strażaku:</label>
+          <label htmlFor="firefighter-filter">🔍 Strażak:</label>
           <select
             id="firefighter-filter"
             value={selectedFirefighter}
@@ -97,7 +143,7 @@ function DeparturesList({ file, onBack, onEditRecord }) {
             }}
             className="firefighter-select"
           >
-            <option value="">Wszyscy strażacy ({firefighters.length})</option>
+            <option value="">Wszyscy ({firefighters.length})</option>
             {firefighters.map((ff) => (
               <option key={ff} value={ff}>
                 {ff}
@@ -106,12 +152,36 @@ function DeparturesList({ file, onBack, onEditRecord }) {
           </select>
         </div>
 
-        {selectedFirefighter && (
+        <div className="control-group date-filter">
+          <label>📅 Data od:</label>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="date-input"
+          />
+          <label>do:</label>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="date-input"
+          />
+          <button className="btn-apply-filter" onClick={handleApplyDateFilter}>
+            Filtruj
+          </button>
+        </div>
+
+        {(selectedFirefighter || dateFrom || dateTo) && (
           <button
             className="btn-clear-filter"
-            onClick={() => setSelectedFirefighter("")}
+            onClick={() => {
+              setSelectedFirefighter("");
+              setDateFrom("");
+              setDateTo("");
+            }}
           >
-            ✕ Wyczyść filtr
+            ✕ Wyczyść filtry
           </button>
         )}
       </div>
@@ -131,15 +201,54 @@ function DeparturesList({ file, onBack, onEditRecord }) {
             <table className="departures-table">
               <thead>
                 <tr>
-                  <th>Nazwisko i Imię</th>
-                  <th>Stopień</th>
-                  <th>Funkcja</th>
-                  <th>Nr meldunku</th>
-                  <th>Czas rozpoczęcia</th>
-                  <th>P</th>
-                  <th>MZ</th>
-                  <th>AF</th>
-                  <th>Zaliczono</th>
+                  <th
+                    onClick={() => handleSort("nazwisko_imie")}
+                    className="sortable"
+                  >
+                    Nazwisko i Imię {getSortIcon("nazwisko_imie")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("funkcja")}
+                    className="sortable"
+                  >
+                    Funkcja {getSortIcon("funkcja")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("nr_meldunku")}
+                    className="sortable"
+                  >
+                    Nr meldunku {getSortIcon("nr_meldunku")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("czas_rozp_zdarzenia")}
+                    className="sortable"
+                  >
+                    Czas rozpoczęcia {getSortIcon("czas_rozp_zdarzenia")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("p")}
+                    className="sortable center"
+                  >
+                    P {getSortIcon("p")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("mz")}
+                    className="sortable center"
+                  >
+                    MZ {getSortIcon("mz")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("af")}
+                    className="sortable center"
+                  >
+                    AF {getSortIcon("af")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("zaliczono_do_emerytury")}
+                    className="sortable center"
+                  >
+                    Zaliczono {getSortIcon("zaliczono_do_emerytury")}
+                  </th>
                   <th>Akcje</th>
                 </tr>
               </thead>
@@ -147,7 +256,6 @@ function DeparturesList({ file, onBack, onEditRecord }) {
                 {records.map((record) => (
                   <tr key={record.id}>
                     <td className="name-cell">{record.nazwisko_imie}</td>
-                    <td>{record.stopien}</td>
                     <td>{record.funkcja}</td>
                     <td className="code-cell">{record.nr_meldunku}</td>
                     <td>{record.czas_rozp_zdarzenia}</td>
@@ -188,7 +296,8 @@ function DeparturesList({ file, onBack, onEditRecord }) {
               ← Poprzednia
             </button>
             <span className="page-info">
-              Strona {currentPage + 1} • Wyświetlono {records.length} rekordów
+              Strona {currentPage + 1} • Wyświetlono {records.length} z{" "}
+              {itemsPerPage} rekordów
             </span>
             <button
               onClick={() => setCurrentPage((p) => p + 1)}

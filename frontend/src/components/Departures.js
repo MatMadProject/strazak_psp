@@ -10,6 +10,7 @@ function Departures({ refreshTrigger }) {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [editingRecord, setEditingRecord] = useState(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -52,12 +53,18 @@ function Departures({ refreshTrigger }) {
     setEditingRecord(record);
   };
 
+  const handleAddRecord = () => {
+    setIsAddingNew(true);
+  };
+
   const handleCloseEditor = () => {
     setEditingRecord(null);
+    setIsAddingNew(false);
   };
 
   const handleSaveRecord = () => {
     setEditingRecord(null);
+    setIsAddingNew(false);
     // Odśwież listę wyjazdów jeśli jesteśmy w tym widoku
     if (view === "departures-list") {
       // Trigger refresh poprzez zmianę klucza komponentu
@@ -243,9 +250,10 @@ function Departures({ refreshTrigger }) {
           file={selectedFile}
           onBack={handleBackFromList}
           onEditRecord={handleEditRecord}
+          onAddRecord={handleAddRecord}
         />
 
-        {editingRecord && (
+        {(editingRecord || isAddingNew) && (
           <DataEditor
             record={editingRecord}
             onClose={handleCloseEditor}
