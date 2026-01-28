@@ -235,3 +235,46 @@ class DataService:
             print(f"❌ [DATA SERVICE] Błąd tworzenia rekordu: {e}")
             db.rollback()
             raise
+
+    @staticmethod
+    def get_records_by_file_with_date_filter(
+        db: Session, 
+        file_id: int,
+        date_from: str = None,
+        date_to: str = None,
+        firefighter: str = None,
+        skip: int = 0, 
+        limit: int = 100,
+        sort_by: str = None, 
+        sort_order: str = 'asc'
+    ) -> List[SWDRecord]:
+        """
+        Pobierz rekordy dla danego pliku z filtrowaniem po dacie i strażaku
+        date_from i date_to w formacie YYYY-MM-DD
+        """
+        query = db.query(SWDRecord).filter(SWDRecord.file_id == file_id)
+        
+        # Filtrowanie po strażaku
+        if firefighter:
+            query = query.filter(SWDRecord.nazwisko_imie == firefighter)
+        
+        # Filtrowanie po dacie
+        if date_from:
+            # Porównaj pierwsze 10 znaków (YYYY-MM-DD) z czas_rozp_zdarzenia
+            query = query.filter(SWDRecord.czas_rozp_zdarzenia >= date_from)
+        
+        if date_to:
+            # Dodaj 23:59:59 do końcowej daty aby uwzględnić cały dzień
+            date_to_end = f"{date_to} 23:59:59"
+            query = query.filter(SWDRecord.czas_rozp_zdarzenia <= date_to_end)
+        
+        # Sortowanie
+        if sort_by:
+            column = getattr(SWDRecord, sort_by, None)
+            if column is not None:
+                if sort_order == 'desc':
+                    query = query.order_by(column.desc())
+                else:
+                    query = query.order_by(column.asc())
+        
+        return query.offset(skip).limit(limit).all()    

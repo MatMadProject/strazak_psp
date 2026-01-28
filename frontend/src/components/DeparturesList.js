@@ -17,7 +17,15 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
   useEffect(() => {
     loadFirefighters();
     loadRecords();
-  }, [file.id, selectedFirefighter, currentPage, sortBy, sortOrder]);
+  }, [
+    file.id,
+    selectedFirefighter,
+    dateFrom,
+    dateTo,
+    currentPage,
+    sortBy,
+    sortOrder,
+  ]);
 
   const loadFirefighters = async () => {
     try {
@@ -38,6 +46,14 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
 
       if (selectedFirefighter) {
         params.firefighter = selectedFirefighter;
+      }
+
+      if (dateFrom) {
+        params.date_from = dateFrom;
+      }
+
+      if (dateTo) {
+        params.date_to = dateTo;
       }
 
       if (sortBy) {
@@ -92,10 +108,15 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
   };
 
   const handleApplyDateFilter = () => {
-    // TODO: Implementacja filtrowania po dacie
-    alert(
-      `Filtrowanie od ${dateFrom || "początku"} do ${dateTo || "końca"} będzie dostępne wkrótce...`,
-    );
+    // Walidacja dat
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      alert("⚠️ Data 'od' nie może być późniejsza niż data 'do'");
+      return;
+    }
+
+    // Reset paginacji i załaduj dane
+    setCurrentPage(0);
+    loadRecords();
   };
 
   const getSortIcon = (column) => {
@@ -173,9 +194,6 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
             onChange={(e) => setDateTo(e.target.value)}
             className="date-input"
           />
-          <button className="btn-apply-filter" onClick={handleApplyDateFilter}>
-            Filtruj
-          </button>
         </div>
 
         {(selectedFirefighter || dateFrom || dateTo) && (
@@ -185,6 +203,7 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
               setSelectedFirefighter("");
               setDateFrom("");
               setDateTo("");
+              setCurrentPage(0);
             }}
           >
             ✕ Wyczyść filtry

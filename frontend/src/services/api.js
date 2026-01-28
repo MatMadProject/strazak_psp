@@ -87,7 +87,7 @@ export const dataAPI = {
 
   // W obiekcie dataAPI dodaj:
   createRecord: async (fileId, data) => {
-    const response = await api.post(`/data/files/${fileId}/records`, data);
+    const response = await api.post(`api/data/files/${fileId}/records`, data);
     return response.data;
   },
 };
