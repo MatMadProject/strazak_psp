@@ -98,9 +98,7 @@ function DataEditor({ record, isAddingNew, fileId, onClose, onSave }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>
-            {isAddingNew ? "✚ Dodaj nowe zdarzenie" : "✏️ Edycja rekordu"}
-          </h2>
+          <h2>{isAddingNew ? "Dodaj nowe zdarzenie" : "✏️ Edycja rekordu"}</h2>
           <button onClick={onClose} className="btn-close">
             ✕
           </button>

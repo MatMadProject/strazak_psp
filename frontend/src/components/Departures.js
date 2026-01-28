@@ -12,6 +12,7 @@ function Departures({ refreshTrigger }) {
   const [editingRecord, setEditingRecord] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (view === "file-list") {
@@ -65,6 +66,7 @@ function Departures({ refreshTrigger }) {
   const handleSaveRecord = () => {
     setEditingRecord(null);
     setIsAddingNew(false);
+    setRefreshKey((prev) => prev + 1);
     // Odśwież listę wyjazdów jeśli jesteśmy w tym widoku
     if (view === "departures-list") {
       // Trigger refresh poprzez zmianę klucza komponentu
@@ -247,6 +249,7 @@ function Departures({ refreshTrigger }) {
     return (
       <>
         <DeparturesList
+          key={refreshKey}
           file={selectedFile}
           onBack={handleBackFromList}
           onEditRecord={handleEditRecord}
