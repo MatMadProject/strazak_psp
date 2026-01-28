@@ -108,8 +108,8 @@ def get_firefighters_in_file(file_id: int, db: Session = Depends(get_db)):
 def get_file_records(
     file_id: int,
     firefighter: Optional[str] = None,
-    date_from: Optional[str] = None,  # NOWE
-    date_to: Optional[str] = None,    # NOWE
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     sort_by: Optional[str] = None,
     sort_order: Optional[str] = 'asc',
     skip: int = Query(0, ge=0),
@@ -118,29 +118,30 @@ def get_file_records(
 ):
     """
     Pobierz rekordy z danego pliku
-    - firefighter: filtruj po strażaku (nazwisko_imie)
-    - date_from: data od (YYYY-MM-DD)
-    - date_to: data do (YYYY-MM-DD)
-    - sort_by: sortuj po kolumnie
-    - sort_order: kierunek sortowania (asc, desc)
-    - skip, limit: paginacja
     """
-    # Jeśli są filtry po dacie lub strażaku, użyj rozszerzonej metody
+    # Pobierz rekordy
     if date_from or date_to or firefighter:
         records = DataService.get_records_by_file_with_date_filter(
             db, file_id, date_from, date_to, firefighter, skip, limit, sort_by, sort_order
+        )
+        # Policz całkowitą liczbę bez paginacji
+        total_count = DataService.count_records_by_file_with_date_filter(
+            db, file_id, date_from, date_to, firefighter
         )
     else:
         records = DataService.get_records_by_file(
             db, file_id, skip, limit, sort_by, sort_order
         )
+        # Policz całkowitą liczbę bez paginacji
+        total_count = DataService.count_records_by_file(db, file_id)
     
     return {
         "records": [record.to_dict() for record in records],
         "file_id": file_id,
         "skip": skip,
         "limit": limit,
-        "count": len(records)
+        "count": len(records),
+        "total_count": total_count 
     }
 
 @router.post("/files/{file_id}/records")

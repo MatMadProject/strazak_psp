@@ -278,3 +278,30 @@ class DataService:
                     query = query.order_by(column.asc())
         
         return query.offset(skip).limit(limit).all()    
+    @staticmethod
+    def count_records_by_file(db: Session, file_id: int) -> int:
+        """Policz wszystkie rekordy w pliku"""
+        return db.query(SWDRecord).filter(SWDRecord.file_id == file_id).count()
+
+    @staticmethod
+    def count_records_by_file_with_date_filter(
+        db: Session, 
+        file_id: int,
+        date_from: str = None,
+        date_to: str = None,
+        firefighter: str = None
+    ) -> int:
+        """Policz rekordy z filtrami"""
+        query = db.query(SWDRecord).filter(SWDRecord.file_id == file_id)
+        
+        if firefighter:
+            query = query.filter(SWDRecord.nazwisko_imie == firefighter)
+        
+        if date_from:
+            query = query.filter(SWDRecord.czas_rozp_zdarzenia >= date_from)
+        
+        if date_to:
+            date_to_end = f"{date_to} 23:59:59"
+            query = query.filter(SWDRecord.czas_rozp_zdarzenia <= date_to_end)
+        
+        return query.count()

@@ -4,6 +4,7 @@ import "./DeparturesList.css";
 
 function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
   const [records, setRecords] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [firefighters, setFirefighters] = useState([]);
   const [selectedFirefighter, setSelectedFirefighter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -63,6 +64,7 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
 
       const data = await dataAPI.getFileRecords(file.id, params);
       setRecords(data.records || []);
+      setTotalCount(data.total_count || 0); // NOWE
     } catch (error) {
       console.error("Błąd ładowania rekordów:", error);
       alert("Nie udało się załadować danych");
@@ -322,7 +324,13 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
             </button>
             <span className="page-info">
               Strona {currentPage + 1} • Wyświetlono {records.length} z{" "}
-              {itemsPerPage} rekordów
+              {totalCount} rekordów
+              {(selectedFirefighter || dateFrom || dateTo) && (
+                <span style={{ fontSize: "0.9em", color: "#666" }}>
+                  {" "}
+                  (filtrowane)
+                </span>
+              )}
             </span>
             <button
               onClick={() => setCurrentPage((p) => p + 1)}
