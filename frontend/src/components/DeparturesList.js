@@ -103,6 +103,12 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
     return sortOrder === "asc" ? "↑" : "↓";
   };
 
+  const formatRetirementStatus = (value) => {
+    if (value === "1" || value === 1) return "Tak";
+    if (value === "0" || value === 0) return "Nie";
+    return value || "";
+  };
+
   return (
     <div className="departures-list-container">
       <div className="list-header">
@@ -239,7 +245,7 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
                   </th>
                   <th
                     onClick={() => handleSort("af")}
-                    className="sortable center"
+                    className="sortable center  "
                   >
                     AF {getSortIcon("af")}
                   </th>
@@ -263,7 +269,7 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
                     <td className="center-cell">{record.mz}</td>
                     <td className="center-cell">{record.af}</td>
                     <td className="center-cell">
-                      {record.zaliczono_do_emerytury}
+                      {formatRetirementStatus(record.zaliczono_do_emerytury)}
                     </td>
                     <td className="actions-cell">
                       <button

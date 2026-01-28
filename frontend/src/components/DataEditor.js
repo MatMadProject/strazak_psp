@@ -27,7 +27,7 @@ function DataEditor({ record, isAddingNew, fileId, onClose, onSave }) {
         p: record.p || "",
         mz: record.mz || "",
         af: record.af || "",
-        zaliczono_do_emerytury: record.zaliczono_do_emerytury || "",
+        zaliczono_do_emerytury: record.zaliczono_do_emerytury?.toString() || "", // Konwersja na string
       });
     } else if (isAddingNew) {
       // Reset formularza dla nowego rekordu
@@ -117,7 +117,18 @@ function DataEditor({ record, isAddingNew, fileId, onClose, onSave }) {
               onChange={handleChange}
               className="form-input"
               required
+              disabled={!isAddingNew} // Zablokowane przy edycji
+              style={
+                !isAddingNew
+                  ? { backgroundColor: "#f5f5f5", cursor: "not-allowed" }
+                  : {}
+              }
             />
+            {!isAddingNew && (
+              <small style={{ color: "#666", fontSize: "0.85em" }}>
+                ℹ️ To pole nie może być edytowane
+              </small>
+            )}
           </div>
 
           <div className="form-row">
@@ -156,7 +167,18 @@ function DataEditor({ record, isAddingNew, fileId, onClose, onSave }) {
               onChange={handleChange}
               className="form-input"
               required
+              disabled={!isAddingNew} // Zablokowane przy edycji
+              style={
+                !isAddingNew
+                  ? { backgroundColor: "#f5f5f5", cursor: "not-allowed" }
+                  : {}
+              }
             />
+            {!isAddingNew && (
+              <small style={{ color: "#666", fontSize: "0.85em" }}>
+                ℹ️ To pole nie może być edytowane
+              </small>
+            )}
           </div>
 
           <div className="form-group">
@@ -216,14 +238,17 @@ function DataEditor({ record, isAddingNew, fileId, onClose, onSave }) {
             <label htmlFor="zaliczono_do_emerytury">
               Zaliczono do emerytury
             </label>
-            <input
-              type="text"
+            <select
               id="zaliczono_do_emerytury"
               name="zaliczono_do_emerytury"
               value={formData.zaliczono_do_emerytury}
               onChange={handleChange}
               className="form-input"
-            />
+            >
+              <option value="">Wybierz...</option>
+              <option value="1">Tak</option>
+              <option value="0">Nie</option>
+            </select>
           </div>
 
           <div className="form-actions">
