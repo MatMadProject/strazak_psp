@@ -84,6 +84,12 @@ export const dataAPI = {
     const response = await api.get(`/api/data/files/${fileId}/firefighters`);
     return response.data;
   },
+
+  // W obiekcie dataAPI dodaj:
+  createRecord: async (fileId, data) => {
+    const response = await api.post(`/data/files/${fileId}/records`, data);
+    return response.data;
+  },
 };
 
 // Firefighters API

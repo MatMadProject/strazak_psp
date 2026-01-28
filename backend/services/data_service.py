@@ -212,3 +212,26 @@ class DataService:
             "total_records": total_records,
             "avg_records_per_file": total_records / total_files if total_files > 0 else 0
         }
+    @staticmethod
+    def check_duplicate_record(db: Session, file_id: int, nazwisko_imie: str, nr_meldunku: str) -> Optional[SWDRecord]:
+        """Sprawdź czy rekord o takich samych danych już istnieje"""
+        return db.query(SWDRecord).filter(
+            SWDRecord.file_id == file_id,
+            SWDRecord.nazwisko_imie == nazwisko_imie,
+            SWDRecord.nr_meldunku == nr_meldunku
+        ).first()
+
+    @staticmethod
+    def create_single_record(db: Session, record_data: dict) -> SWDRecord:
+        """Utwórz pojedynczy rekord"""
+        try:
+            record = SWDRecord(**record_data)
+            db.add(record)
+            db.commit()
+            db.refresh(record)
+            print(f"✅ [DATA SERVICE] Utworzono nowy rekord ID: {record.id}")
+            return record
+        except Exception as e:
+            print(f"❌ [DATA SERVICE] Błąd tworzenia rekordu: {e}")
+            db.rollback()
+            raise

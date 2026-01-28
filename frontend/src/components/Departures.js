@@ -256,6 +256,8 @@ function Departures({ refreshTrigger }) {
         {(editingRecord || isAddingNew) && (
           <DataEditor
             record={editingRecord}
+            isAddingNew={isAddingNew}
+            fileId={selectedFile.id}
             onClose={handleCloseEditor}
             onSave={handleSaveRecord}
           />

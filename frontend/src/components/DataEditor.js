@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { dataAPI } from "../services/api";
 import "./DataEditor.css";
 
-function DataEditor({ record, onClose, onSave }) {
+function DataEditor({ record, isAddingNew, fileId, onClose, onSave }) {
   const [formData, setFormData] = useState({
     nazwisko_imie: "",
     stopien: "",
@@ -29,8 +29,21 @@ function DataEditor({ record, onClose, onSave }) {
         af: record.af || "",
         zaliczono_do_emerytury: record.zaliczono_do_emerytury || "",
       });
+    } else if (isAddingNew) {
+      // Reset formularza dla nowego rekordu
+      setFormData({
+        nazwisko_imie: "",
+        stopien: "",
+        funkcja: "",
+        nr_meldunku: "",
+        czas_rozp_zdarzenia: "",
+        p: "",
+        mz: "",
+        af: "",
+        zaliczono_do_emerytury: "",
+      });
     }
-  }, [record]);
+  }, [record, isAddingNew]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,27 +55,52 @@ function DataEditor({ record, onClose, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Walidacja po stronie frontendu
+    if (!formData.nazwisko_imie || !formData.nazwisko_imie.trim()) {
+      alert("⚠️ Pole 'Nazwisko i Imię' jest wymagane");
+      return;
+    }
+
+    if (!formData.nr_meldunku || !formData.nr_meldunku.trim()) {
+      alert("⚠️ Pole 'Nr meldunku' jest wymagane");
+      return;
+    }
+
     setSaving(true);
 
     try {
-      await dataAPI.updateRecord(record.id, formData);
-      alert("Rekord zaktualizowany pomyślnie");
+      if (isAddingNew) {
+        // Dodawanie nowego rekordu
+        await dataAPI.createRecord(fileId, formData);
+        alert("✅ Nowy rekord dodany pomyślnie");
+      } else {
+        // Aktualizacja istniejącego rekordu
+        await dataAPI.updateRecord(record.id, formData);
+        alert("✅ Rekord zaktualizowany pomyślnie");
+      }
       onSave();
     } catch (error) {
-      console.error("Błąd aktualizacji:", error);
-      alert(`Błąd: ${error.response?.data?.detail || error.message}`);
+      console.error("Błąd zapisu:", error);
+
+      // Obsługa błędu duplikatu
+      if (error.response?.status === 409) {
+        alert(`⚠️ Duplikat!\n\n${error.response.data.detail}`);
+      } else {
+        alert(`❌ Błąd: ${error.response?.data?.detail || error.message}`);
+      }
     } finally {
       setSaving(false);
     }
   };
 
-  if (!record) return null;
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Edycja rekordu</h2>
+          <h2>
+            {isAddingNew ? "✚ Dodaj nowe zdarzenie" : "✏️ Edycja rekordu"}
+          </h2>
           <button onClick={onClose} className="btn-close">
             ✕
           </button>
@@ -70,7 +108,7 @@ function DataEditor({ record, onClose, onSave }) {
 
         <form onSubmit={handleSubmit} className="editor-form">
           <div className="form-group">
-            <label htmlFor="nazwisko_imie">Nazwisko i Imię</label>
+            <label htmlFor="nazwisko_imie">Nazwisko i Imię *</label>
             <input
               type="text"
               id="nazwisko_imie"
@@ -78,6 +116,7 @@ function DataEditor({ record, onClose, onSave }) {
               value={formData.nazwisko_imie}
               onChange={handleChange}
               className="form-input"
+              required
             />
           </div>
 
@@ -108,7 +147,7 @@ function DataEditor({ record, onClose, onSave }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="nr_meldunku">Nr meldunku</label>
+            <label htmlFor="nr_meldunku">Nr meldunku *</label>
             <input
               type="text"
               id="nr_meldunku"
@@ -116,6 +155,7 @@ function DataEditor({ record, onClose, onSave }) {
               value={formData.nr_meldunku}
               onChange={handleChange}
               className="form-input"
+              required
             />
           </div>
 
@@ -196,7 +236,11 @@ function DataEditor({ record, onClose, onSave }) {
               Anuluj
             </button>
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? "Zapisywanie..." : "Zapisz zmiany"}
+              {saving
+                ? "Zapisywanie..."
+                : isAddingNew
+                  ? "Dodaj zdarzenie"
+                  : "Zapisz zmiany"}
             </button>
           </div>
         </form>

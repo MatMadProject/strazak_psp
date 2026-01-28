@@ -137,3 +137,55 @@ def get_file_records(
         "limit": limit,
         "count": len(records)
     }
+
+@router.post("/files/{file_id}/records")
+def create_record(
+    file_id: int,
+    record_data: RecordUpdate,
+    db: Session = Depends(get_db)
+):
+    """Utwórz nowy rekord w pliku"""
+    # Sprawdź czy plik istnieje
+    from services.data_service import DataService
+    file_record = DataService.get_file_by_id(db, file_id)
+    if not file_record:
+        raise HTTPException(status_code=404, detail="Plik nie znaleziony")
+    
+    # Przygotuj dane (usuń None wartości)
+    create_dict = {k: v for k, v in record_data.dict().items() if v is not None}
+    
+    if not create_dict:
+        raise HTTPException(status_code=400, detail="Brak danych do zapisania")
+    
+    # Sprawdź wymagane pola
+    if not create_dict.get('nazwisko_imie'):
+        raise HTTPException(status_code=400, detail="Pole 'Nazwisko i Imię' jest wymagane")
+    
+    if not create_dict.get('nr_meldunku'):
+        raise HTTPException(status_code=400, detail="Pole 'Nr meldunku' jest wymagane")
+    
+    # Sprawdź duplikaty
+    existing_record = DataService.check_duplicate_record(
+        db, 
+        file_id, 
+        create_dict['nazwisko_imie'], 
+        create_dict['nr_meldunku']
+    )
+    
+    if existing_record:
+        raise HTTPException(
+            status_code=409,  # 409 Conflict
+            detail=f"Rekord dla '{create_dict['nazwisko_imie']}' z meldunkiem '{create_dict['nr_meldunku']}' już istnieje w tym pliku"
+        )
+    
+    # Dodaj file_id do danych
+    create_dict['file_id'] = file_id
+    
+    # Utwórz rekord
+    record = DataService.create_single_record(db, create_dict)
+    
+    return {
+        "success": True,
+        "message": "Rekord utworzony pomyślnie",
+        "record": record.to_dict()
+    }
