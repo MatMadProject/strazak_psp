@@ -1,13 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 import sys
 from pathlib import Path
+import unicodedata
+import re
 
 sys.path.append(str(Path(__file__).parent.parent))
 from database import get_db
 from services.data_service import DataService
+from services.departures_excel_service import DeparturesExcelService
 
 router = APIRouter(prefix="/api/data", tags=["data"])
 
@@ -22,6 +26,25 @@ class RecordUpdate(BaseModel):
     nr_meldunku: Optional[str] = None
     czas_rozp_zdarzenia: Optional[str] = None
     funkcja: Optional[str] = None
+
+def normalize_filename(text: str) -> str:
+    """
+    Normalizuje tekst do bezpiecznej nazwy pliku (usuwa polskie znaki, spacje, znaki specjalne)
+    """
+    # Zamień polskie znaki na ASCII
+    text = unicodedata.normalize('NFKD', text)
+    text = text.encode('ASCII', 'ignore').decode('ASCII')
+    
+    # Usuń wszystko co nie jest literą, cyfrą, myślnikiem lub podkreślnikiem
+    text = re.sub(r'[^\w\s-]', '', text)
+    
+    # Zamień spacje i wielokrotne myślniki/podkreślniki na pojedyncze podkreślniki
+    text = re.sub(r'[-\s]+', '_', text)
+    
+    # Usuń podkreślniki z początku i końca
+    text = text.strip('_')
+    
+    return text
 
 @router.get("/records")
 def get_records(
@@ -195,3 +218,142 @@ def create_record(
         "message": "Rekord utworzony pomyślnie",
         "record": record.to_dict()
     }
+
+    from services.departures_excel_service import DeparturesExcelService
+
+# Inicjalizacja serwisu Excel (dodaj na górze z innymi inicjalizacjami)
+departures_excel_service = DeparturesExcelService()
+
+@router.get("/files/{file_id}/export/excel")
+def export_departures_to_excel(
+    file_id: int,
+    firefighter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Eksportuj wyjazdy z danego pliku do Excel
+    Obsługuje te same filtry co endpoint listowania
+    """
+    try:
+        # Pobierz wszystkie rekordy z filtrami (bez limitów paginacji)
+        if date_from or date_to or firefighter:
+            records = DataService.get_records_by_file_with_date_filter(
+                db, file_id, date_from, date_to, firefighter, skip=0, limit=100000
+            )
+        else:
+            records = DataService.get_records_by_file(
+                db, file_id, skip=0, limit=100000
+            )
+        
+        if not records:
+            raise HTTPException(status_code=404, detail="Brak danych do eksportu")
+        
+        # Konwertuj do słowników
+        records_data = [record.to_dict() for record in records]
+        
+        # Generuj plik Excel
+        file_content = departures_excel_service.export_to_excel(records_data)
+        
+        # Buduj nazwę pliku z filtrami
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename_parts = ["wyjazdy"]
+        
+        if firefighter:
+            # Normalizuj nazwę strażaka (usuń polskie znaki)
+            firefighter_clean = normalize_filename(firefighter)
+            filename_parts.append(firefighter_clean)
+        
+        if date_from and date_to:
+            filename_parts.append(f"{date_from}_do_{date_to}")
+        elif date_from:
+            filename_parts.append(f"od_{date_from}")
+        elif date_to:
+            filename_parts.append(f"do_{date_to}")
+        
+        filename_parts.append(timestamp)
+        filename = "_".join(filename_parts) + ".csv"
+        
+        return StreamingResponse(
+            file_content,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ BŁĄD EKSPORTU EXCEL: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/files/{file_id}/export/csv")
+def export_departures_to_csv(
+    file_id: int,
+    firefighter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Eksportuj wyjazdy z danego pliku do CSV
+    Obsługuje te same filtry co endpoint listowania
+    """
+    try:
+        # Pobierz wszystkie rekordy z filtrami (bez limitów paginacji)
+        if date_from or date_to or firefighter:
+            records = DataService.get_records_by_file_with_date_filter(
+                db, file_id, date_from, date_to, firefighter, skip=0, limit=100000
+            )
+        else:
+            records = DataService.get_records_by_file(
+                db, file_id, skip=0, limit=100000
+            )
+        
+        if not records:
+            raise HTTPException(status_code=404, detail="Brak danych do eksportu")
+        
+        # Konwertuj do słowników
+        records_data = [record.to_dict() for record in records]
+        
+        # Generuj plik CSV
+        file_content = departures_excel_service.export_to_csv(records_data)
+        
+        # Buduj nazwę pliku z filtrami
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename_parts = ["wyjazdy"]
+        
+        if firefighter:
+            # Normalizuj nazwę strażaka (usuń polskie znaki)
+            firefighter_clean = normalize_filename(firefighter)
+            filename_parts.append(firefighter_clean)
+        
+        if date_from and date_to:
+            filename_parts.append(f"{date_from}_do_{date_to}")
+        elif date_from:
+            filename_parts.append(f"od_{date_from}")
+        elif date_to:
+            filename_parts.append(f"do_{date_to}")
+        
+        filename_parts.append(timestamp)
+        filename = "_".join(filename_parts) + ".csv"
+        
+        return StreamingResponse(
+            file_content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ BŁĄD EKSPORTU CSV: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

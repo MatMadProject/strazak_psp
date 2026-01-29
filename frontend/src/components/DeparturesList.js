@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { dataAPI } from "../services/api";
 import "./DeparturesList.css";
+import DeparturesExportButton from "./DeparturesExportButton";
 
 function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
   const [records, setRecords] = useState([]);
@@ -14,6 +15,11 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
   const [itemsPerPage] = useState(100);
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
+  const currentFilters = {
+    firefighter: selectedFirefighter || undefined,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
+  };
 
   useEffect(() => {
     loadFirefighters();
@@ -109,18 +115,6 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
     // TODO: Implementacja tworzenia dokumentu
   };
 
-  const handleApplyDateFilter = () => {
-    // Walidacja dat
-    if (dateFrom && dateTo && dateFrom > dateTo) {
-      alert("⚠️ Data 'od' nie może być późniejsza niż data 'do'");
-      return;
-    }
-
-    // Reset paginacji i załaduj dane
-    setCurrentPage(0);
-    loadRecords();
-  };
-
   const getSortIcon = (column) => {
     if (sortBy !== column) return "↕️";
     return sortOrder === "asc" ? "↑" : "↓";
@@ -151,9 +145,7 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
           <button className="btn-create-doc" onClick={handleCreateDocument}>
             📄 Utwórz dokument
           </button>
-          <button className="btn-export" onClick={handleExport}>
-            📤 Eksportuj
-          </button>
+          <DeparturesExportButton fileId={file.id} filters={currentFilters} />
           <button className="btn-add" onClick={onAddRecord}>
             ✚ Dodaj zdarzenie
           </button>

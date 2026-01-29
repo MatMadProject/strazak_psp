@@ -85,9 +85,24 @@ export const dataAPI = {
     return response.data;
   },
 
-  // W obiekcie dataAPI dodaj:
   createRecord: async (fileId, data) => {
     const response = await api.post(`api/data/files/${fileId}/records`, data);
+    return response.data;
+  },
+
+  exportDeparturesToExcel: async (fileId, filters = {}) => {
+    const response = await api.get(`/api/data/files/${fileId}/export/excel`, {
+      params: filters,
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  exportDeparturesToCSV: async (fileId, filters = {}) => {
+    const response = await api.get(`/api/data/files/${fileId}/export/csv`, {
+      params: filters,
+      responseType: "blob",
+    });
     return response.data;
   },
 };

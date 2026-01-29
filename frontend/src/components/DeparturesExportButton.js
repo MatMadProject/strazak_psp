@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { firefightersAPI } from "../services/api";
+import { dataAPI } from "../services/api";
 import "./ExportButton.css";
 
-function ExportButton({ filters = {} }) {
+function DeparturesExportButton({ fileId, filters = {} }) {
   const [showMenu, setShowMenu] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -15,11 +15,11 @@ function ExportButton({ filters = {} }) {
       let filename;
 
       if (format === "excel") {
-        blob = await firefightersAPI.exportToExcel(filters);
-        filename = `strazacy_${new Date().toISOString().split("T")[0]}.xlsx`;
+        blob = await dataAPI.exportDeparturesToExcel(fileId, filters);
+        filename = blob.filename;
       } else if (format === "csv") {
-        blob = await firefightersAPI.exportToCSV(filters);
-        filename = `strazacy_${new Date().toISOString().split("T")[0]}.csv`;
+        blob = await dataAPI.exportDeparturesToCSV(fileId, filters);
+        filename = `wyjazdy_${new Date().toISOString().split("T")[0]}.csv`;
       }
 
       // Utwórz link do pobrania
@@ -33,10 +33,12 @@ function ExportButton({ filters = {} }) {
       window.URL.revokeObjectURL(url);
 
       // Pokaż komunikat sukcesu
-      //alert(`Plik ${filename} został pobrany pomyślnie!`);
+      //alert(`✅ Plik ${filename} został pobrany pomyślnie!`);
     } catch (error) {
       console.error("Błąd eksportu:", error);
-      alert(`Błąd eksportu: ${error.response?.data?.detail || error.message}`);
+      alert(
+        `❌ Błąd eksportu: ${error.response?.data?.detail || error.message}`,
+      );
     } finally {
       setExporting(false);
     }
@@ -81,4 +83,4 @@ function ExportButton({ filters = {} }) {
   );
 }
 
-export default ExportButton;
+export default DeparturesExportButton;
