@@ -6,13 +6,39 @@ import DataEditor from "./DataEditor";
 import "./Departures.css";
 
 function Departures({ refreshTrigger }) {
-  const [view, setView] = useState("menu"); // 'menu', 'import', 'file-list', 'departures-list'
+  // Przywróć ostatni stan z localStorage lub ustaw 'menu'
+  const [view, setView] = useState(() => {
+    const saved = localStorage.getItem("departures_view");
+    return saved || "menu";
+  });
+
   const [files, setFiles] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
+
+  const [selectedFile, setSelectedFile] = useState(() => {
+    const saved = localStorage.getItem("departures_selectedFile");
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [editingRecord, setEditingRecord] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Zapisz stan do localStorage przy każdej zmianie
+  useEffect(() => {
+    localStorage.setItem("departures_view", view);
+  }, [view]);
+
+  useEffect(() => {
+    if (selectedFile) {
+      localStorage.setItem(
+        "departures_selectedFile",
+        JSON.stringify(selectedFile),
+      );
+    } else {
+      localStorage.removeItem("departures_selectedFile");
+    }
+  }, [selectedFile]);
 
   useEffect(() => {
     if (view === "file-list") {
@@ -50,6 +76,13 @@ function Departures({ refreshTrigger }) {
     setView("file-list");
   };
 
+  const handleBackToMenu = () => {
+    setSelectedFile(null);
+    setView("menu");
+    // Opcjonalnie wyczyść localStorage gdy użytkownik wraca do menu
+    // localStorage.removeItem('departures_selectedFile');
+  };
+
   const handleEditRecord = (record) => {
     setEditingRecord(record);
   };
@@ -67,12 +100,6 @@ function Departures({ refreshTrigger }) {
     setEditingRecord(null);
     setIsAddingNew(false);
     setRefreshKey((prev) => prev + 1);
-    // Odśwież listę wyjazdów jeśli jesteśmy w tym widoku
-    if (view === "departures-list") {
-      // Trigger refresh poprzez zmianę klucza komponentu
-      setView("departures-list-refresh");
-      setTimeout(() => setView("departures-list"), 0);
-    }
   };
 
   const handleDeleteFile = async (fileId, filename) => {
@@ -148,7 +175,7 @@ function Departures({ refreshTrigger }) {
     return (
       <div className="departures-container">
         <div className="view-header">
-          <button className="btn-back" onClick={() => setView("menu")}>
+          <button className="btn-back" onClick={handleBackToMenu}>
             ← Powrót
           </button>
           <h2>📥 Import pliku Excel</h2>
@@ -167,7 +194,7 @@ function Departures({ refreshTrigger }) {
     return (
       <div className="departures-container">
         <div className="view-header">
-          <button className="btn-back" onClick={() => setView("menu")}>
+          <button className="btn-back" onClick={handleBackToMenu}>
             ← Powrót
           </button>
           <h2>📂 Zaimportowane pliki</h2>
@@ -260,7 +287,7 @@ function Departures({ refreshTrigger }) {
           <DataEditor
             record={editingRecord}
             isAddingNew={isAddingNew}
-            fileId={selectedFile.id}
+            fileId={selectedFile?.id}
             onClose={handleCloseEditor}
             onSave={handleSaveRecord}
           />
