@@ -95,7 +95,35 @@ export const dataAPI = {
       params: filters,
       responseType: "blob",
     });
-    return response.data;
+
+    // Wyciągnij nazwę pliku z nagłówka Content-Disposition
+    const contentDisposition = response.headers["content-disposition"];
+    let filename = `wyjazdy_${new Date().toISOString().split("T")[0]}.xlsx`;
+
+    console.log("Content-Disposition:", contentDisposition); // Debug
+
+    if (contentDisposition) {
+      // RFC 5987: filename*=UTF-8''encoded_filename
+      const filenameStarMatch = contentDisposition.match(
+        /filename\*=UTF-8''([^;]+)/,
+      );
+      if (filenameStarMatch && filenameStarMatch[1]) {
+        filename = decodeURIComponent(filenameStarMatch[1]);
+      } else {
+        // Fallback dla starego formatu
+        const filenameMatch = contentDisposition.match(/filename=([^;]+)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].trim().replace(/['"]/g, "");
+        }
+      }
+    }
+
+    console.log("Extracted filename:", filename); // Debug
+
+    return {
+      blob: response.data,
+      filename: filename,
+    };
   },
 
   exportDeparturesToCSV: async (fileId, filters = {}) => {
@@ -103,7 +131,35 @@ export const dataAPI = {
       params: filters,
       responseType: "blob",
     });
-    return response.data;
+
+    // Wyciągnij nazwę pliku z nagłówka Content-Disposition
+    const contentDisposition = response.headers["content-disposition"];
+    let filename = `wyjazdy_${new Date().toISOString().split("T")[0]}.csv`;
+
+    console.log("Content-Disposition:", contentDisposition); // Debug
+
+    if (contentDisposition) {
+      // RFC 5987: filename*=UTF-8''encoded_filename
+      const filenameStarMatch = contentDisposition.match(
+        /filename\*=UTF-8''([^;]+)/,
+      );
+      if (filenameStarMatch && filenameStarMatch[1]) {
+        filename = decodeURIComponent(filenameStarMatch[1]);
+      } else {
+        // Fallback dla starego formatu
+        const filenameMatch = contentDisposition.match(/filename=([^;]+)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].trim().replace(/['"]/g, "");
+        }
+      }
+    }
+
+    console.log("Extracted filename:", filename); // Debug
+
+    return {
+      blob: response.data,
+      filename: filename,
+    };
   },
 };
 

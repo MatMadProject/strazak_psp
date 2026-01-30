@@ -11,19 +11,19 @@ function DeparturesExportButton({ fileId, filters = {} }) {
     setShowMenu(false);
 
     try {
-      let blob;
-      let filename;
+      let response;
+      let filename = `wyjazdy_${new Date().toISOString().split("T")[0]}`; // Domyślna nazwa
 
       if (format === "excel") {
-        blob = await dataAPI.exportDeparturesToExcel(fileId, filters);
-        filename = blob.filename;
+        response = await dataAPI.exportDeparturesToExcel(fileId, filters);
+        filename = response.filename || `${filename}.xlsx`;
       } else if (format === "csv") {
-        blob = await dataAPI.exportDeparturesToCSV(fileId, filters);
-        filename = `wyjazdy_${new Date().toISOString().split("T")[0]}.csv`;
+        response = await dataAPI.exportDeparturesToCSV(fileId, filters);
+        filename = response.filename || `${filename}.csv`;
       }
 
       // Utwórz link do pobrania
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(response.blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;

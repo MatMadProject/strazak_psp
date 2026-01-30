@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 import unicodedata
 import re
+from urllib.parse import quote
 
 sys.path.append(str(Path(__file__).parent.parent))
 from database import get_db
@@ -45,6 +46,17 @@ def normalize_filename(text: str) -> str:
     text = text.strip('_')
     
     return text
+
+def encode_filename_header(filename: str) -> str:
+    """
+    Koduje nazwę pliku dla nagłówka Content-Disposition zgodnie z RFC 5987
+    Obsługuje polskie znaki i jest kompatybilne z nowoczesnymi przeglądarkami
+    """
+    # Zakoduj filename używając UTF-8 i URL encoding
+    encoded_filename = quote(filename)
+    
+    # RFC 5987: filename*=UTF-8''encoded_filename
+    return f"attachment; filename*=UTF-8''{encoded_filename}"
 
 @router.get("/records")
 def get_records(
@@ -256,14 +268,14 @@ def export_departures_to_excel(
         # Generuj plik Excel
         file_content = departures_excel_service.export_to_excel(records_data)
         
-        # Buduj nazwę pliku z filtrami
+        # Buduj nazwę pliku z filtrami (BEZ normalizacji - zachowaj polskie znaki!)
         from datetime import datetime
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename_parts = ["wyjazdy"]
         
         if firefighter:
-            # Normalizuj nazwę strażaka (usuń polskie znaki)
-            firefighter_clean = normalize_filename(firefighter)
+            # Zachowaj polskie znaki, tylko zamień spacje na podkreślniki
+            firefighter_clean = firefighter.replace(" ", "_")
             filename_parts.append(firefighter_clean)
         
         if date_from and date_to:
@@ -274,13 +286,16 @@ def export_departures_to_excel(
             filename_parts.append(f"do_{date_to}")
         
         filename_parts.append(timestamp)
-        filename = "_".join(filename_parts) + ".csv"
+        filename = "_".join(filename_parts) + ".xlsx"
+        
+        print(f"📤 Wysyłam plik: {filename}")  # Debug
         
         return StreamingResponse(
             file_content,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={
-                "Content-Disposition": f'attachment; filename="{filename}"'
+                "Content-Disposition": encode_filename_header(filename),  # Użyj nowej funkcji!
+                "Access-Control-Expose-Headers": "Content-Disposition",
             }
         )
     except HTTPException:
@@ -323,14 +338,14 @@ def export_departures_to_csv(
         # Generuj plik CSV
         file_content = departures_excel_service.export_to_csv(records_data)
         
-        # Buduj nazwę pliku z filtrami
+        # Buduj nazwę pliku z filtrami (BEZ normalizacji - zachowaj polskie znaki!)
         from datetime import datetime
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename_parts = ["wyjazdy"]
         
         if firefighter:
-            # Normalizuj nazwę strażaka (usuń polskie znaki)
-            firefighter_clean = normalize_filename(firefighter)
+            # Zachowaj polskie znaki, tylko zamień spacje na podkreślniki
+            firefighter_clean = firefighter.replace(" ", "_")
             filename_parts.append(firefighter_clean)
         
         if date_from and date_to:
@@ -343,11 +358,14 @@ def export_departures_to_csv(
         filename_parts.append(timestamp)
         filename = "_".join(filename_parts) + ".csv"
         
+        print(f"📤 Wysyłam plik: {filename}")  # Debug
+        
         return StreamingResponse(
             file_content,
             media_type="text/csv",
             headers={
-                "Content-Disposition": f"attachment; filename={filename}"
+                "Content-Disposition": encode_filename_header(filename),  # Użyj nowej funkcji!
+                "Access-Control-Expose-Headers": "Content-Disposition",
             }
         )
     except HTTPException:
