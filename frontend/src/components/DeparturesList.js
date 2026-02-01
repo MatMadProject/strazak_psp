@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { dataAPI } from "../services/api";
 import "./DeparturesList.css";
 import DeparturesExportButton from "./DeparturesExportButton";
+import DocumentGeneratorButton from "./DocumentGeneratorButton";
 
 function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
   const [records, setRecords] = useState([]);
@@ -105,11 +106,6 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
     }
   };
 
-  const handleExport = () => {
-    alert("Eksport do Excel będzie dostępny wkrótce...");
-    // TODO: Implementacja eksportu
-  };
-
   const handleCreateDocument = () => {
     alert("Tworzenie dokumentu będzie dostępne wkrótce...");
     // TODO: Implementacja tworzenia dokumentu
@@ -142,9 +138,14 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
           </div>
         </div>
         <div className="header-buttons">
-          <button className="btn-create-doc" onClick={handleCreateDocument}>
+          {/* <button className="btn-create-doc" onClick={handleCreateDocument}>
             📄 Utwórz dokument
-          </button>
+          </button> */}
+          <DocumentGeneratorButton
+            fileId={file.id}
+            firefighter={selectedFirefighter}
+            filters={currentFilters}
+          />
           <DeparturesExportButton fileId={file.id} filters={currentFilters} />
           <button className="btn-add" onClick={onAddRecord}>
             ✚ Dodaj zdarzenie

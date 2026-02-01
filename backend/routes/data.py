@@ -13,6 +13,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from database import get_db
 from services.data_service import DataService
 from services.departures_excel_service import DeparturesExcelService
+from services.document_generator_service import DocumentGeneratorService
 
 router = APIRouter(prefix="/api/data", tags=["data"])
 
@@ -231,7 +232,7 @@ def create_record(
         "record": record.to_dict()
     }
 
-    from services.departures_excel_service import DeparturesExcelService
+
 
 # Inicjalizacja serwisu Excel (dodaj na górze z innymi inicjalizacjami)
 departures_excel_service = DeparturesExcelService()
@@ -287,8 +288,6 @@ def export_departures_to_excel(
         
         filename_parts.append(timestamp)
         filename = "_".join(filename_parts) + ".xlsx"
-        
-        print(f"📤 Wysyłam plik: {filename}")  # Debug
         
         return StreamingResponse(
             file_content,
@@ -358,8 +357,6 @@ def export_departures_to_csv(
         filename_parts.append(timestamp)
         filename = "_".join(filename_parts) + ".csv"
         
-        print(f"📤 Wysyłam plik: {filename}")  # Debug
-        
         return StreamingResponse(
             file_content,
             media_type="text/csv",
@@ -372,6 +369,137 @@ def export_departures_to_csv(
         raise
     except Exception as e:
         print(f"❌ BŁĄD EKSPORTU CSV: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+
+# Inicjalizacja serwisu generowania dokumentów
+document_service = DocumentGeneratorService()
+
+@router.get("/files/{file_id}/generate-document/{format}")
+def generate_document(
+    file_id: int,
+    format: str,  # html, pdf, docx
+    firefighter: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Generuje dokument karty wyjazdów w wybranym formacie
+    Formaty: html, pdf, docx
+    """
+    try:
+        # Walidacja formatu
+        if format not in ['html', 'pdf', 'docx']:
+            raise HTTPException(status_code=400, detail="Nieprawidłowy format. Dostępne: html, pdf, docx")
+        
+        # Sprawdź czy wybrano strażaka
+        if not firefighter:
+            raise HTTPException(status_code=400, detail="Musisz wybrać strażaka aby wygenerować dokument")
+        
+        # WALIDACJA DAT - muszą być wybrane obie daty
+        if not date_from or not date_to:
+            raise HTTPException(
+                status_code=400, 
+                detail="Musisz wybrać zakres dat (od - do) aby wygenerować dokument"
+            )
+        
+        # Pobierz wszystkie rekordy z filtrami
+        if date_from or date_to or firefighter:
+            records = DataService.get_records_by_file_with_date_filter(
+                db, file_id, date_from, date_to, firefighter, skip=0, limit=100000
+            )
+        else:
+            records = DataService.get_records_by_file(
+                db, file_id, skip=0, limit=100000
+            )
+        
+        if not records:
+            raise HTTPException(status_code=404, detail="Brak danych do wygenerowania dokumentu")
+        
+        # Konwertuj do słowników
+        records_data = [record.to_dict() for record in records]
+        
+        # Pobierz dane strażaka z bazy Firefighters (jeśli istnieje)
+        from services.firefighter_service import FirefighterService
+        
+        firefighter_data = None
+        try:
+            # Spróbuj znaleźć strażaka w bazie
+            firefighters = FirefighterService.search_firefighters(db, firefighter, skip=0, limit=1)
+            if firefighters and len(firefighters) > 0:
+                ff = firefighters[0]
+                firefighter_data = {
+                    'stopien': ff.stopien,
+                    'nazwisko_imie': ff.nazwisko_imie,
+                    'stanowisko': ff.stanowisko
+                }
+        except Exception as e:
+            print(f"⚠️ Nie znaleziono strażaka w bazie Firefighters: {e}")
+            # Jeśli nie znaleziono, użyj domyślnych wartości
+            firefighter_data = None
+        
+        # Przygotuj nazwę pliku
+        from datetime import datetime
+        from urllib.parse import quote
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        firefighter_clean = firefighter.replace(" ", "_")
+        filename_base = f"karta_wyjazdow_{firefighter_clean}_{timestamp}"
+        
+        # Generuj dokument w wybranym formacie
+        if format == 'html':
+            content = document_service.generate_html(
+                firefighter, records_data, date_from, date_to, firefighter_data
+            )
+            filename = f"{filename_base}.html"
+            
+            return StreamingResponse(
+                iter([content.encode('utf-8')]),
+                media_type="text/html",
+                headers={
+                    "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}",
+                    "Access-Control-Expose-Headers": "Content-Disposition",
+                }
+            )
+        
+        elif format == 'pdf':
+            file_content = document_service.generate_pdf(
+                firefighter, records_data, date_from, date_to, firefighter_data
+            )
+            filename = f"{filename_base}.pdf"
+            
+            return StreamingResponse(
+                file_content,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}",
+                    "Access-Control-Expose-Headers": "Content-Disposition",
+                }
+            )
+        
+        elif format == 'docx':
+            file_content = document_service.generate_docx(
+                firefighter, records_data, date_from, date_to, firefighter_data
+            )
+            filename = f"{filename_base}.docx"
+            
+            return StreamingResponse(
+                file_content,
+                media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                headers={
+                    "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}",
+                    "Access-Control-Expose-Headers": "Content-Disposition",
+                }
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ BŁĄD GENEROWANIA DOKUMENTU: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

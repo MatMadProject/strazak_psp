@@ -161,6 +161,34 @@ export const dataAPI = {
       filename: filename,
     };
   },
+
+  generateDocument: async (fileId, format, filters = {}) => {
+    const response = await api.get(
+      `/api/data/files/${fileId}/generate-document/${format}`,
+      {
+        params: filters,
+        responseType: "blob",
+      },
+    );
+
+    // Wyciągnij nazwę pliku z nagłówka Content-Disposition
+    const contentDisposition = response.headers["content-disposition"];
+    let filename = `karta_wyjazdow_${new Date().toISOString().split("T")[0]}.${format}`;
+
+    if (contentDisposition) {
+      const filenameStarMatch = contentDisposition.match(
+        /filename\*=UTF-8''([^;]+)/,
+      );
+      if (filenameStarMatch && filenameStarMatch[1]) {
+        filename = decodeURIComponent(filenameStarMatch[1]);
+      }
+    }
+
+    return {
+      blob: response.data,
+      filename: filename,
+    };
+  },
 };
 
 // Firefighters API
