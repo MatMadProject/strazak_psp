@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Karta Ewidencyjna Wyjazdów - {{ firefighter_name }}</title>
+    <style>
+      @media print {
+        @page {
+          size: landscape;
+          margin: 1.5cm;
+        }
+        body {
+          margin: 0;
+        }
+
+        /* Powtarzaj nagłówek na każdej stronie */
+        .page-header {
+          display: table-header-group;
+        }
+      }
+
+      @page {
+        size: landscape;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 1.5cm;
+        font-size: 11pt;
+      }
+
+      /* PIERWSZY KONTENER - nagłówek strony (powtarzany na każdej stronie) */
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .header-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      /* Kolumny: 25% | 50% | 25% */
+      .header-table td {
+        padding: 4px 8px;
+      }
+
+      .header-col-1 {
+        width: 25%;
+      }
+
+      .header-col-2 {
+        width: 50%;
+      }
+
+      .header-col-3 {
+        width: 25%;
+      }
+
+      /* Wiersz 1 */
+      .stamp-dots {
+        border-bottom: 1px dotted #000;
+        text-align: center;
+        padding-bottom: 2px;
+      }
+
+      /* Wiersz 2 */
+      .stamp-label {
+        font-size: 8pt;
+        font-style: italic;
+        text-align: center;
+        color: #666;
+        padding-top: 2px;
+      }
+
+      .page-number {
+        text-align: right;
+        font-size: 10pt;
+        vertical-align: bottom;
+      }
+
+      /* Reszta dokumentu */
+      .title-section {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .title {
+        font-size: 12pt;
+        font-weight: bold;
+        line-height: 1.4;
+      }
+
+      .date-range {
+        text-align: center;
+        font-size: 10pt;
+        margin: 10px 0;
+      }
+
+      .firefighter-info {
+        text-align: center;
+        font-size: 11pt;
+        margin: 10px 0;
+      }
+
+      .firefighter-label {
+        text-align: center;
+        font-size: 8pt;
+        font-style: italic;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      table.data-table th,
+      table.data-table td {
+        border: 1px solid #000;
+        padding: 6px;
+        text-align: left;
+      }
+
+      table.data-table th {
+        background-color: #d3d3d3;
+        font-weight: bold;
+        text-align: center;
+        font-size: 9pt;
+      }
+
+      table.data-table td {
+        font-size: 8pt;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .summary {
+        font-size: 10pt;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      .footer {
+        text-align: center;
+        font-size: 7pt;
+        font-style: italic;
+        color: #808080;
+        margin-top: 30px;
+      }
+
+      /* Szerokości kolumn w tabeli głównej */
+      .col-lp {
+        width: 5%;
+      }
+      .col-data {
+        width: 10%;
+      }
+      .col-meldunek {
+        width: 15%;
+      }
+      .col-funkcja {
+        width: 20%;
+      }
+      .col-rodzaj {
+        width: 12%;
+      }
+      .col-zaliczono {
+        width: 12%;
+      }
+      .col-uwagi {
+        width: 26%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAGŁÓWEK STRONY (powtarzany na każdej stronie przy druku) -->
+    <div class="page-header">
+      <table class="header-table">
+        <tr>
+          <!-- Kolumna 1: 25% -->
+          <td class="header-col-1 stamp-dots"></td>
+          <!-- Kolumna 2: 50% (pusta) -->
+          <td class="header-col-2">&nbsp;</td>
+          <!-- Kolumna 3: 25% (pusta w wierszu 1) -->
+          <td class="header-col-3">&nbsp;</td>
+        </tr>
+        <tr>
+          <!-- Kolumna 1: Etykieta pieczątki -->
+          <td class="header-col-1 stamp-label">
+            (pieczątka jednostki organizacyjnej)
+          </td>
+          <!-- Kolumna 2: pusta -->
+          <td class="header-col-2">&nbsp;</td>
+          <!-- Kolumna 3: Numer strony -->
+          <td class="header-col-3 page-number">Strona nr {{ page_number }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- NAGŁÓWEK DOKUMENTU -->
+    <div class="title-section">
+      <div class="title">
+        Roczna karta ewidencji bezpośredniego udziału strażaka w działaniach
+        ratowniczych,<br />
+        w tym ratowniczo-gaśniczych lub bezpośredniego kierowania tymi
+        działaniami na miejscu zdarzenia
+      </div>
+    </div>
+
+    <!-- ZAKRES DAT -->
+    <div class="date-range">od {{ date_from }} do {{ date_to }}</div>
+
+    <!-- DANE STRAŻAKA -->
+    <div class="firefighter-info">
+      {{ stopien }} {{ nazwisko_imie }} {{ stanowisko }}
+    </div>
+    <div class="firefighter-label">
+      (stopień, tytuł, imię, nazwisko, stanowisko)
+    </div>
+
+    <!-- TABELA GŁÓWNA -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-lp">Lp.</th>
+          <th class="col-data">Data</th>
+          <th class="col-meldunek">Nr meldunku</th>
+          <th class="col-funkcja">Funkcja</th>
+          <th class="col-rodzaj">Rodzaj zdarzenia</th>
+          <th class="col-zaliczono">Zaliczono do 0,5%</th>
+          <th class="col-uwagi">Uwagi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <td class="center">{{ loop.index }}</td>
+          <td class="center">{{ record.data }}</td>
+          <td>{{ record.nr_meldunku }}</td>
+          <td>{{ record.funkcja }}</td>
+          <td class="center">{{ record.rodzaj }}</td>
+          <td class="center">{{ record.zaliczono }}</td>
+          <td></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="summary">Łącznie wyjazdów: {{ records|length }}</div>
+
+    <div class="footer">
+      app.straznica.com.pl 2026 wszelkie prawa zastrzeżone
+    </div>
+  </body>
+</html>

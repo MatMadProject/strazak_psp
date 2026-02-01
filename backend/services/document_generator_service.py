@@ -3,10 +3,11 @@ from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from jinja2 import Template
+from jinja2 import Template, Environment, FileSystemLoader
 from io import BytesIO
 from typing import List, Dict, Any
 from datetime import datetime
+from pathlib import Path
 
 # Dodaj importy dla ReportLab
 from reportlab.lib import colors
@@ -33,7 +34,10 @@ class DocumentGeneratorService:
         except:
             # Fallback - użyj Helvetica (wbudowana)
             self.font_name = 'Helvetica'
-    
+        # Konfiguracja Jinja2 - ścieżka do szablonów
+        template_dir = Path(__file__).parent.parent / 'templates'
+        self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
+
     def generate_docx(self, firefighter_name: str, records: List[Dict[str, Any]], 
                     date_from: str = None, date_to: str = None,
                     firefighter_data: Dict[str, str] = None) -> BytesIO:
@@ -204,206 +208,14 @@ class DocumentGeneratorService:
         cell._element.get_or_add_tcPr().append(shading_elm)
     
     def generate_html(self, firefighter_name: str, records: List[Dict[str, Any]],
-                  date_from: str = None, date_to: str = None,
-                  firefighter_data: Dict[str, str] = None) -> str:
+                      date_from: str = None, date_to: str = None,
+                      firefighter_data: Dict[str, str] = None, page_number: int = 1) -> str:
         """
-        Generuje kartę wyjazdów w formacie HTML
+        Generuje kartę wyjazdów w formacie HTML używając szablonu z pliku
         ORIENTACJA POZIOMA (LANDSCAPE)
         """
-        html_template = """
-    <!DOCTYPE html>
-    <html lang="pl">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Karta Ewidencyjna Wyjazdów - {{ firefighter_name }}</title>
-        <style>
-            @media print {
-                @page { 
-                    size: landscape;
-                    margin: 1.5cm;
-                }
-                body { margin: 0; }
-            }
-            
-            body {
-                font-family: Arial, sans-serif;
-                margin: 2cm;
-                font-size: 11pt;
-            }
-            
-            .header-section {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-            }
-            
-            .stamp-area {
-                text-align: left;
-            }
-            
-            .stamp-line {
-                font-size: 10pt;
-            }
-            
-            .stamp-label {
-                font-size: 8pt;
-                font-style: italic;
-                color: #666;
-            }
-            
-            .page-number {
-                text-align: right;
-                font-size: 10pt;
-            }
-            
-            .title-section {
-                text-align: center;
-                margin: 20px 0;
-            }
-            
-            .title {
-                font-size: 12pt;
-                font-weight: bold;
-                line-height: 1.4;
-            }
-            
-            .date-range {
-                text-align: center;
-                font-size: 10pt;
-                margin: 15px 0;
-            }
-            
-            .firefighter-info {
-                text-align: center;
-                font-size: 11pt;
-                margin: 15px 0;
-            }
-            
-            .firefighter-label {
-                text-align: center;
-                font-size: 8pt;
-                font-style: italic;
-                color: #666;
-                margin-bottom: 20px;
-            }
-            
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 20px;
-            }
-            
-            th, td {
-                border: 1px solid #000;
-                padding: 6px;
-                text-align: left;
-            }
-            
-            th {
-                background-color: #D3D3D3;
-                font-weight: bold;
-                text-align: center;
-                font-size: 9pt;
-            }
-            
-            td {
-                font-size: 8pt;
-            }
-            
-            .center {
-                text-align: center;
-            }
-            
-            .summary {
-                font-size: 10pt;
-                font-weight: bold;
-                margin-top: 20px;
-            }
-            
-            .footer {
-                text-align: center;
-                font-size: 7pt;
-                font-style: italic;
-                color: #808080;
-                margin-top: 30px;
-            }
-            
-            /* Szerokości kolumn */
-            .col-lp { width: 5%; }
-            .col-data { width: 10%; }
-            .col-meldunek { width: 15%; }
-            .col-funkcja { width: 20%; }
-            .col-rodzaj { width: 12%; }
-            .col-zaliczono { width: 12%; }
-            .col-uwagi { width: 26%; }
-        </style>
-    </head>
-    <body>
-        <!-- 1. GÓRNA SEKCJA -->
-        <div class="header-section">
-            <div class="stamp-area">
-                <div class="stamp-line">........................................</div>
-                <div class="stamp-label">(pieczątka jednostki organizacyjnej)</div>
-            </div>
-            <div class="page-number">Strona nr 1</div>
-        </div>
-        
-        <!-- 2. NAGŁÓWEK DOKUMENTU -->
-        <div class="title-section">
-            <div class="title">
-                Roczna karta ewidencji bezpośredniego udziału strażaka w działaniach ratowniczych,<br>
-                w tym ratowniczo-gaśniczych lub bezpośredniego kierowania tymi działaniami na miejscu zdarzenia
-            </div>
-        </div>
-        
-        <!-- 3. ZAKRES DAT -->
-        <div class="date-range">
-            od {{ date_from }} do {{ date_to }}
-        </div>
-        
-        <!-- 4. DANE STRAŻAKA -->
-        <div class="firefighter-info">
-            {{ stopien }}, {{ nazwisko_imie }}, {{ stanowisko }}
-        </div>
-        <div class="firefighter-label">
-            (stopień, tytuł, imię, nazwisko, stanowisko)
-        </div>
-        
-        <!-- 5. TABELA GŁÓWNA -->
-        <table>
-            <thead>
-                <tr>
-                    <th class="col-lp">Lp.</th>
-                    <th class="col-data">Data</th>
-                    <th class="col-meldunek">Nr meldunku</th>
-                    <th class="col-funkcja">Funkcja</th>
-                    <th class="col-rodzaj">Rodzaj zdarzenia</th>
-                    <th class="col-zaliczono">Zaliczono do 0,5%</th>
-                    <th class="col-uwagi">Uwagi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in records %}
-                <tr>
-                    <td class="center">{{ loop.index }}</td>
-                    <td class="center">{{ record.data }}</td>
-                    <td>{{ record.nr_meldunku }}</td>
-                    <td>{{ record.funkcja }}</td>
-                    <td class="center">{{ record.rodzaj }}</td>
-                    <td class="center">{{ record.zaliczono }}</td>
-                    <td></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-        <div class="summary">Łącznie wyjazdów: {{ records|length }}</div>
-        
-        <div class="footer">app.straznica.com.pl 2026 wszelkie prawa zastrzeżone</div>
-    </body>
-    </html>
-        """
+        # Załaduj szablon z pliku
+        template = self.jinja_env.get_template('karta_wyjazdow.html')
         
         # Przygotuj dane strażaka
         stopien = firefighter_data.get('stopien', '.....................') if firefighter_data else '.....................'
@@ -439,7 +251,6 @@ class DocumentGeneratorService:
             })
         
         # Renderuj szablon
-        template = Template(html_template)
         html_content = template.render(
             firefighter_name=firefighter_name,
             stopien=stopien,
@@ -447,7 +258,8 @@ class DocumentGeneratorService:
             stanowisko=stanowisko,
             date_from=date_from if date_from else '.....................',
             date_to=date_to if date_to else '.....................',
-            records=template_data
+            records=template_data,
+            page_number=page_number
         )
         
         return html_content

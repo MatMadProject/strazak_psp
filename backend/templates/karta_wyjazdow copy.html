@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Karta Ewidencyjna Wyjazdów - {{ firefighter_name }}</title>
+    <style>
+      @media print {
+        @page {
+          size: landscape;
+          margin: 1.5cm;
+        }
+        body {
+          margin: 0;
+        }
+
+        /* Powtarzaj nagłówek na każdej stronie */
+        .page-header {
+          display: table-header-group;
+        }
+      }
+
+      @page {
+        size: landscape;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 1.5cm;
+        font-size: 11pt;
+      }
+
+      /* PIERWSZY KONTENER - nagłówek strony (powtarzany na każdej stronie) */
+      .page-header {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .header-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      /* Kolumny: 25% | 50% | 25% */
+      .header-table td {
+        padding: 4px 8px;
+      }
+
+      .header-col-1 {
+        width: 25%;
+      }
+
+      .header-col-2 {
+        width: 50%;
+      }
+
+      .header-col-3 {
+        width: 25%;
+      }
+
+      /* Wiersz 1 */
+      .stamp-dots {
+        border-bottom: 1px dotted #000;
+        text-align: center;
+        padding-bottom: 2px;
+      }
+
+      /* Wiersz 2 */
+      .stamp-label {
+        font-size: 8pt;
+        font-style: italic;
+        text-align: center;
+        color: #666;
+        padding-top: 2px;
+      }
+
+      .page-number {
+        text-align: right;
+        font-size: 10pt;
+        vertical-align: bottom;
+      }
+
+      /* Reszta dokumentu */
+      .title-section {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .title {
+        font-size: 12pt;
+        font-weight: bold;
+        line-height: 1.4;
+      }
+
+      .date-range {
+        text-align: center;
+        font-size: 11pt;
+        margin: 10px 0;
+      }
+
+      .firefighter-info {
+        text-align: center;
+        font-size: 11pt;
+        margin: 10px 0;
+      }
+
+      .firefighter-label {
+        text-align: center;
+        font-size: 8pt;
+        font-style: italic;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+      }
+
+      table.data-table th,
+      table.data-table td {
+        border: 1px solid #000;
+        padding: 2px;
+        text-align: left;
+      }
+
+      table.data-table th {
+        background-color: #d3d3d3;
+        text-align: center;
+        font-size: 8pt;
+      }
+
+      table.data-table td {
+        font-size: 8pt;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .summary {
+        font-size: 10pt;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      .footer {
+        text-align: center;
+        font-size: 7pt;
+        font-style: italic;
+        color: #808080;
+        margin-top: 30px;
+      }
+
+      /* Szerokości kolumn w tabeli głównej */
+      .col-lp {
+        width: 2%;
+      }
+      .col-data {
+        width: 10%;
+      }
+      .col-rodzajzagrozenia{
+        width: 13%;
+      }
+      .col-wykonywaniezadan{
+        width: 33%;
+      }
+      .col-zadanie{
+        width: 11%;
+      }
+      .col-meldunek {
+        width: 12%;
+      }
+      .col-podpis {
+        width: 30%;
+      }
+
+      /* Footer pod tabelą */
+      .footer-table{
+        margin-top: 20px;
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .footer-col-data{
+        width:30%
+      }
+      .footer-col-margin{
+        width:5%
+      }
+      table.footer-table .td-top{
+        font-size: 8pt;
+      }
+      table.footer-table .td-center{
+        padding-top: 50px;
+        text-align: center;
+        font-size: 8pt;
+        border-bottom: 1px dotted #000;
+      }
+      table.footer-table .td-bottom{
+        text-align: center;
+        font-size: 8pt;
+        font-style: italic;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAGŁÓWEK STRONY (powtarzany na każdej stronie przy druku) -->
+    <div class="page-header">
+      <table class="header-table">
+        <tr>
+          <!-- Kolumna 1: 25% -->
+          <td class="header-col-1 stamp-dots"></td>
+          <!-- Kolumna 2: 50% (pusta) -->
+          <td class="header-col-2">&nbsp;</td>
+          <!-- Kolumna 3: 25% (pusta w wierszu 1) -->
+          <td class="header-col-3">&nbsp;</td>
+        </tr>
+        <tr>
+          <!-- Kolumna 1: Etykieta pieczątki -->
+          <td class="header-col-1 stamp-label">
+            (pieczątka jednostki organizacyjnej)
+          </td>
+          <!-- Kolumna 2: pusta -->
+          <td class="header-col-2">&nbsp;</td>
+          <!-- Kolumna 3: Numer strony -->
+          <!--
+          <td class="header-col-3 page-number">Strona nr {{ page_number }}</td>
+          -->
+          <td class="header-col-3 page-number">Strona nr 1</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- NAGŁÓWEK DOKUMENTU -->
+    <div class="title-section">
+      <div class="title">
+        Roczna karta ewidencji bezpośredniego udziału strażaka w działaniach
+        ratowniczych,<br />
+        w tym ratowniczo-gaśniczych lub bezpośredniego kierowania tymi
+        działaniami na miejscu zdarzenia
+      </div>
+    </div>
+
+    <!-- ZAKRES DAT -->
+    <!--
+    <div class="date-range">od {{ date_from }} do {{ date_to }}</div>
+    -->
+    <div class="date-range">od 2024-01-01 do 2024-12-31</div>
+    <!-- DANE STRAŻAKA -->
+    <!--
+    <div class="firefighter-info">
+      {{ stopien }} {{ nazwisko_imie }}, {{ stanowisko }}
+    </div>
+    -->
+    <div class="firefighter-info">starszy kapitan Mateusz Madej, Stażysta</div>
+    <div class="firefighter-label">
+      (stopień, tytuł, imię, nazwisko, stanowisko)
+    </div>
+
+    <!-- TABELA GŁÓWNA -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-lp" rowspan="2">Lp.</th>
+          <th class="col-data" rowspan="2">Data</th>
+          <th class="col-rodzajzagrozenia" rowspan="2">Rodzaj zagrożenia </b> (pożar, m. zagrożenie)</th>
+          <th class="col-wykonywaniezadan" colspan= "3">Wykonywanie zadań*</th>
+          
+          <th class="col-meldunek" colspan="1">Nazwa dokumentu źródłowego</th>
+          
+          <th class="col-podpis" rowspan="2">Podpis strażaka biorącego udział w działaniach ratowniczych, w tym ratowniczo-gaśniczcyhc lub bezpośrednio kierującego tymi działaniami na miejscu zdarzenia</th>
+        </tr>
+        <tr>
+          <th class="col-zadanie">Podstawowych</th>
+          <th class="col-zadanie">Specjalistycznych**</th>
+          <th class="col-zadanie">Kierowanie działaniami ratowniczymi</th>
+          <th class="col-meldunek">(nr meldunku - inf. ze zdarzenia)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <td class="center">{{ loop.index }}</td>
+          <td class="center">{{ record.data }}</td>
+          <td>{{ record.nr_meldunku }}</td>
+          <td>{{ record.funkcja }}</td>
+          <td class="center">{{ record.rodzaj }}</td>
+          <td class="center">{{ record.zaliczono }}</td>
+          <td></td>
+          <td></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- STOPKA TABELI (powtarzany na każdej stronie przy druku) -->
+    <div class="page-footer">
+      <table class="footer-table">
+        <tr>
+          <!-- Kolumna 1: 30% -->
+          <td class="footer-col-data td-top"></td>
+          <!-- Kolumna 2: 5% -->
+          <td class="footer-col-margin"></td>
+          <!-- Kolumna 3: 30% -->
+          <td class="footer-col-data td-top">Sprawdził:</td>
+          <!-- Kolumna 4: 5% -->
+          <td class="footer-col-margin"></td>
+          <!-- Kolumna 5: 30% -->
+          <td class="footer-col-data td-top">Zatwierdził:</td>
+        </tr>
+        <tr>
+          
+          <td class="footer-col-data td-center"></td>
+          <td class="footer-col-margin"></td>
+          <td class="footer-col-data td-center"></td>
+          <td class="footer-col-margin"></td>
+          <td class="footer-col-data td-center"></td>
+        </tr>
+        <tr>
+          <td class="footer-col-data td-bottom">(miejscowość, data)</td>
+          <td class="footer-col-margin"></td>
+          <td class="footer-col-data td-bottom">
+            (podpis i pieczątka kierownika komórki operacyjnej lub dowódcy jednostki ratowniczo-gaśniczej)
+          </td>
+          <td class="footer-col-margin"></td>
+
+          <td class="footer-col-data td-bottom">(podpis i pieczątka kierownika jednostki organizacyjnej)</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="footer">
+      app.straznica.com.pl 2026 wszelkie prawa zastrzeżone
+    </div>
+  </body>
+</html>

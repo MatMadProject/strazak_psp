@@ -25,20 +25,41 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
     setShowMenu(false);
 
     try {
-      const response = await dataAPI.generateDocument(fileId, format, filters);
+      if (format === "html") {
+        // HTML - otwórz w nowej karcie
+        const response = await dataAPI.generateDocument(
+          fileId,
+          format,
+          filters,
+        );
 
-      // Utwórz link do pobrania
-      const url = window.URL.createObjectURL(response.blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = response.filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+        // Utwórz URL z bloba
+        const url = window.URL.createObjectURL(response.blob);
 
-      // Pokaż komunikat sukcesu
-      alert(`✅ Dokument ${response.filename} został wygenerowany pomyślnie!`);
+        // Otwórz w nowej karcie
+        window.open(url, "_blank");
+
+        // Zwolnij URL po krótkim czasie (daj czas na załadowanie)
+        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+      } else {
+        // PDF i DOCX - pobierz plik
+        const response = await dataAPI.generateDocument(
+          fileId,
+          format,
+          filters,
+        );
+
+        const url = window.URL.createObjectURL(response.blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = response.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        alert(`✅ Dokument ${response.filename} został pobrany pomyślnie!`);
+      }
     } catch (error) {
       console.error("Błąd generowania dokumentu:", error);
 

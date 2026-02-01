@@ -450,19 +450,18 @@ def generate_document(
         firefighter_clean = firefighter.replace(" ", "_")
         filename_base = f"karta_wyjazdow_{firefighter_clean}_{timestamp}"
         
-        # Generuj dokument w wybranym formacie
+       # Generuj dokument w wybranym formacie
         if format == 'html':
             content = document_service.generate_html(
                 firefighter, records_data, date_from, date_to, firefighter_data
             )
-            filename = f"{filename_base}.html"
             
+            # Zamiast pobierania - zwróć HTML do wyświetlenia w nowej karcie
             return StreamingResponse(
                 iter([content.encode('utf-8')]),
                 media_type="text/html",
                 headers={
-                    "Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}",
-                    "Access-Control-Expose-Headers": "Content-Disposition",
+                    "Content-Type": "text/html; charset=utf-8",
                 }
             )
         
