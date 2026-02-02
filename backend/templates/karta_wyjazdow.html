@@ -96,7 +96,7 @@
 
       .date-range {
         text-align: center;
-        font-size: 10pt;
+        font-size: 11pt;
         margin: 10px 0;
       }
 
@@ -117,21 +117,20 @@
       table.data-table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
       }
 
       table.data-table th,
       table.data-table td {
         border: 1px solid #000;
-        padding: 6px;
+        padding: 2px;
         text-align: left;
       }
 
       table.data-table th {
         background-color: #d3d3d3;
-        font-weight: bold;
         text-align: center;
-        font-size: 9pt;
+        font-size: 8pt;
       }
 
       table.data-table td {
@@ -158,25 +157,63 @@
 
       /* Szerokości kolumn w tabeli głównej */
       .col-lp {
-        width: 5%;
+        width: 2%;
       }
       .col-data {
         width: 10%;
       }
+      .col-rodzajzagrozenia{
+        width: 13%;
+      }
+      .col-wykonywaniezadan{
+        width: 33%;
+      }
+      .col-zadanie{
+        width: 11%;
+      }
       .col-meldunek {
-        width: 15%;
-      }
-      .col-funkcja {
-        width: 20%;
-      }
-      .col-rodzaj {
         width: 12%;
       }
-      .col-zaliczono {
-        width: 12%;
+      .col-podpis {
+        width: 30%;
       }
-      .col-uwagi {
-        width: 26%;
+
+      /* Footer pod tabelą */
+      .footer-table{
+        margin-top: 20px;
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      .footer-col-data{
+        width:30%
+      }
+      .footer-col-margin{
+        width:5%
+      }
+      table.footer-table .td-top{
+        font-size: 8pt;
+      }
+      table.footer-table .td-center{
+        padding-top: 50px;
+        text-align: center;
+        font-size: 8pt;
+        border-bottom: 1px dotted #000;
+      }
+      table.footer-table .td-bottom{
+        text-align: center;
+        font-size: 8pt;
+        font-style: italic;
+        color: #666;
+      }
+      /**/
+      .description-title{
+        margin: 10px 0;
+        font-size: 8pt
+      }
+      .description-label{
+        margin: 0;
+        font-size: 8pt;
       }
     </style>
   </head>
@@ -217,11 +254,8 @@
 
     <!-- ZAKRES DAT -->
     <div class="date-range">od {{ date_from }} do {{ date_to }}</div>
-
     <!-- DANE STRAŻAKA -->
-    <div class="firefighter-info">
-      {{ stopien }} {{ nazwisko_imie }} {{ stanowisko }}
-    </div>
+    <div class="firefighter-info">{{ stopien }} {{ nazwisko_imie }} {{ stanowisko }}</div>
     <div class="firefighter-label">
       (stopień, tytuł, imię, nazwisko, stanowisko)
     </div>
@@ -230,13 +264,20 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th class="col-lp">Lp.</th>
-          <th class="col-data">Data</th>
-          <th class="col-meldunek">Nr meldunku</th>
-          <th class="col-funkcja">Funkcja</th>
-          <th class="col-rodzaj">Rodzaj zdarzenia</th>
-          <th class="col-zaliczono">Zaliczono do 0,5%</th>
-          <th class="col-uwagi">Uwagi</th>
+          <th class="col-lp" rowspan="2">Lp.</th>
+          <th class="col-data" rowspan="2">Data</th>
+          <th class="col-rodzajzagrozenia" rowspan="2">Rodzaj zagrożenia </b> (pożar, m. zagrożenie)</th>
+          <th class="col-wykonywaniezadan" colspan= "3">Wykonywanie zadań*</th>
+          
+          <th class="col-meldunek" colspan="1">Nazwa dokumentu źródłowego</th>
+          
+          <th class="col-podpis" rowspan="2">Podpis strażaka biorącego udział w działaniach ratowniczych, w tym ratowniczo-gaśniczcyhc lub bezpośrednio kierującego tymi działaniami na miejscu zdarzenia</th>
+        </tr>
+        <tr>
+          <th class="col-zadanie">Podstawowych</th>
+          <th class="col-zadanie">Specjalistycznych**</th>
+          <th class="col-zadanie">Kierowanie działaniami ratowniczymi</th>
+          <th class="col-meldunek">(nr meldunku - inf. ze zdarzenia)</th>
         </tr>
       </thead>
       <tbody>
@@ -249,15 +290,51 @@
           <td class="center">{{ record.rodzaj }}</td>
           <td class="center">{{ record.zaliczono }}</td>
           <td></td>
+          <td></td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
 
-    <div class="summary">Łącznie wyjazdów: {{ records|length }}</div>
+    <!-- STOPKA TABELI (powtarzany na każdej stronie przy druku) -->
+    <div class="page-footer">
+      <table class="footer-table">
+        <tr>
+          <!-- Kolumna 1: 30% -->
+          <td class="footer-col-data td-top"></td>
+          <!-- Kolumna 2: 5% -->
+          <td class="footer-col-margin"></td>
+          <!-- Kolumna 3: 30% -->
+          <td class="footer-col-data td-top">Sprawdził:</td>
+          <!-- Kolumna 4: 5% -->
+          <td class="footer-col-margin"></td>
+          <!-- Kolumna 5: 30% -->
+          <td class="footer-col-data td-top">Zatwierdził:</td>
+        </tr>
+        <tr>
+          
+          <td class="footer-col-data td-center"></td>
+          <td class="footer-col-margin"></td>
+          <td class="footer-col-data td-center"></td>
+          <td class="footer-col-margin"></td>
+          <td class="footer-col-data td-center"></td>
+        </tr>
+        <tr>
+          <td class="footer-col-data td-bottom">(miejscowość, data)</td>
+          <td class="footer-col-margin"></td>
+          <td class="footer-col-data td-bottom">
+            (podpis i pieczątka kierownika komórki operacyjnej lub dowódcy jednostki ratowniczo-gaśniczej)
+          </td>
+          <td class="footer-col-margin"></td>
 
-    <div class="footer">
-      app.straznica.com.pl 2026 wszelkie prawa zastrzeżone
+          <td class="footer-col-data td-bottom">(podpis i pieczątka kierownika jednostki organizacyjnej)</td>
+        </tr>
+      </table>
+    </div>
+    <div class="description-section">
+      <h4 class="description-title">Objaśnienia:</h4>
+      <p class="description-label">* - wpisać znak X</p>
+      <p class="description-label">** - dotyczy udziału w działaniach ratowniczych w ramach Specjalistycznych grup roboczych</p>
     </div>
   </body>
 </html>
