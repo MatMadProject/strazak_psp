@@ -222,10 +222,13 @@ class DocumentGeneratorService:
         stopien = firefighter_data.get('stopien', '.....................') if firefighter_data else '.....................'
         nazwisko_imie = firefighter_data.get('nazwisko_imie', firefighter_name) if firefighter_data else firefighter_name
         stanowisko = firefighter_data.get('stanowisko', '.....................') if firefighter_data else '.....................'
-        
+        idx = 1
         # Przygotuj dane dla szablonu
         all_records = []
-        for idx, record in enumerate(records, start=1):
+        for id, record in enumerate(records, start=1):
+            # Pomiń rekord jeżele nie zaliczony do emerytury
+            if record.get('zaliczono_do_emerytury', '') != '1':
+                continue
             # Wyciągnij datę (pierwsze 10 znaków)
             czas_rozp = record.get('czas_rozp_zdarzenia', '')
             data = czas_rozp[:10] if len(czas_rozp) >= 10 else czas_rozp
@@ -259,6 +262,8 @@ class DocumentGeneratorService:
                 'kierowanie': kierowanie,
                 'nr_meldunku': record.get('nr_meldunku', ''),
             })
+            # Zwieksz licznik
+            idx += 1
         
         # PAGINACJA: Strona 1 = 16 wierszy, kolejne = 20 wierszy
         pages = []
