@@ -423,12 +423,13 @@ def generate_document(
         # Konwertuj do słowników
         records_data = [record.to_dict() for record in records]
         
-        # Pobierz dane strażaka z bazy Firefighters (jeśli istnieje)
-        from services.firefighter_service import FirefighterService
-        
+        # Pobierz dane strażaka z PIERWSZEGO REKORDU wyjazdów (jako fallback)
+        # oraz spróbuj z bazy Firefighters
         firefighter_data = None
+        
+        # SPOSÓB 1: Spróbuj pobrać z bazy Firefighters
         try:
-            # Spróbuj znaleźć strażaka w bazie
+            from services.firefighter_service import FirefighterService
             firefighters = FirefighterService.search_firefighters(db, firefighter, skip=0, limit=1)
             if firefighters and len(firefighters) > 0:
                 ff = firefighters[0]
@@ -437,10 +438,28 @@ def generate_document(
                     'nazwisko_imie': ff.nazwisko_imie,
                     'stanowisko': ff.stanowisko
                 }
+                print(f"✅ Znaleziono strażaka w bazie Firefighters: {firefighter_data}")
         except Exception as e:
             print(f"⚠️ Nie znaleziono strażaka w bazie Firefighters: {e}")
-            # Jeśli nie znaleziono, użyj domyślnych wartości
-            firefighter_data = None
+        
+        # SPOSÓB 2: Jeśli nie znaleziono w Firefighters, użyj danych z pierwszego rekordu SWD
+        if not firefighter_data and records:
+            first_record = records[0]
+            firefighter_data = {
+                'stopien': first_record.stopien if first_record.stopien else '.....................',
+                'nazwisko_imie': first_record.nazwisko_imie if first_record.nazwisko_imie else firefighter,
+                'stanowisko': '.....................'  # Brak stanowiska w SWDRecord - wypełnij kropkami
+            }
+            print(f"⚠️ Używam danych z pierwszego rekordu SWD: {firefighter_data}")
+        
+        # SPOSÓB 3: Jeśli nadal brak danych, użyj domyślnych wartości
+        if not firefighter_data:
+            firefighter_data = {
+                'stopien': '.....................',
+                'nazwisko_imie': firefighter,
+                'stanowisko': '.....................'
+            }
+            print(f"⚠️ Używam domyślnych wartości: {firefighter_data}")
         
         # Przygotuj nazwę pliku
         from datetime import datetime
@@ -450,7 +469,9 @@ def generate_document(
         firefighter_clean = firefighter.replace(" ", "_")
         filename_base = f"karta_wyjazdow_{firefighter_clean}_{timestamp}"
         
-       # Generuj dokument w wybranym formacie
+        print(f"📄 Generuję dokument dla: {firefighter_data}")
+        
+        # Generuj dokument w wybranym formacie
         if format == 'html':
             content = document_service.generate_html(
                 firefighter, records_data, date_from, date_to, firefighter_data

@@ -209,10 +209,11 @@ class DocumentGeneratorService:
     
     def generate_html(self, firefighter_name: str, records: List[Dict[str, Any]],
                     date_from: str = None, date_to: str = None,
-                    firefighter_data: Dict[str, str] = None, page_number: int = 1) -> str:
+                    firefighter_data: Dict[str, str] = None) -> str:
         """
         Generuje kartę wyjazdów w formacie HTML używając szablonu z pliku
         ORIENTACJA POZIOMA (LANDSCAPE)
+        Z PAGINACJĄ: strona 1 = 16 wierszy, kolejne strony = 20 wierszy
         """
         # Załaduj szablon z pliku
         template = self.jinja_env.get_template('karta_wyjazdow.html')
@@ -223,8 +224,8 @@ class DocumentGeneratorService:
         stanowisko = firefighter_data.get('stanowisko', '.....................') if firefighter_data else '.....................'
         
         # Przygotuj dane dla szablonu
-        template_data = []
-        for record in records:
+        all_records = []
+        for idx, record in enumerate(records, start=1):
             # Wyciągnij datę (pierwsze 10 znaków)
             czas_rozp = record.get('czas_rozp_zdarzenia', '')
             data = czas_rozp[:10] if len(czas_rozp) >= 10 else czas_rozp
@@ -249,7 +250,8 @@ class DocumentGeneratorService:
             # Kierowanie działaniami (X jeśli dowódca)
             kierowanie = 'X' if 'dowódca' in funkcja or 'dowodca' in funkcja else ''
             
-            template_data.append({
+            all_records.append({
+                'lp': idx,  # Globalne Lp przez wszystkie strony
                 'data': data,
                 'rodzaj_zagrozenia': rodzaj_zagrozenia,
                 'zadanie_podstawowe': zadanie_podstawowe,
@@ -258,9 +260,28 @@ class DocumentGeneratorService:
                 'nr_meldunku': record.get('nr_meldunku', ''),
             })
         
-        # Ogranicz do 16 wierszy na stronę 1
-        if page_number == 1:
-            template_data = template_data[:15]
+        # PAGINACJA: Strona 1 = 16 wierszy, kolejne = 20 wierszy
+        pages = []
+        page_number = 1
+        records_remaining = all_records[:]
+        
+        while records_remaining:
+            if page_number == 1:
+                # Pierwsza strona - 16 wierszy
+                page_records = records_remaining[:16]
+                records_remaining = records_remaining[16:]
+            else:
+                # Kolejne strony - 20 wierszy
+                page_records = records_remaining[:20]
+                records_remaining = records_remaining[20:]
+            
+            pages.append({
+                'page_number': page_number,
+                'records': page_records,
+                'is_last_page': len(records_remaining) == 0
+            })
+            
+            page_number += 1
         
         # Renderuj szablon
         html_content = template.render(
@@ -270,8 +291,7 @@ class DocumentGeneratorService:
             stanowisko=stanowisko,
             date_from=date_from if date_from else '.....................',
             date_to=date_to if date_to else '.....................',
-            records=template_data,
-            page_number=page_number
+            pages=pages
         )
         
         return html_content

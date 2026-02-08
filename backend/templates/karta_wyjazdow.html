@@ -14,9 +14,8 @@
           margin: 0;
         }
 
-        /* Powtarzaj nagłówek na każdej stronie */
-        .page-header {
-          display: table-header-group;
+        .page-break {
+          page-break-after: always;
         }
       }
 
@@ -31,10 +30,28 @@
         font-size: 11pt;
       }
 
-      /* PIERWSZY KONTENER - nagłówek strony (powtarzany na każdej stronie) */
-      .page-header {
+      /* NAGŁÓWEK STRONY 1 */
+      .page-header-first {
         width: 100%;
         margin-bottom: 10px;
+      }
+
+      /* NAGŁÓWEK KOLEJNYCH STRON */
+      .page-header-next {
+        width: 100%;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .header-left {
+        flex: 1;
+      }
+
+      .header-right {
+        text-align: right;
+        font-size: 9pt;
       }
 
       .header-table {
@@ -101,13 +118,13 @@
       }
 
       .firefighter-info {
-        text-align: center;
+        text-align: left;
         font-size: 10pt;
         margin-top: 5px;
       }
 
       .firefighter-label {
-        text-align: center;
+        text-align: left;
         font-size: 8pt;
         font-style: italic;
         color: #666;
@@ -215,34 +232,34 @@
         margin: 0;
         font-size: 7pt;
       }
+
+      .page-break {
+        page-break-after: always;
+      }
     </style>
   </head>
   <body>
-    <!-- NAGŁÓWEK STRONY (powtarzany na każdej stronie przy druku) -->
-    <div class="page-header">
+    {% for page in pages %} {% if page.page_number == 1 %}
+    <!-- STRONA 1 - Pełny nagłówek -->
+    <div class="page-header-first">
       <table class="header-table">
         <tr>
-          <!-- Kolumna 1: 25% -->
           <td class="header-col-1 stamp-dots"></td>
-          <!-- Kolumna 2: 50% (pusta) -->
           <td class="header-col-2">&nbsp;</td>
-          <!-- Kolumna 3: 25% (pusta w wierszu 1) -->
           <td class="header-col-3">&nbsp;</td>
         </tr>
         <tr>
-          <!-- Kolumna 1: Etykieta pieczątki -->
           <td class="header-col-1 stamp-label">
             (pieczątka jednostki organizacyjnej)
           </td>
-          <!-- Kolumna 2: pusta -->
           <td class="header-col-2">&nbsp;</td>
-          <!-- Kolumna 3: Numer strony -->
-          <td class="header-col-3 page-number">Strona nr {{ page_number }}</td>
+          <td class="header-col-3 page-number">
+            Strona nr {{ page.page_number }}
+          </td>
         </tr>
       </table>
     </div>
 
-    <!-- NAGŁÓWEK DOKUMENTU -->
     <div class="title-section">
       <div class="title">
         Roczna karta ewidencji bezpośredniego udziału strażaka w działaniach
@@ -252,15 +269,29 @@
       </div>
     </div>
 
-    <!-- ZAKRES DAT -->
     <div class="date-range">od {{ date_from }} do {{ date_to }}</div>
-    <!-- DANE STRAŻAKA -->
-    <div class="firefighter-info">
+
+    <div class="firefighter-info" style="text-align: center">
       {{ stopien }} {{ nazwisko_imie }} - {{ stanowisko }}
     </div>
-    <div class="firefighter-label">
+    <div class="firefighter-label" style="text-align: center">
       (stopień, tytuł, imię, nazwisko, stanowisko)
     </div>
+
+    {% else %}
+    <!-- STRONY 2+ - Uproszczony nagłówek -->
+    <div class="page-header-next">
+      <div class="header-left">
+        <div class="firefighter-info">
+          {{ stopien }} {{ nazwisko_imie }} - {{ stanowisko }}
+        </div>
+        <div class="firefighter-label">
+          (stopień, tytuł, imię, nazwisko, stanowisko)
+        </div>
+      </div>
+      <div class="header-right">Strona nr {{ page.page_number }}</div>
+    </div>
+    {% endif %}
 
     <!-- TABELA GŁÓWNA -->
     <table class="data-table">
@@ -287,9 +318,9 @@
         </tr>
       </thead>
       <tbody>
-        {% for record in records %}
+        {% for record in page.records %}
         <tr>
-          <td class="center">{{ loop.index }}</td>
+          <td class="center">{{ record.lp }}</td>
           <td class="center">{{ record.data }}</td>
           <td class="center">{{ record.rodzaj_zagrozenia }}</td>
           <td class="center">{{ record.zadanie_podstawowe }}</td>
@@ -302,19 +333,14 @@
       </tbody>
     </table>
 
-    <!-- STOPKA TABELI (powtarzany na każdej stronie przy druku) -->
+    <!-- STOPKA TABELI (na każdej stronie) -->
     <div class="page-footer">
       <table class="footer-table">
         <tr>
-          <!-- Kolumna 1: 30% -->
           <td class="footer-col-data td-top"></td>
-          <!-- Kolumna 2: 5% -->
           <td class="footer-col-margin"></td>
-          <!-- Kolumna 3: 30% -->
           <td class="footer-col-data td-top">Sprawdził:</td>
-          <!-- Kolumna 4: 5% -->
           <td class="footer-col-margin"></td>
-          <!-- Kolumna 5: 30% -->
           <td class="footer-col-data td-top">Zatwierdził:</td>
         </tr>
         <tr>
@@ -332,13 +358,13 @@
             jednostki ratowniczo-gaśniczej)
           </td>
           <td class="footer-col-margin"></td>
-
           <td class="footer-col-data td-bottom">
             (podpis i pieczątka kierownika jednostki organizacyjnej)
           </td>
         </tr>
       </table>
     </div>
+
     <div class="description-section">
       <h4 class="description-title">Objaśnienia:</h4>
       <p class="description-label">* - wpisać znak X</p>
@@ -347,5 +373,9 @@
         Specjalistycznych grup roboczych
       </p>
     </div>
+
+    {% if not page.is_last_page %}
+    <div class="page-break"></div>
+    {% endif %} {% endfor %}
   </body>
 </html>
