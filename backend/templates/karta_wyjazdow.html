@@ -78,32 +78,32 @@
 
       .page-number {
         text-align: right;
-        font-size: 10pt;
+        font-size: 9pt;
         vertical-align: bottom;
       }
 
       /* Reszta dokumentu */
       .title-section {
         text-align: center;
-        margin: 20px 0;
+        margin: 10px 0;
       }
 
       .title {
-        font-size: 12pt;
+        font-size: 11pt;
         font-weight: bold;
         line-height: 1.4;
       }
 
       .date-range {
         text-align: center;
-        font-size: 11pt;
-        margin: 10px 0;
+        font-size: 10pt;
+        margin: 5px 0;
       }
 
       .firefighter-info {
         text-align: center;
-        font-size: 11pt;
-        margin: 10px 0;
+        font-size: 10pt;
+        margin-top: 5px;
       }
 
       .firefighter-label {
@@ -111,7 +111,7 @@
         font-size: 8pt;
         font-style: italic;
         color: #666;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
       }
 
       table.data-table {
@@ -130,11 +130,11 @@
       table.data-table th {
         background-color: #d3d3d3;
         text-align: center;
-        font-size: 8pt;
+        font-size: 7pt;
       }
 
       table.data-table td {
-        font-size: 8pt;
+        font-size: 7pt;
       }
 
       .center {
@@ -142,14 +142,14 @@
       }
 
       .summary {
-        font-size: 10pt;
+        font-size: 9pt;
         font-weight: bold;
         margin-top: 20px;
       }
 
       .footer {
         text-align: center;
-        font-size: 7pt;
+        font-size: 6pt;
         font-style: italic;
         color: #808080;
         margin-top: 30px;
@@ -162,13 +162,13 @@
       .col-data {
         width: 10%;
       }
-      .col-rodzajzagrozenia{
+      .col-rodzajzagrozenia {
         width: 13%;
       }
-      .col-wykonywaniezadan{
+      .col-wykonywaniezadan {
         width: 33%;
       }
-      .col-zadanie{
+      .col-zadanie {
         width: 11%;
       }
       .col-meldunek {
@@ -179,41 +179,41 @@
       }
 
       /* Footer pod tabelą */
-      .footer-table{
+      .footer-table {
         margin-top: 20px;
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
       }
-      .footer-col-data{
-        width:30%
+      .footer-col-data {
+        width: 30%;
       }
-      .footer-col-margin{
-        width:5%
+      .footer-col-margin {
+        width: 5%;
       }
-      table.footer-table .td-top{
-        font-size: 8pt;
+      table.footer-table .td-top {
+        font-size: 7pt;
       }
-      table.footer-table .td-center{
+      table.footer-table .td-center {
         padding-top: 50px;
         text-align: center;
-        font-size: 8pt;
+        font-size: 7pt;
         border-bottom: 1px dotted #000;
       }
-      table.footer-table .td-bottom{
+      table.footer-table .td-bottom {
         text-align: center;
-        font-size: 8pt;
+        font-size: 7pt;
         font-style: italic;
         color: #666;
       }
       /**/
-      .description-title{
-        margin: 10px 0;
-        font-size: 8pt
+      .description-title {
+        margin: 5px 0;
+        font-size: 7pt;
       }
-      .description-label{
+      .description-label {
         margin: 0;
-        font-size: 8pt;
+        font-size: 7pt;
       }
     </style>
   </head>
@@ -255,7 +255,9 @@
     <!-- ZAKRES DAT -->
     <div class="date-range">od {{ date_from }} do {{ date_to }}</div>
     <!-- DANE STRAŻAKA -->
-    <div class="firefighter-info">{{ stopien }} {{ nazwisko_imie }} {{ stanowisko }}</div>
+    <div class="firefighter-info">
+      {{ stopien }} {{ nazwisko_imie }} - {{ stanowisko }}
+    </div>
     <div class="firefighter-label">
       (stopień, tytuł, imię, nazwisko, stanowisko)
     </div>
@@ -266,12 +268,16 @@
         <tr>
           <th class="col-lp" rowspan="2">Lp.</th>
           <th class="col-data" rowspan="2">Data</th>
-          <th class="col-rodzajzagrozenia" rowspan="2">Rodzaj zagrożenia </b> (pożar, m. zagrożenie)</th>
-          <th class="col-wykonywaniezadan" colspan= "3">Wykonywanie zadań*</th>
-          
+          <th class="col-rodzajzagrozenia" rowspan="2">
+            Rodzaj zagrożenia (pożar, m. zagrożenie)
+          </th>
+          <th class="col-wykonywaniezadan" colspan="3">Wykonywanie zadań*</th>
           <th class="col-meldunek" colspan="1">Nazwa dokumentu źródłowego</th>
-          
-          <th class="col-podpis" rowspan="2">Podpis strażaka biorącego udział w działaniach ratowniczych, w tym ratowniczo-gaśniczcyhc lub bezpośrednio kierującego tymi działaniami na miejscu zdarzenia</th>
+          <th class="col-podpis" rowspan="2">
+            Podpis strażaka biorącego udział w działaniach ratowniczych, w tym
+            ratowniczo-gaśniczych lub bezpośrednio kierującego tymi działaniami
+            na miejscu zdarzenia
+          </th>
         </tr>
         <tr>
           <th class="col-zadanie">Podstawowych</th>
@@ -285,11 +291,11 @@
         <tr>
           <td class="center">{{ loop.index }}</td>
           <td class="center">{{ record.data }}</td>
-          <td>{{ record.nr_meldunku }}</td>
-          <td>{{ record.funkcja }}</td>
-          <td class="center">{{ record.rodzaj }}</td>
-          <td class="center">{{ record.zaliczono }}</td>
-          <td></td>
+          <td class="center">{{ record.rodzaj_zagrozenia }}</td>
+          <td class="center">{{ record.zadanie_podstawowe }}</td>
+          <td class="center">{{ record.zadanie_specjalistyczne }}</td>
+          <td class="center">{{ record.kierowanie }}</td>
+          <td class="center">{{ record.nr_meldunku }}</td>
           <td></td>
         </tr>
         {% endfor %}
@@ -312,7 +318,6 @@
           <td class="footer-col-data td-top">Zatwierdził:</td>
         </tr>
         <tr>
-          
           <td class="footer-col-data td-center"></td>
           <td class="footer-col-margin"></td>
           <td class="footer-col-data td-center"></td>
@@ -323,18 +328,24 @@
           <td class="footer-col-data td-bottom">(miejscowość, data)</td>
           <td class="footer-col-margin"></td>
           <td class="footer-col-data td-bottom">
-            (podpis i pieczątka kierownika komórki operacyjnej lub dowódcy jednostki ratowniczo-gaśniczej)
+            (podpis i pieczątka kierownika komórki operacyjnej lub dowódcy
+            jednostki ratowniczo-gaśniczej)
           </td>
           <td class="footer-col-margin"></td>
 
-          <td class="footer-col-data td-bottom">(podpis i pieczątka kierownika jednostki organizacyjnej)</td>
+          <td class="footer-col-data td-bottom">
+            (podpis i pieczątka kierownika jednostki organizacyjnej)
+          </td>
         </tr>
       </table>
     </div>
     <div class="description-section">
       <h4 class="description-title">Objaśnienia:</h4>
       <p class="description-label">* - wpisać znak X</p>
-      <p class="description-label">** - dotyczy udziału w działaniach ratowniczych w ramach Specjalistycznych grup roboczych</p>
+      <p class="description-label">
+        ** - dotyczy udziału w działaniach ratowniczych w ramach
+        Specjalistycznych grup roboczych
+      </p>
     </div>
   </body>
 </html>

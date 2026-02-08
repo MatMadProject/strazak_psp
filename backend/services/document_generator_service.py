@@ -208,8 +208,8 @@ class DocumentGeneratorService:
         cell._element.get_or_add_tcPr().append(shading_elm)
     
     def generate_html(self, firefighter_name: str, records: List[Dict[str, Any]],
-                      date_from: str = None, date_to: str = None,
-                      firefighter_data: Dict[str, str] = None, page_number: int = 1) -> str:
+                    date_from: str = None, date_to: str = None,
+                    firefighter_data: Dict[str, str] = None, page_number: int = 1) -> str:
         """
         Generuje kartę wyjazdów w formacie HTML używając szablonu z pliku
         ORIENTACJA POZIOMA (LANDSCAPE)
@@ -229,26 +229,38 @@ class DocumentGeneratorService:
             czas_rozp = record.get('czas_rozp_zdarzenia', '')
             data = czas_rozp[:10] if len(czas_rozp) >= 10 else czas_rozp
             
-            # Określ rodzaj zdarzenia
-            rodzaj = ''
-            if str(record.get('p', '')).strip() == '1':
-                rodzaj = 'P'
-            elif str(record.get('mz', '')).strip() == '1':
-                rodzaj = 'MZ'
-            elif str(record.get('af', '')).strip() == '1':
-                rodzaj = 'AF'
+            # Określ rodzaj zagrożenia
+            rodzaj_zagrozenia = ''
+            p_value = str(record.get('p', '')).strip()
+            mz_value = str(record.get('mz', '')).strip()
             
-            # Zaliczono do emerytury
-            zaliczono = record.get('zaliczono_do_emerytury', '')
-            zaliczono_text = 'Tak' if str(zaliczono) == '1' else 'Nie' if str(zaliczono) == '0' else ''
+            if p_value == '1':
+                rodzaj_zagrozenia = 'pożar'
+            elif mz_value == '1':
+                rodzaj_zagrozenia = 'm.zagrożenie'
+            
+            # Określ zadanie podstawowe (X jeśli ratownik)
+            funkcja = record.get('funkcja', '').lower()
+            zadanie_podstawowe = 'X' if 'ratownik' in funkcja else ''
+            
+            # Zadanie specjalistyczne - na razie puste (do implementacji po zmianie modelu)
+            zadanie_specjalistyczne = ''
+            
+            # Kierowanie działaniami (X jeśli dowódca)
+            kierowanie = 'X' if 'dowódca' in funkcja or 'dowodca' in funkcja else ''
             
             template_data.append({
                 'data': data,
+                'rodzaj_zagrozenia': rodzaj_zagrozenia,
+                'zadanie_podstawowe': zadanie_podstawowe,
+                'zadanie_specjalistyczne': zadanie_specjalistyczne,
+                'kierowanie': kierowanie,
                 'nr_meldunku': record.get('nr_meldunku', ''),
-                'funkcja': record.get('funkcja', ''),
-                'rodzaj': rodzaj,
-                'zaliczono': zaliczono_text
             })
+        
+        # Ogranicz do 16 wierszy na stronę 1
+        if page_number == 1:
+            template_data = template_data[:15]
         
         # Renderuj szablon
         html_content = template.render(
