@@ -71,9 +71,15 @@ pyinstaller --clean --noconfirm ^
     --hidden-import=pandas ^
     --hidden-import=openpyxl ^
     --hidden-import=webview ^
+    --hidden-import=zestawienie_swd ^
+    --hidden-import=docx ^
+    --hidden-import=reportlab.lib ^
+    --hidden-import=reportlab.platypus ^
+    --hidden-import=reportlab.pdfbase ^
     --collect-all=uvicorn ^
     --collect-all=fastapi ^
     --collect-all=sqlalchemy ^
+    --collect-all=reportlab ^
     "%PROJECT_ROOT%\desktop\app.py"
 
 if %errorlevel% neq 0 (
