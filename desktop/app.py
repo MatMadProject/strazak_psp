@@ -6,12 +6,39 @@ from threading import Thread
 from pathlib import Path
 import time
 import requests
+import importlib.util
 
-# Import FastAPI app
-backend_path = Path(__file__).parent.parent / "backend"
+# Funkcja do znalezienia ścieżki zasobów (działa z PyInstaller)
+def get_resource_path(relative_path):
+    """Pobierz absolutną ścieżkę do zasobu - działa z PyInstaller"""
+    try:
+        # PyInstaller tworzy folder tymczasowy i zapisuje ścieżkę w _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # Normalny tryb development
+        base_path = Path(__file__).parent.parent
+    
+    return Path(base_path) / relative_path
+
+# Określ ścieżkę do backendu
+backend_path = get_resource_path("backend")
 sys.path.insert(0, str(backend_path))
 
-from main import app as fastapi_app
+# Dynamiczny import backend/main.py
+backend_main_file = backend_path / "main.py"
+
+if not backend_main_file.exists():
+    raise FileNotFoundError(
+        f"Nie znaleziono backend/main.py w: {backend_main_file}\n"
+        f"sys._MEIPASS: {getattr(sys, '_MEIPASS', 'nie ustawione')}\n"
+        f"Zawartość katalogu: {list(Path(sys._MEIPASS).iterdir()) if hasattr(sys, '_MEIPASS') else 'brak'}"
+    )
+
+spec = importlib.util.spec_from_file_location("backend_main", backend_main_file)
+backend_module = importlib.util.module_from_spec(spec)
+sys.modules['backend_main'] = backend_module
+spec.loader.exec_module(backend_module)
+fastapi_app = backend_module.app
 
 class DesktopApp:
     def __init__(self):
