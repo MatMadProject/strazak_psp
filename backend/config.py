@@ -3,7 +3,7 @@ from pathlib import Path
 
 class Settings:
     # Podstawowa konfiguracja
-    APP_NAME = "SWD Desktop App"
+    APP_NAME = "Strazak App"
     VERSION = "1.0.0"
     
     # Ścieżki

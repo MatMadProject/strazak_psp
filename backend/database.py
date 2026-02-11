@@ -1,6 +1,11 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+# Obsługa obu wersji SQLAlchemy (1.x i 2.x)
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
+    
 from config import settings
 
 # Silnik bazy danych
