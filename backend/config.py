@@ -1,3 +1,4 @@
+import sys
 import os
 from pathlib import Path
 
@@ -5,6 +6,8 @@ class Settings:
     # Podstawowa konfiguracja
     APP_NAME = "Strazak App"
     VERSION = "1.0.0"
+    # Czy aplikacja działa jako exe (PyInstaller)
+    IS_DESKTOP = getattr(sys, "frozen", False)
     
     # Ścieżki
     BASE_DIR = Path(__file__).parent.parent

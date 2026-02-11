@@ -49,7 +49,7 @@ class DesktopApp:
     
     def start_backend(self):
         """Uruchom FastAPI w osobnym wątku"""
-        print("🚀 Uruchamianie backendu...")
+        print("Uruchamianie backendu...")
         
         config = uvicorn.Config(
             fastapi_app,
@@ -74,19 +74,19 @@ class DesktopApp:
         max_attempts = 30
         url = f"http://127.0.0.1:{self.port}/health"
         
-        print("⏳ Czekam na backend...")
+        print("Czekam na backend...")
         for attempt in range(max_attempts):
             try:
                 response = requests.get(url, timeout=1)
                 if response.status_code == 200:
                     self.backend_ready = True
-                    print("✅ Backend gotowy!")
+                    print("Backend gotowy!")
                     return
             except Exception:
                 pass
             time.sleep(0.2)
         
-        raise Exception("❌ Backend nie uruchomił się w czasie 6 sekund")
+        raise Exception("Backend nie uruchomił się w czasie 6 sekund")
     
     def get_frontend_url(self):
         """Zwróć URL do frontendu"""
@@ -96,7 +96,7 @@ class DesktopApp:
     
     def shutdown(self):
         """Zamknij serwer przy zamykaniu aplikacji"""
-        print("🛑 Zamykanie aplikacji...")
+        print("Zamykanie aplikacji...")
         if self.server:
             self.server.should_exit = True
 
@@ -115,7 +115,7 @@ def show_error(message):
 def main():
     try:
         print("=" * 50)
-        print("  SWD DESKTOP APP")
+        print("  STRAZAK APP")
         print("=" * 50)
         
         app_instance = DesktopApp()
@@ -125,11 +125,11 @@ def main():
         
         # KROK 2: Pobierz URL frontendu
         frontend_url = app_instance.get_frontend_url()
-        print(f"🌐 Ładowanie interfejsu z: {frontend_url}")
+        print(f"Ładowanie interfejsu z: {frontend_url}")
         
         # KROK 3: Utwórz okno aplikacji
         window = webview.create_window(
-            'SWD Desktop App',
+            'Strazak App',
             frontend_url,
             width=1400,
             height=900,
@@ -139,13 +139,13 @@ def main():
         )
         
         # KROK 4: Uruchom aplikację
-        print("🎉 Aplikacja uruchomiona!")
+        print("Aplikacja uruchomiona!")
         print("=" * 50)
         webview.start()
         
         # KROK 5: Po zamknięciu okna
         app_instance.shutdown()
-        print("👋 Aplikacja zamknięta")
+        print("Aplikacja zamknięta")
         
     except Exception as e:
         error_msg = (
@@ -155,7 +155,7 @@ def main():
             f"2. Port 8000 nie jest zajęty\n"
             f"3. Masz wszystkie wymagane biblioteki"
         )
-        print(f"\n❌ BŁĄD: {error_msg}")
+        print(f"\nBŁĄD: {error_msg}")
         show_error(error_msg)
         sys.exit(1)
 

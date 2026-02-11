@@ -1,18 +1,28 @@
 import pandas as pd
 from pathlib import Path
 from typing import Dict, Any
+from config import settings
 import sys
 
 # Import biblioteki zestawienie-swd
 try:
     from zestawienie_swd import import_zestawienie, CollectionZestawienieWiersz
     ZESTAWIENIE_SWD_AVAILABLE = True
-    print("✅ Biblioteka zestawienie_swd załadowana pomyślnie")
+    if settings.IS_DESKTOP: 
+        print("[OK] Biblioteka zestawienie_swd załadowana pomyślnie")
+    else:
+        print("✅ Biblioteka zestawienie_swd załadowana pomyślnie")    
 except ImportError as e:
     ZESTAWIENIE_SWD_AVAILABLE = False
-    print("❌ UWAGA: Biblioteka zestawienie-swd nie jest zainstalowana")
-    print("Zainstaluj: pip install git+https://github.com/MatMadProject/zestawienie-udzialu-swd.git")
-    print(f"Błąd importu: {e}")
+    if settings.IS_DESKTOP: 
+        print("[ERROR] UWAGA: Biblioteka zestawienie-swd nie jest zainstalowana")
+        print("Zainstaluj: pip install git+https://github.com/MatMadProject/zestawienie-udzialu-swd.git")
+        print(f"Błąd importu: {e}")
+    else:
+        print("❌ UWAGA: Biblioteka zestawienie-swd nie jest zainstalowana")
+        print("Zainstaluj: pip install git+https://github.com/MatMadProject/zestawienie-udzialu-swd.git")
+        print(f"Błąd importu: {e}")  
+    
 
 class ExcelProcessor:
     """
@@ -22,7 +32,10 @@ class ExcelProcessor:
     
     def __init__(self):
         if not ZESTAWIENIE_SWD_AVAILABLE:
-            print("⚠️ ExcelProcessor działa w trybie awaryjnym (bez zestawienie_swd)")
+            if settings.IS_DESKTOP: 
+                print("[WARNING] ExcelProcessor działa w trybie awaryjnym (bez zestawienie_swd)")
+            else:
+                print("⚠️ ExcelProcessor działa w trybie awaryjnym (bez zestawienie_swd)")
     
     def validate_file(self, file_path: Path) -> tuple[bool, str]:
         """
@@ -63,9 +76,18 @@ class ExcelProcessor:
             print(f"🔍 [EXCEL PROCESSOR] Walidacja pliku...")
             is_valid, error = self.validate_file(file_path)
             if not is_valid:
-                print(f"❌ [EXCEL PROCESSOR] Walidacja nieudana: {error}")
+                if settings.IS_DESKTOP: 
+                    print(f"[ERROR] [EXCEL PROCESSOR] Walidacja nieudana: {error}")
+                else:
+                    print(f"❌ [EXCEL PROCESSOR] Walidacja nieudana: {error}")
+                
                 raise ValueError(error)
-            print(f"✅ [EXCEL PROCESSOR] Walidacja OK")
+            
+            if settings.IS_DESKTOP: 
+                print(f"[OK] [EXCEL PROCESSOR] Walidacja OK")
+            else:
+                print(f"✅ [EXCEL PROCESSOR] Walidacja OK")
+            
             
             # KROK 2: Sprawdź czy biblioteka jest dostępna
             if not ZESTAWIENIE_SWD_AVAILABLE:
@@ -78,7 +100,11 @@ class ExcelProcessor:
             print(f"🔍 [EXCEL PROCESSOR] Importowanie zestawienia...")
             result = import_zestawienie(str(file_path)).get_zestawienie_szkodliwosci()
             
-            print(f"✅ [EXCEL PROCESSOR] Przetworzono {len(result.items)} rekordów")
+            if settings.IS_DESKTOP: 
+                print(f"[OK]] [EXCEL PROCESSOR] Przetworzono {len(result.items)} rekordów")
+            else:
+                print(f"✅ [EXCEL PROCESSOR] Przetworzono {len(result.items)} rekordów")
+            
             
             # Debug: pokaż pierwsze 3 rekordy
             if result.items:
@@ -88,8 +114,13 @@ class ExcelProcessor:
             return result
             
         except Exception as e:
-            print(f"❌ [EXCEL PROCESSOR] BŁĄD: {str(e)}")
-            print(f"❌ [EXCEL PROCESSOR] Typ błędu: {type(e).__name__}")
+            if settings.IS_DESKTOP: 
+                print(f"[ERROR] [EXCEL PROCESSOR] BŁĄD: {str(e)}")
+                print(f"[ERROR] [EXCEL PROCESSOR] Typ błędu: {type(e).__name__}")
+            else:
+                print(f"❌ [EXCEL PROCESSOR] BŁĄD: {str(e)}")
+                print(f"❌ [EXCEL PROCESSOR] Typ błędu: {type(e).__name__}")
+            
             traceback.print_exc()
             raise Exception(f"Błąd przetwarzania pliku: {str(e)}")
     
