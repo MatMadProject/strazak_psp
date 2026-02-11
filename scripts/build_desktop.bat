@@ -43,6 +43,7 @@ del "%PROJECT_ROOT%\desktop\*.spec" 2>nul
 pyinstaller --clean --noconfirm ^
     --name="Strazak-DesktopApp" ^
     --onefile ^
+    --windowed ^
     --icon="%PROJECT_ROOT%\desktop\icon.ico" ^
     --distpath="%PROJECT_ROOT%\desktop\dist" ^
     --workpath="%PROJECT_ROOT%\desktop\build" ^
