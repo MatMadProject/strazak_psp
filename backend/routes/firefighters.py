@@ -14,7 +14,7 @@ from config import settings
 from services.firefighter_service import FirefighterService
 from services.firefighter_excel_service import FirefighterExcelService
 
-router = APIRouter(prefix="/api/firefighters", tags=["firefighters"])
+router = APIRouter()
 
 # Inicjalizacja serwisu Excel
 excel_service = FirefighterExcelService()

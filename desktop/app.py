@@ -55,8 +55,8 @@ class DesktopApp:
             fastapi_app,
             host="127.0.0.1",
             port=self.port,
-            log_level="error",
-            access_log=False
+            log_level="info",
+            access_log=True
         )
         self.server = uvicorn.Server(config)
         

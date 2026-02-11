@@ -15,7 +15,7 @@ from services.data_service import DataService
 from services.departures_excel_service import DeparturesExcelService
 from services.document_generator_service import DocumentGeneratorService
 
-router = APIRouter(prefix="/api/data", tags=["data"])
+router = APIRouter()
 
 # Pydantic models dla request/response
 class RecordUpdate(BaseModel):

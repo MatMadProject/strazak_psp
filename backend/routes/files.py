@@ -11,7 +11,7 @@ from config import settings
 from services.excel_processor import ExcelProcessor
 from services.data_service import DataService
 
-router = APIRouter(prefix="/api/files", tags=["files"])
+router = APIRouter()
 processor = ExcelProcessor()
 
 @router.post("/upload")
