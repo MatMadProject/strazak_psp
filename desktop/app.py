@@ -7,6 +7,9 @@ from pathlib import Path
 import time
 import requests
 import importlib.util
+from logger import setup_logger
+
+logger = setup_logger()
 
 # Funkcja do znalezienia ścieżki zasobów (działa z PyInstaller)
 def get_resource_path(relative_path):
@@ -114,6 +117,9 @@ def show_error(message):
 
 def main():
     try:
+        logger.info("=" * 50)
+        logger.info("  STRAZAK APP")
+        logger.info("=" * 50)
         print("=" * 50)
         print("  STRAZAK APP")
         print("=" * 50)

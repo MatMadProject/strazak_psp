@@ -79,12 +79,12 @@ async def serve_react_app(full_path: str):
     
     # Nie przechwytuj API routes
     if full_path.startswith("api"):
-        print(f"  → API route, skipping")
+        print(f" -> API route, skipping")
         return {"error": "Not found"}
     
     # Zwróć index.html
     index_path = frontend_build_path / "index.html"
-    print(f"  → Serving: {index_path}")
+    print(f" -> Serving: {index_path}")
     
     if index_path.exists():
         return FileResponse(index_path)
