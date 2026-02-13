@@ -158,7 +158,7 @@ async def import_from_excel(
     Importuj strażaków z pliku Excel
     """
     try:
-        print(f"📁 Otrzymano plik: {file.filename}")
+        print(f"Otrzymano plik: {file.filename}")
         
         # Walidacja rozszerzenia
         file_ext = Path(file.filename).suffix.lower()
@@ -176,7 +176,7 @@ async def import_from_excel(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        print(f"✅ Plik zapisany: {file_path}")
+        print(f"Plik zapisany: {file_path}")
         
         # Przetwórz plik
         firefighters_data = excel_service.process_excel_file(file_path)
@@ -219,7 +219,7 @@ async def import_from_excel(
         if 'file_path' in locals() and file_path.exists():
             file_path.unlink()
         
-        print(f"❌ BŁĄD: {str(e)}")
+        print(f"BŁĄD: {str(e)}")
         import traceback
         traceback.print_exc()
         
@@ -269,7 +269,7 @@ def export_to_excel(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ BŁĄD EKSPORTU EXCEL: {str(e)}")
+        print(f"BŁĄD EKSPORTU EXCEL: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
@@ -318,7 +318,7 @@ def export_to_csv(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ BŁĄD EKSPORTU CSV: {str(e)}")
+        print(f"BŁĄD EKSPORTU CSV: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

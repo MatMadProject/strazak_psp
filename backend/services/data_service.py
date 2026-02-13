@@ -128,7 +128,7 @@ class DataService:
             # Sprawdź czy to CollectionZestawienieWiersz z biblioteki
             if hasattr(records_data, 'items'):
                 # To jest CollectionZestawienieWiersz
-                print(f"📝 [DATA SERVICE] Tworzenie {len(records_data.items)} rekordów z CollectionZestawienieWiersz")
+                print(f"[DATA SERVICE] Tworzenie {len(records_data.items)} rekordów z CollectionZestawienieWiersz")
                 
                 for record_data in records_data.items:
                     record = SWDRecord(
@@ -147,7 +147,7 @@ class DataService:
                     created_count += 1
             else:
                 # To jest lista słowników (fallback dla starszego kodu)
-                print(f"📝 [DATA SERVICE] Tworzenie {len(records_data)} rekordów ze słowników")
+                print(f"[DATA SERVICE] Tworzenie {len(records_data)} rekordów ze słowników")
                 
                 for record_data in records_data:
                     record = SWDRecord(
@@ -158,11 +158,11 @@ class DataService:
                     created_count += 1
             
             db.commit()
-            print(f"✅ [DATA SERVICE] Utworzono {created_count} rekordów")
+            print(f"[DATA SERVICE] Utworzono {created_count} rekordów")
             return created_count
             
         except Exception as e:
-            print(f"❌ [DATA SERVICE] Błąd tworzenia rekordów: {e}")
+            print(f"[DATA SERVICE] Błąd tworzenia rekordów: {e}")
             db.rollback()
             raise
     
@@ -229,10 +229,10 @@ class DataService:
             db.add(record)
             db.commit()
             db.refresh(record)
-            print(f"✅ [DATA SERVICE] Utworzono nowy rekord ID: {record.id}")
+            print(f"[DATA SERVICE] Utworzono nowy rekord ID: {record.id}")
             return record
         except Exception as e:
-            print(f"❌ [DATA SERVICE] Błąd tworzenia rekordu: {e}")
+            print(f"[DATA SERVICE] Błąd tworzenia rekordu: {e}")
             db.rollback()
             raise
 
