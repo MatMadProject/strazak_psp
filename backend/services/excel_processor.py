@@ -70,10 +70,10 @@ class ExcelProcessor:
         import traceback
         
         try:
-            print(f"🔍 [EXCEL PROCESSOR] Rozpoczynam przetwarzanie: {file_path}")
+            print(f"[EXCEL PROCESSOR] Rozpoczynam przetwarzanie: {file_path}")
             
             # KROK 1: Walidacja
-            print(f"🔍 [EXCEL PROCESSOR] Walidacja pliku...")
+            print(f"[EXCEL PROCESSOR] Walidacja pliku...")
             is_valid, error = self.validate_file(file_path)
             if not is_valid:
                 if settings.IS_DESKTOP: 
@@ -97,7 +97,7 @@ class ExcelProcessor:
                 )
             
             # KROK 3: Przetwarzanie z biblioteką zestawienie-swd
-            print(f"🔍 [EXCEL PROCESSOR] Importowanie zestawienia...")
+            print(f"[EXCEL PROCESSOR] Importowanie zestawienia...")
             result = import_zestawienie(str(file_path)).get_zestawienie_szkodliwosci()
             
             if settings.IS_DESKTOP: 
@@ -109,7 +109,7 @@ class ExcelProcessor:
             # Debug: pokaż pierwsze 3 rekordy
             if result.items:
                 for i, item in enumerate(result.items[:3]):
-                    print(f"📝 [EXCEL PROCESSOR] Rekord {i}: {item.nazwisko_imie} - {item.funkcja}")
+                    print(f"[EXCEL PROCESSOR] Rekord {i}: {item.nazwisko_imie} - {item.funkcja}")
             
             return result
             

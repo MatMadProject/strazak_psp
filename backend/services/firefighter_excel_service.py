@@ -72,18 +72,18 @@ class FirefighterExcelService:
         import traceback
         
         try:
-            print(f"🔍 [FIREFIGHTER EXCEL] Rozpoczynam przetwarzanie: {file_path}")
+            print(f"[FIREFIGHTER EXCEL] Rozpoczynam przetwarzanie: {file_path}")
             
             # Walidacja
             is_valid, error = self.validate_file(file_path)
             if not is_valid:
-                print(f"❌ [FIREFIGHTER EXCEL] Walidacja nieudana: {error}")
+                print(f"[ERROR] [FIREFIGHTER EXCEL] Walidacja nieudana: {error}")
                 raise ValueError(error)
             
             # Odczyt pliku
-            print(f"🔍 [FIREFIGHTER EXCEL] Odczyt pliku...")
+            print(f"[FIREFIGHTER EXCEL] Odczyt pliku...")
             df = pd.read_excel(file_path)
-            print(f"✅ [FIREFIGHTER EXCEL] Odczytano {len(df)} wierszy")
+            print(f"[FIREFIGHTER EXCEL] Odczytano {len(df)} wierszy")
             
             # Przetwarzanie rekordów
             firefighters = []
@@ -97,18 +97,18 @@ class FirefighterExcelService:
                     else:
                         skipped_rows += 1
                 except Exception as e:
-                    print(f"⚠️ [FIREFIGHTER EXCEL] Błąd w wierszu {idx + 2}: {e}")
+                    print(f"[WARN]] [FIREFIGHTER EXCEL] Błąd w wierszu {idx + 2}: {e}")
                     skipped_rows += 1
                     continue
             
-            print(f"✅ [FIREFIGHTER EXCEL] Przetworzono {len(firefighters)} strażaków")
+            print(f"[INFO] [FIREFIGHTER EXCEL] Przetworzono {len(firefighters)} strażaków")
             if skipped_rows > 0:
-                print(f"⚠️ [FIREFIGHTER EXCEL] Pominięto {skipped_rows} wierszy")
+                print(f"[WARN] [FIREFIGHTER EXCEL] Pominięto {skipped_rows} wierszy")
             
             return firefighters
             
         except Exception as e:
-            print(f"❌ [FIREFIGHTER EXCEL] BŁĄD: {str(e)}")
+            print(f"[ERROR] [FIREFIGHTER EXCEL] BŁĄD: {str(e)}")
             traceback.print_exc()
             raise Exception(f"Błąd przetwarzania pliku: {str(e)}")
     
@@ -123,7 +123,7 @@ class FirefighterExcelService:
             
             # Walidacja wymaganych pól
             if not imie or not nazwisko:
-                print(f"⚠️ Pominięto wiersz: brak imienia lub nazwiska")
+                print(f"[WARN] Pominięto wiersz: brak imienia lub nazwiska")
                 return None
             
             # Połącz nazwisko i imię zgodnie z modelem
@@ -135,7 +135,7 @@ class FirefighterExcelService:
             
             # Walidacja wymaganych pól
             if not stopien or not stanowisko or not jednostka:
-                print(f"⚠️ Pominięto wiersz {nazwisko_imie}: brakuje wymaganych danych")
+                print(f"[WARN] Pominięto wiersz {nazwisko_imie}: brakuje wymaganych danych")
                 return None
             
             firefighter = {
@@ -148,7 +148,7 @@ class FirefighterExcelService:
             return firefighter
             
         except Exception as e:
-            print(f"❌ Błąd parsowania wiersza: {e}")
+            print(f"[ERROR] Błąd parsowania wiersza: {e}")
             return None
     
     def create_template_file(self) -> BytesIO:

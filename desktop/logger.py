@@ -27,8 +27,14 @@ def setup_logger():
             logging.StreamHandler(sys.stdout)  # Nadal wypisuj do konsoli jeśli jest
         ]
     )
-    
+
+    # Ustaw UTF-8 dla stdout/stderr w Windows
+    if sys.platform == "win32":
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+        
     logger = logging.getLogger(__name__)
-    logger.info(f"📝 Log file: {log_file}")
+    logger.info(f"[INFO] Log file: {log_file}")
     
     return logger
