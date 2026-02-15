@@ -1,10 +1,10 @@
 ; Inno Setup Script dla Strazak Desktop App
 
-#define MyAppName "Strażak Desktop App"
+#define MyAppName "Strażak"
 #define MyAppVersion "0.1.0"
 #define MyAppPublisher "Twoja Firma"
 #define MyAppURL "https://example.com"
-#define MyAppExeName "Strazak.exe"
+#define MyAppExeName "Strazak-DesktopApp.exe"
 
 [Setup]
 AppId={{92BE2677-9806-4A64-A3AC-3345859EF48C}}
@@ -52,7 +52,6 @@ var
 
 procedure InitializeWizard;
 begin
-  { Strona 1: Wybór typu bazy danych }
   DatabaseTypePage := CreateInputOptionPage(wpSelectDir,
     'Konfiguracja bazy danych',
     'Wybierz sposób przechowywania danych',
@@ -62,9 +61,8 @@ begin
   
   DatabaseTypePage.Add('Lokalna baza danych (tylko dla tego komputera)');
   DatabaseTypePage.Add('Baza danych w zasobie sieciowym (współdzielona z innymi komputerami)');
-  DatabaseTypePage.Values[0] := True;  { Domyślnie lokalna }
+  DatabaseTypePage.Values[0] := True;
   
-  { Strona 2a: Lokalizacja lokalnej bazy }
   LocalDatabaseDirPage := CreateInputDirPage(DatabaseTypePage.ID,
     'Lokalizacja lokalnej bazy danych',
     'Gdzie zapisać lokalną bazę danych?',
@@ -73,9 +71,9 @@ begin
     False, '');
   
   LocalDatabaseDirPage.Add('');
-  LocalDatabaseDirPage.Values[0] := ExpandConstant('{app}\data');
+  { Nie ustawiaj tutaj - zostaw puste }
+  LocalDatabaseDirPage.Values[0] := '';
   
-  { Strona 2b: Ścieżka do sieciowej bazy }
   NetworkDatabasePage := CreateInputFilePage(DatabaseTypePage.ID,
     'Ścieżka do bazy sieciowej',
     'Podaj ścieżkę do współdzielonej bazy danych',
@@ -86,15 +84,27 @@ begin
   NetworkDatabasePage.Values[0] := '\\serwer\udział\StrazakApp\app.db';
 end;
 
+procedure CurPageChanged(CurPageID: Integer);
+begin
+   // Set default value when user enters the page 
+  if CurPageID = LocalDatabaseDirPage.ID then
+  begin
+    if LocalDatabaseDirPage.Values[0] = '' then
+    begin
+      // Now app is already initialized 
+      LocalDatabaseDirPage.Values[0] := ExpandConstant('{app}\data');
+    end;
+  end;
+end;
+
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
   
-  { Pokaż tylko odpowiednią stronę w zależności od wyboru }
   if PageID = LocalDatabaseDirPage.ID then
-    Result := DatabaseTypePage.Values[1]  { Ukryj jeśli wybrano sieciową }
+    Result := DatabaseTypePage.Values[1]
   else if PageID = NetworkDatabasePage.ID then
-    Result := DatabaseTypePage.Values[0];  { Ukryj jeśli wybrano lokalną }
+    Result := DatabaseTypePage.Values[0];
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;

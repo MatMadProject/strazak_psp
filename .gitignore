@@ -91,6 +91,7 @@ desktop/*.spec
 
 # Installer
 installer/output/
+installer/setup.iss
 
 # IDE
 .vscode/
@@ -109,3 +110,5 @@ tmp/
 *.tmp
 *.temp
 .cache/
+
+# Scripts
