@@ -1,91 +1,257 @@
-; Inno Setup Script dla SWD Desktop App
+; Inno Setup Script dla Strazak Desktop App
+
+#define MyAppName "Strażak Desktop App"
+#define MyAppVersion "0.1.0"
+#define MyAppPublisher "Twoja Firma"
+#define MyAppURL "https://example.com"
+#define MyAppExeName "Strazak.exe"
 
 [Setup]
-; Informacje o aplikacji
-AppName=SWD Desktop App
-AppVersion=1.0.0
-AppPublisher=Twoja Firma
-AppPublisherURL=https://twojafirma.pl
-AppSupportURL=https://twojafirma.pl/support
-AppUpdatesURL=https://twojafirma.pl/updates
-
-; Katalogi instalacji
-DefaultDirName={autopf}\SWD Desktop App
-DefaultGroupName=SWD Desktop App
-DisableProgramGroupPage=yes
-
-; Wyjście
+AppId={{92BE2677-9806-4A64-A3AC-3345859EF48C}}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}
+DefaultGroupName={#MyAppName}
+AllowNoIcons=yes
 OutputDir=output
-OutputBaseFilename=SWD-DesktopApp-Setup-v1.0.0
+OutputBaseFilename=Strazak-Setup-v{#MyAppVersion}
 SetupIconFile=..\desktop\icon.ico
-UninstallDisplayIcon={app}\SWD-DesktopApp.exe
-
-; Kompresja
-Compression=lzma2
+UninstallDisplayIcon={app}\{#MyAppExeName}
+Compression=lzma
 SolidCompression=yes
-
-; Wizard
 WizardStyle=modern
-
-; Architektura
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
-
-; Wymagania
-MinVersion=10.0
-
-; Uprawnienia
 PrivilegesRequired=admin
 
 [Languages]
 Name: "polish"; MessagesFile: "compiler:Languages\Polish.isl"
-Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; Główny plik exe
-Source: "..\desktop\dist\SWD-DesktopApp.exe"; DestDir: "{app}"; Flags: ignoreversion
-
-; Dodatkowe pliki jeśli potrzebne (README, LICENSE, etc.)
-; Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\desktop\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\data\app.db"; Flags: dontcopy
 
 [Icons]
-; Skrót w menu Start
-Name: "{group}\SWD Desktop App"; Filename: "{app}\SWD-DesktopApp.exe"
-Name: "{group}\{cm:UninstallProgram,SWD Desktop App}"; Filename: "{uninstallexe}"
-
-; Skrót na pulpicie (jeśli użytkownik wybrał)
-Name: "{autodesktop}\SWD Desktop App"; Filename: "{app}\SWD-DesktopApp.exe"; Tasks: desktopicon
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-; Opcjonalnie uruchom aplikację po instalacji
-Filename: "{app}\SWD-DesktopApp.exe"; Description: "{cm:LaunchProgram,SWD Desktop App}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-// Sprawdź czy aplikacja jest uruchomiona przed instalacją
-function InitializeSetup(): Boolean;
 var
-  ResultCode: Integer;
+  DatabaseTypePage: TInputOptionWizardPage;
+  LocalDatabaseDirPage: TInputDirWizardPage;
+  NetworkDatabasePage: TInputFileWizardPage;
+
+procedure InitializeWizard;
+begin
+  { Strona 1: Wybór typu bazy danych }
+  DatabaseTypePage := CreateInputOptionPage(wpSelectDir,
+    'Konfiguracja bazy danych',
+    'Wybierz sposób przechowywania danych',
+    'Aplikacja może używać lokalnej bazy danych lub współdzielonej bazy w sieci.' + #13#10 + #13#10 +
+    'Wybierz odpowiednią opcję:',
+    True, False);
+  
+  DatabaseTypePage.Add('Lokalna baza danych (tylko dla tego komputera)');
+  DatabaseTypePage.Add('Baza danych w zasobie sieciowym (współdzielona z innymi komputerami)');
+  DatabaseTypePage.Values[0] := True;  { Domyślnie lokalna }
+  
+  { Strona 2a: Lokalizacja lokalnej bazy }
+  LocalDatabaseDirPage := CreateInputDirPage(DatabaseTypePage.ID,
+    'Lokalizacja lokalnej bazy danych',
+    'Gdzie zapisać lokalną bazę danych?',
+    'Wybierz folder, w którym będzie przechowywana baza danych aplikacji.' + #13#10 + #13#10 +
+    'ZALECANE: Użyj domyślnej lokalizacji (kliknij Dalej bez zmian).',
+    False, '');
+  
+  LocalDatabaseDirPage.Add('');
+  LocalDatabaseDirPage.Values[0] := ExpandConstant('{app}\data');
+  
+  { Strona 2b: Ścieżka do sieciowej bazy }
+  NetworkDatabasePage := CreateInputFilePage(DatabaseTypePage.ID,
+    'Ścieżka do bazy sieciowej',
+    'Podaj ścieżkę do współdzielonej bazy danych',
+    'Wprowadź pełną ścieżkę sieciową do pliku bazy danych (np. \\serwer\udział\StrazakApp\app.db)' + #13#10 + #13#10 +
+    'Upewnij się, że masz uprawnienia do odczytu i zapisu w tej lokalizacji.');
+  
+  NetworkDatabasePage.Add('Ścieżka do bazy danych:', 'Pliki bazy SQLite (*.db)|*.db|Wszystkie pliki (*.*)|*.*', '.db');
+  NetworkDatabasePage.Values[0] := '\\serwer\udział\StrazakApp\app.db';
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  
+  { Pokaż tylko odpowiednią stronę w zależności od wyboru }
+  if PageID = LocalDatabaseDirPage.ID then
+    Result := DatabaseTypePage.Values[1]  { Ukryj jeśli wybrano sieciową }
+  else if PageID = NetworkDatabasePage.ID then
+    Result := DatabaseTypePage.Values[0];  { Ukryj jeśli wybrano lokalną }
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  NetworkPath: string;
+  NetworkDir: string;
 begin
   Result := True;
   
-  // Sprawdź czy aplikacja jest uruchomiona
-  if CheckForMutexes('SWDDesktopAppMutex') then
+  { Walidacja ścieżki sieciowej }
+  if CurPageID = NetworkDatabasePage.ID then
   begin
-    if MsgBox('SWD Desktop App jest obecnie uruchomiona. Zamknij aplikację aby kontynuować instalację.', mbError, MB_OKCANCEL) = IDOK then
+    NetworkPath := NetworkDatabasePage.Values[0];
+    
+    { Sprawdź czy ścieżka zaczyna się od \\ (UNC path) }
+    if (Length(NetworkPath) < 3) or (Copy(NetworkPath, 1, 2) <> '\\') then
     begin
+      MsgBox('Ścieżka sieciowa musi zaczynać się od \\ (np. \\serwer\udział\folder\app.db)', mbError, MB_OK);
       Result := False;
+      Exit;
+    end;
+    
+    NetworkDir := ExtractFileDir(NetworkPath);
+    
+    { Sprawdź czy katalog jest dostępny }
+    if not DirExists(NetworkDir) then
+    begin
+      if MsgBox('Nie można uzyskać dostępu do folderu sieciowego:' + #13#10 +
+                NetworkDir + #13#10 + #13#10 +
+                'Czy na pewno chcesz kontynuować?' + #13#10 +
+                '(Upewnij się, że zasób sieciowy jest dostępny przed uruchomieniem aplikacji)',
+                mbConfirmation, MB_YESNO) = IDNO then
+      begin
+        Result := False;
+        Exit;
+      end;
     end;
   end;
 end;
 
-// Pokaż komunikat po instalacji
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ConfigFile: string;
+  ConfigContent: TStringList;
+  DatabasePath: string;
+  LocalDir: string;
+  UseDefaultLocation: Boolean;
 begin
   if CurStep = ssPostInstall then
   begin
-    // Możesz tutaj dodać dodatkowe akcje po instalacji
+    { Lokalna baza danych }
+    if DatabaseTypePage.Values[0] then
+    begin
+      LocalDir := LocalDatabaseDirPage.Values[0];
+      
+      { Sprawdź czy to domyślna lokalizacja (obok exe) }
+      UseDefaultLocation := (LocalDir = ExpandConstant('{app}\data'));
+      
+      if UseDefaultLocation then
+      begin
+        { DOMYŚLNA LOKALIZACJA - NIE twórz config.ini }
+        DatabasePath := ExpandConstant('{app}\data\app.db');
+        
+        { Utwórz folder data }
+        ForceDirectories(ExpandConstant('{app}\data'));
+        
+        { Kopiuj przykładową bazę jeśli nie istnieje }
+        if not FileExists(DatabasePath) then
+        begin
+          ExtractTemporaryFile('app.db');
+          FileCopy(ExpandConstant('{tmp}\app.db'), DatabasePath, False);
+        end;
+        
+        MsgBox('Aplikacja zostanie zainstalowana z domyślną bazą danych w:' + #13#10 +
+               DatabasePath + #13#10 + #13#10 +
+               'Dane będą przechowywane lokalnie na tym komputerze.',
+               mbInformation, MB_OK);
+      end
+      else
+      begin
+        { WŁASNA LOKALIZACJA - utwórz config.ini }
+        DatabasePath := LocalDir + '\app.db';
+        
+        { Utwórz folder }
+        ForceDirectories(LocalDir);
+        
+        { Kopiuj przykładową bazę jeśli nie istnieje }
+        if not FileExists(DatabasePath) then
+        begin
+          ExtractTemporaryFile('app.db');
+          FileCopy(ExpandConstant('{tmp}\app.db'), DatabasePath, False);
+        end;
+        
+        { Zapisz config.ini }
+        ConfigContent := TStringList.Create;
+        try
+          ConfigContent.Add('[Database]');
+          ConfigContent.Add('Type=local');
+          ConfigContent.Add('Path=' + DatabasePath);
+          
+          ConfigFile := ExpandConstant('{app}\config.ini');
+          ConfigContent.SaveToFile(ConfigFile);
+        finally
+          ConfigContent.Free;
+        end;
+        
+        MsgBox('Lokalna baza danych została utworzona w:' + #13#10 +
+               DatabasePath,
+               mbInformation, MB_OK);
+      end;
+    end
+    { Baza sieciowa - zawsze twórz config.ini }
+    else
+    begin
+      DatabasePath := NetworkDatabasePage.Values[0];
+      
+      ConfigContent := TStringList.Create;
+      try
+        ConfigContent.Add('[Database]');
+        ConfigContent.Add('Type=network');
+        ConfigContent.Add('Path=' + DatabasePath);
+        
+        ConfigFile := ExpandConstant('{app}\config.ini');
+        ConfigContent.SaveToFile(ConfigFile);
+      finally
+        ConfigContent.Free;
+      end;
+      
+      { Sprawdź czy plik istnieje, jeśli nie - zaoferuj utworzenie }
+      if not FileExists(DatabasePath) then
+      begin
+        if MsgBox('Plik bazy danych nie istnieje w lokalizacji:' + #13#10 +
+                  DatabasePath + #13#10 + #13#10 +
+                  'Czy chcesz utworzyć nową bazę danych w tej lokalizacji?',
+                  mbConfirmation, MB_YESNO) = IDYES then
+        begin
+          try
+            ForceDirectories(ExtractFileDir(DatabasePath));
+            ExtractTemporaryFile('app.db');
+            FileCopy(ExpandConstant('{tmp}\app.db'), DatabasePath, False);
+            
+            MsgBox('Baza danych została utworzona w zasobie sieciowym.' + #13#10 + #13#10 +
+                   'Wszystkie komputery będą współdzielić dane.',
+                   mbInformation, MB_OK);
+          except
+            MsgBox('BŁĄD: Nie można utworzyć bazy danych!' + #13#10 + #13#10 +
+                   'Sprawdź uprawnienia i dostępność zasobu sieciowego.',
+                   mbError, MB_OK);
+          end;
+        end;
+      end
+      else
+      begin
+        MsgBox('Aplikacja zostanie skonfigurowana do używania istniejącej bazy:' + #13#10 +
+               DatabasePath,
+               mbInformation, MB_OK);
+      end;
+    end;
   end;
 end;

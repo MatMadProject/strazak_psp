@@ -246,6 +246,34 @@ body {
   font-weight: 700;
   color: #3498db;
 }
+/*Firetruck smoke animation*/
+.firetruck-toggle::after {
+  content: "💨";
+  position: absolute;
+  right: -20px;
+  opacity: 0;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.sidebar:not(.collapsed) .firetruck-toggle:active::after {
+  animation: smoke 0.6s ease-out;
+}
+
+@keyframes smoke {
+  0% {
+    opacity: 0;
+    transform: translateX(0) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px) scale(1.5);
+  }
+}
 
 /* Responsive - ukryj statystyki na małych ekranach */
 @media (max-width: 768px) {
