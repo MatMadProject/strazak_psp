@@ -29,16 +29,15 @@ function App() {
       <aside className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
         <div className="sidebar-header">
           <div className="app-logo">
-            <span className="logo-icon">🚒</span>
-            {!sidebarCollapsed && <span className="logo-text">SWD App</span>}
+            {!sidebarCollapsed && <span className="logo-text">Strażak</span>}
+            <button
+              className="firetruck-toggle"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              title={sidebarCollapsed ? "Rozwiń menu" : "Zwiń menu"}
+            >
+              <span className="firetruck-icon">🚒</span>
+            </button>
           </div>
-          <button
-            className="sidebar-toggle"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            title={sidebarCollapsed ? "Rozwiń menu" : "Zwiń menu"}
-          >
-            {sidebarCollapsed ? "»" : "«"}
-          </button>
         </div>
 
         <nav className="sidebar-nav">

@@ -25,30 +25,18 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
     setShowMenu(false);
 
     try {
-      if (format === "html") {
-        // HTML - otwórz w nowej karcie
-        const response = await dataAPI.generateDocument(
-          fileId,
-          format,
-          filters,
-        );
+      const response = await dataAPI.generateDocument(fileId, format, filters);
 
-        // Utwórz URL z bloba
+      // Sprawdź czy to aplikacja desktopowa
+      const isDesktop = typeof window.pywebview !== "undefined";
+
+      if (format === "html" && !isDesktop) {
+        // HTML w przeglądarce (webowa) - otwórz w nowej karcie
         const url = window.URL.createObjectURL(response.blob);
-
-        // Otwórz w nowej karcie
         window.open(url, "_blank");
-
-        // Zwolnij URL po krótkim czasie (daj czas na załadowanie)
         setTimeout(() => window.URL.revokeObjectURL(url), 1000);
       } else {
-        // PDF i DOCX - pobierz plik
-        const response = await dataAPI.generateDocument(
-          fileId,
-          format,
-          filters,
-        );
-
+        // HTML w desktop LUB PDF/DOCX - pobierz jako plik
         const url = window.URL.createObjectURL(response.blob);
         const link = document.createElement("a");
         link.href = url;
@@ -58,7 +46,7 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
 
-        alert(`✅ Dokument ${response.filename} został pobrany pomyślnie!`);
+        // alert(`✅ Dokument ${response.filename} został pobrany pomyślnie!`);
       }
     } catch (error) {
       console.error("Błąd generowania dokumentu:", error);
@@ -94,13 +82,13 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
             <span className="menu-icon">📝</span>
             <span>Word (.docx)</span>
           </button>
-          <button
+          {/* <button
             className="export-menu-item"
             onClick={() => handleGenerate("pdf")}
           >
             <span className="menu-icon">📕</span>
             <span>PDF (.pdf)</span>
-          </button>
+          </button> */}
           <button
             className="export-menu-item"
             onClick={() => handleGenerate("html")}

@@ -26,7 +26,7 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 100;
@@ -40,43 +40,107 @@ body {
   padding: 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
 .app-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.logo-icon {
-  font-size: 28px;
+  width: 100%;
+  position: relative;
 }
 
 .logo-text {
   font-size: 20px;
   font-weight: 700;
   white-space: nowrap;
+  flex: 1;
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
-.sidebar-toggle {
-  background: rgba(255, 255, 255, 0.1);
+.sidebar.collapsed .logo-text {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Wóz strażacki - przycisk toggle */
+.firetruck-toggle {
+  background: none;
   border: none;
-  color: white;
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
-  transition: background 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0;
+  position: relative;
+  z-index: 10;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
+.firetruck-icon {
+  font-size: 28px;
+  display: block;
+  transform-origin: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Animacja najechania */
+.firetruck-toggle:hover .firetruck-icon {
+  transform: scale(1.1);
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Animacja wyjazdu (sidebar się składa) */
+.sidebar:not(.collapsed) .firetruck-toggle {
+  animation: driveToEdge 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Animacja powrotu (sidebar się rozkłada) */
+.sidebar.collapsed .firetruck-toggle {
+  animation: driveToCenter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Animacja "wyjazdu" - wóz jedzie w prawo */
+@keyframes driveToEdge {
+  0% {
+    transform: translateX(0) scaleX(1);
+  }
+  50% {
+    transform: translateX(15px) scaleX(1.05);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+/* Animacja "powrotu" - wóz jedzie w lewo */
+@keyframes driveToCenter {
+  0% {
+    transform: translateX(0) scaleX(-1);
+  }
+  50% {
+    transform: translateX(-15px) scaleX(-1.05);
+  }
+  100% {
+    transform: translateX(0) scaleX(-1);
+  }
+}
+
+/* Animacja potrząsania przy hover */
+@keyframes shake {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1.1);
+  }
+  25% {
+    transform: rotate(-3deg) scale(1.1);
+  }
+  75% {
+    transform: rotate(3deg) scale(1.1);
+  }
 }
 
 /* Sidebar Navigation */
@@ -133,6 +197,7 @@ body {
 
 .nav-text {
   white-space: nowrap;
+  transition: opacity 0.3s ease;
 }
 
 .sidebar.collapsed .nav-item {
@@ -141,7 +206,9 @@ body {
 }
 
 .sidebar.collapsed .nav-text {
-  display: none;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
 }
 
 /* Sidebar Stats */
@@ -150,6 +217,12 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   gap: 10px;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-stats {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .stat-box {
@@ -172,6 +245,20 @@ body {
   font-size: 24px;
   font-weight: 700;
   color: #3498db;
+}
+
+/* Responsive - ukryj statystyki na małych ekranach */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 70px;
+  }
+
+  .sidebar:not(.collapsed) {
+    width: 260px;
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
+  }
 }
 
 /* ==================== MAIN CONTAINER ==================== */

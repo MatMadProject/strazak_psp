@@ -106,11 +106,6 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
     }
   };
 
-  const handleCreateDocument = () => {
-    alert("Tworzenie dokumentu będzie dostępne wkrótce...");
-    // TODO: Implementacja tworzenia dokumentu
-  };
-
   const getSortIcon = (column) => {
     if (sortBy !== column) return "↕️";
     return sortOrder === "asc" ? "↑" : "↓";
@@ -138,9 +133,6 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
           </div>
         </div>
         <div className="header-buttons">
-          {/* <button className="btn-create-doc" onClick={handleCreateDocument}>
-            📄 Utwórz dokument
-          </button> */}
           <DocumentGeneratorButton
             fileId={file.id}
             firefighter={selectedFirefighter}
