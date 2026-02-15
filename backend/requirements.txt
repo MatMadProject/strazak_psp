@@ -12,7 +12,7 @@ python-docx
 jinja2
 reportlab
 docxtpl==0.16.7
-weasyprint==60.1
+xhtml2pdf==0.2.16
 
 # Biblioteka do przetwarzania SWD
 # Zakładam że zestawienie-udzialu-swd jest dostępne przez pip

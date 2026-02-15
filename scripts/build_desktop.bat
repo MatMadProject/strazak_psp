@@ -50,7 +50,7 @@ pyinstaller --clean --noconfirm ^
     --specpath="%PROJECT_ROOT%\desktop" ^
     --add-data="%PROJECT_ROOT%\frontend\build;frontend/build" ^
     --add-data="%PROJECT_ROOT%\backend;backend" ^
-    --add-data="%PROJECT_ROOT%\backend\templates;backend/templates" ^
+    --add-data="%PROJECT_ROOT%\backend\templates\*;backend/templates" ^
     --add-data="%PROJECT_ROOT%\data;data" ^
     --hidden-import=uvicorn ^
     --hidden-import=uvicorn.logging ^
@@ -76,10 +76,13 @@ pyinstaller --clean --noconfirm ^
     --hidden-import=reportlab.lib ^
     --hidden-import=reportlab.platypus ^
     --hidden-import=reportlab.pdfbase ^
+    --hidden-import=xhtml2pdf ^
     --collect-all=uvicorn ^
     --collect-all=fastapi ^
     --collect-all=sqlalchemy ^
     --collect-all=reportlab ^
+    --collect-all=xhtml2pdf ^
+    --collect-all=docxtpl ^
     "%PROJECT_ROOT%\desktop\app.py"
 
 if %errorlevel% neq 0 (
