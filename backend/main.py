@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException  # ← DODANE HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -22,12 +22,14 @@ app.add_middleware(
 )
 
 # Import routerów
-from routes import firefighters, data, files
+from routes import firefighters, data, files, settings as settings_route
+
 
 # WAŻNE: Wszystkie API routes PRZED catch-all
 app.include_router(firefighters.router, prefix="/api/firefighters", tags=["firefighters"])
 app.include_router(data.router, prefix="/api/data", tags=["data"])
 app.include_router(files.router, prefix="/api/files", tags=["files"])
+app.include_router(settings_route.router, prefix="/api/settings", tags=["settings"])
 
 @app.get("/api")
 def root():
@@ -75,26 +77,23 @@ else:
 @app.get("/{full_path:path}")
 async def serve_react_app(full_path: str):
     """Serwuj React app dla wszystkich ścieżek (obsługa React Router)"""
+    
+    # ZMIANA: Nie obsługuj API routes - pozwól FastAPI znaleźć właściwy router
+    # Jeśli żaden router nie obsłuży /api/*, zostanie zwrócony 404 automatycznie
+    if full_path.startswith("api"):
+        # NIE loguj dla API - to zaśmieca logi
+        raise HTTPException(status_code=404, detail="API endpoint not found")
+    
+    # Dla innych ścieżek - serwuj React
     print(f"Request for: /{full_path}")
     
-    # Nie przechwytuj API routes
-    if full_path.startswith("api"):
-        print(f" -> API route, skipping")
-        return {"error": "Not found"}
-    
-    # Zwróć index.html
     index_path = frontend_build_path / "index.html"
     print(f" -> Serving: {index_path}")
     
     if index_path.exists():
         return FileResponse(index_path)
-    else:
-        return {
-            "error": "Frontend not found", 
-            "path": str(frontend_build_path),
-            "index_exists": index_path.exists(),
-            "build_exists": frontend_build_path.exists()
-        }
+    
+    raise HTTPException(status_code=404, detail="Frontend not found")
 
 if __name__ == "__main__":
     import uvicorn
