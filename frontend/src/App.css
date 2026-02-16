@@ -311,6 +311,11 @@ body {
   color: #2c3e50;
 }
 
+.page-subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
 /* Main content */
 .app-main {
   flex: 1;

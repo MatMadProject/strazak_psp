@@ -258,5 +258,21 @@ export const firefightersAPI = {
     return response.data;
   },
 };
+//Settings API
+export const settingsAPI = {
+  getSettings: async () => {
+    const response = await api.get("/api/settings/");
+    return response.data;
+  },
 
+  updateSettings: async (settings) => {
+    const response = await api.post("/api/settings/", settings);
+    return response.data;
+  },
+
+  getCurrentDatabase: async () => {
+    const response = await api.get("/api/settings/current-database");
+    return response.data;
+  },
+};
 export default api;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Firefighters from "./components/Firefighters";
 import Departures from "./components/Departures";
+import Settings from "./components/Settings";
 import { dataAPI } from "./services/api";
 import "./App.css";
 
@@ -58,6 +59,14 @@ function App() {
             <span className="nav-icon">👨‍🚒</span>
             {!sidebarCollapsed && <span className="nav-text">Strażacy</span>}
           </button>
+          <button
+            className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
+            onClick={() => setActiveTab("settings")}
+            title="Ustawienia"
+          >
+            <span className="nav-icon">⚙️</span>
+            {!sidebarCollapsed && <span className="nav-text">Ustawienia</span>}
+          </button>
         </nav>
 
         {!sidebarCollapsed && statistics && (
@@ -80,7 +89,13 @@ function App() {
           <h1>
             {activeTab === "departures" && "🚨 Wyjazdy"}
             {activeTab === "firefighters" && "👨‍🚒 Strażacy"}
+            {activeTab === "settings" && "⚙️ Ustawienia"}
           </h1>
+          <p>
+            {activeTab === "departures" && "Zarządzanie wyjazdami"}
+            {activeTab === "firefighters" && "Zarządzanie danymi strażaków"}
+            {activeTab === "settings" && "Konfiguracja aplikacji"}
+          </p>
         </header>
 
         <main className="app-main">
@@ -89,6 +104,7 @@ function App() {
           )}
 
           {activeTab === "firefighters" && <Firefighters />}
+          {activeTab === "settings" && <Settings />}
         </main>
       </div>
     </div>
