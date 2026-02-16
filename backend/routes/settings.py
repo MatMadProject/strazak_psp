@@ -20,8 +20,11 @@ def get_settings_path() -> Path:
         # Desktop - obok exe
         return Path(sys.executable).parent / "settings.json"
     else:
-        # Development - w katalogu projektu
-        return Path(__file__).parent.parent.parent / "settings.json"
+        # Web/Development - w folderze data/
+        project_root = Path(__file__).parent.parent.parent
+        data_dir = project_root / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)  # Utwórz jeśli nie istnieje
+        return data_dir / "settings.json"
 
 @router.get("/")
 async def get_settings():
@@ -95,3 +98,46 @@ async def get_current_database():
         "path": str(app_settings.DATABASE_PATH),
         "exists": app_settings.DATABASE_PATH.exists()
     }
+@router.get("/browse-database")
+@router.get("/browse-database/")
+async def browse_database():
+    """Otwórz dialog wyboru pliku bazy danych (tylko desktop)"""
+    try:
+        import webview
+        
+        # Otwórz dialog wyboru pliku
+        result = webview.windows[0].create_file_dialog(
+            webview.OPEN_DIALOG,
+            allow_multiple=False,
+            file_types=('Baza danych SQLite (*.db)', 'Wszystkie pliki (*.*)')
+        )
+        
+        if result and len(result) > 0:
+            return {"path": result[0]}
+        else:
+            return {"path": None}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Błąd dialogu: {str(e)}")
+
+@router.get("/browse-folder")
+@router.get("/browse-folder/")
+async def browse_folder():
+    """Otwórz dialog wyboru folderu (tylko desktop)"""
+    try:
+        import webview
+        
+        # Otwórz dialog wyboru folderu
+        result = webview.windows[0].create_file_dialog(
+            webview.FOLDER_DIALOG
+        )
+        
+        if result and len(result) > 0:
+            # Dodaj nazwę pliku app.db
+            from pathlib import Path
+            folder_path = Path(result[0])
+            db_path = folder_path / "app.db"
+            return {"path": str(db_path)}
+        else:
+            return {"path": None}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Błąd dialogu: {str(e)}")

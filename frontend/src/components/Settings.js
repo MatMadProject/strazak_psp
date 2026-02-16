@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { settingsAPI } from "../services/api";
 import "./Settings.css";
 
-function Settings() {
+function Settings({ isDesktop }) {
   const [settings, setSettings] = useState(null);
   const [currentDatabase, setCurrentDatabase] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -70,9 +70,37 @@ function Settings() {
     }
   };
 
-  const handleBrowse = () => {
-    // W aplikacji desktopowej możesz użyć dialog
-    alert("Funkcja przeglądania plików będzie dostępna w przyszłej wersji");
+  const handleBrowse = async () => {
+    if (!isDesktop) {
+      alert("Przeglądanie plików jest dostępne tylko w aplikacji desktopowej");
+      return;
+    }
+
+    try {
+      let result;
+
+      if (databaseType === "network") {
+        // Dla sieci - wybór pliku
+        result = await settingsAPI.browseDatabaseFile();
+      } else {
+        // Dla lokalnej - wybór folderu (automatycznie doda app.db)
+        result = await settingsAPI.browseDatabaseFolder();
+      }
+
+      if (result.path) {
+        setDatabasePath(result.path);
+        setMessage({
+          type: "success",
+          text: "Wybrano ścieżkę: " + result.path,
+        });
+      }
+    } catch (error) {
+      console.error("Błąd dialogu:", error);
+      setMessage({
+        type: "error",
+        text: "Nie udało się otworzyć dialogu wyboru pliku",
+      });
+    }
   };
 
   if (loading) {
@@ -85,13 +113,6 @@ function Settings() {
 
   return (
     <div className="settings-page">
-      {/* <div className="settings-page-header">
-        <div>
-          <h1>⚙️ Ustawienia</h1>
-          <p className="page-subtitle">Konfiguracja aplikacji</p>
-        </div>
-      </div> */}
-
       <div className="settings-content">
         {/* Aktualna baza danych */}
         <div className="settings-section">

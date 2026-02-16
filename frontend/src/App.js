@@ -10,8 +10,17 @@ function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [statistics, setStatistics] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDev, setIsDev] = useState(false);
 
   useEffect(() => {
+    loadStatistics();
+  }, [refreshTrigger]);
+
+  useEffect(() => {
+    setIsDesktop(typeof window.pywebview !== "undefined");
+    // Dev mode: localhost:3000
+    setIsDev(window.location.hostname === "localhost");
     loadStatistics();
   }, [refreshTrigger]);
 
@@ -59,14 +68,18 @@ function App() {
             <span className="nav-icon">👨‍🚒</span>
             {!sidebarCollapsed && <span className="nav-text">Strażacy</span>}
           </button>
-          <button
-            className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
-            onClick={() => setActiveTab("settings")}
-            title="Ustawienia"
-          >
-            <span className="nav-icon">⚙️</span>
-            {!sidebarCollapsed && <span className="nav-text">Ustawienia</span>}
-          </button>
+          {(isDesktop || isDev) && (
+            <button
+              className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
+              onClick={() => setActiveTab("settings")}
+              title="Ustawienia"
+            >
+              <span className="nav-icon">⚙️</span>
+              {!sidebarCollapsed && (
+                <span className="nav-text">Ustawienia</span>
+              )}
+            </button>
+          )}
         </nav>
 
         {!sidebarCollapsed && statistics && (
@@ -104,7 +117,7 @@ function App() {
           )}
 
           {activeTab === "firefighters" && <Firefighters />}
-          {activeTab === "settings" && <Settings />}
+          {activeTab === "settings" && <Settings isDesktop={isDesktop} />}
         </main>
       </div>
     </div>

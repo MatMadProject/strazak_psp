@@ -274,5 +274,15 @@ export const settingsAPI = {
     const response = await api.get("/api/settings/current-database");
     return response.data;
   },
+
+  browseDatabaseFile: async () => {
+    const response = await api.get("/api/settings/browse-database/");
+    return response.data;
+  },
+
+  browseDatabaseFolder: async () => {
+    const response = await api.get("/api/settings/browse-folder/");
+    return response.data;
+  },
 };
 export default api;

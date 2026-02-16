@@ -2,7 +2,7 @@
 
 #define MyAppName "Strażak"
 #define MyAppVersion "0.1.0"
-#define MyAppPublisher "Twoja Firma"
+#define MyAppPublisher "MatMad Software"
 #define MyAppURL "https://example.com"
 #define MyAppExeName "Strazak-DesktopApp.exe"
 

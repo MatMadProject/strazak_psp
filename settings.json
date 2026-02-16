@@ -1,0 +1,6 @@
+{
+  "database": {
+    "type": "local",
+    "path": "D:\\python projects\\strazak_psp\\data\\app.db"
+  }
+}
