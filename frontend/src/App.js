@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import Firefighters from "./components/Firefighters";
 import Departures from "./components/Departures";
 import Settings from "./components/Settings";
-import { dataAPI } from "./services/api";
+import Footer from "./components/Footer";
+import { dataAPI, systemAPI } from "./services/api";
 import "./App.css";
 
 function App() {
@@ -12,8 +13,9 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isDev, setIsDev] = useState(false);
-
+  //TODO - powtórzony useEffect
   useEffect(() => {
+    checkEnvironment();
     loadStatistics();
   }, [refreshTrigger]);
 
@@ -23,7 +25,16 @@ function App() {
     setIsDev(window.location.hostname === "localhost");
     loadStatistics();
   }, [refreshTrigger]);
-
+  const checkEnvironment = async () => {
+    try {
+      const data = await systemAPI.getEnvironment();
+      setIsDesktop(data.is_desktop);
+      console.log("[APP] Environment:", data);
+    } catch (error) {
+      console.error("[APP] Błąd sprawdzania środowiska:", error);
+      setIsDev(window.location.hostname === "localhost");
+    }
+  };
   const loadStatistics = async () => {
     try {
       const stats = await dataAPI.getStatistics();
@@ -119,6 +130,7 @@ function App() {
           {activeTab === "firefighters" && <Firefighters />}
           {activeTab === "settings" && <Settings isDesktop={isDesktop} />}
         </main>
+        <Footer />
       </div>
     </div>
   );
