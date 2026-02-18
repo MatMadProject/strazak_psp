@@ -6,7 +6,8 @@ import configparser
 class Settings:
     # Podstawowa konfiguracja
     APP_NAME = "Strazak App"
-    VERSION = "0.1.0"
+    VERSION = "0.2.0"
+    COMPANY = "MatMad Software"
     
     # Czy aplikacja działa jako exe (PyInstaller)
     IS_DESKTOP = getattr(sys, "frozen", False)

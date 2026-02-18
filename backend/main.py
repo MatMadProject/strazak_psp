@@ -22,7 +22,7 @@ app.add_middleware(
 )
 
 # Import routerów
-from routes import firefighters, data, files, settings as settings_route
+from routes import firefighters, data, files, settings as settings_route, system as system_route
 
 
 # WAŻNE: Wszystkie API routes PRZED catch-all
@@ -30,6 +30,7 @@ app.include_router(firefighters.router, prefix="/api/firefighters", tags=["firef
 app.include_router(data.router, prefix="/api/data", tags=["data"])
 app.include_router(files.router, prefix="/api/files", tags=["files"])
 app.include_router(settings_route.router, prefix="/api/settings", tags=["settings"])
+app.include_router(system_route.router, prefix="/api/system", tags=["system"])
 
 @app.get("/api")
 def root():
@@ -42,6 +43,16 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "healthy"}
+
+@app.get("/api/environment")
+def get_environment():
+    """Zwróć informacje o środowisku"""
+    return {
+        "is_desktop": getattr(sys, "frozen", False),
+        "version": settings.VERSION,
+        "app_name": settings.APP_NAME,
+        "company": settings.COMPANY
+    }
 
 # Funkcja do znalezienia ścieżki zasobów (działa z PyInstaller)
 def get_resource_path(relative_path):

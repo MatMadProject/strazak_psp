@@ -1,5 +1,5 @@
 
 # Routes package
-from . import files, data, firefighters, settings
+from . import files, data, firefighters, settings, system
 
-__all__ = ['files', 'data', 'firefighters', 'settings']
+__all__ = ['files', 'data', 'firefighters', 'settings', 'system']
