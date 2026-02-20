@@ -10,7 +10,8 @@ function Settings({ isDesktop }) {
   const [databaseType, setDatabaseType] = useState("local");
   const [databasePath, setDatabasePath] = useState("");
   const [message, setMessage] = useState(null);
-
+  //TODO W wersji dekstop przy wyborze bazy lokalnej po przyciśnieciu przycisku "Przeglądaj" otwiera się inne okno dialogowe, niż
+  //przy wyborze wersji sieciowej. Bardziej odpowiada wygląd okno dla wersji sieciowej bazy danych.
   useEffect(() => {
     loadSettings();
     loadCurrentDatabase();

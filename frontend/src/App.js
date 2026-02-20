@@ -8,23 +8,17 @@ import "./App.css";
 
 function App() {
   const [activeTab, setActiveTab] = useState("departures"); // 'departures', 'firefighters'
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  //const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [statistics, setStatistics] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isDev, setIsDev] = useState(false);
-  //TODO - powtórzony useEffect
+
   useEffect(() => {
     checkEnvironment();
     loadStatistics();
-  }, [refreshTrigger]);
+  }, []);
 
-  useEffect(() => {
-    setIsDesktop(typeof window.pywebview !== "undefined");
-    // Dev mode: localhost:3000
-    setIsDev(window.location.hostname === "localhost");
-    loadStatistics();
-  }, [refreshTrigger]);
   const checkEnvironment = async () => {
     try {
       const data = await systemAPI.getEnvironment();
@@ -124,7 +118,8 @@ function App() {
 
         <main className="app-main">
           {activeTab === "departures" && (
-            <Departures refreshTrigger={refreshTrigger} />
+            //<Departures refreshTrigger={refreshTrigger} />
+            <Departures />
           )}
 
           {activeTab === "firefighters" && <Firefighters />}

@@ -5,7 +5,8 @@ import DeparturesList from "./DeparturesList";
 import DataEditor from "./DataEditor";
 import "./Departures.css";
 
-function Departures({ refreshTrigger }) {
+//function Departures({ refreshTrigger }) {
+function Departures() {
   // Przywróć ostatni stan z localStorage lub ustaw 'menu'
   const [view, setView] = useState(() => {
     const saved = localStorage.getItem("departures_view");
@@ -44,7 +45,8 @@ function Departures({ refreshTrigger }) {
     if (view === "file-list") {
       loadFiles();
     }
-  }, [view, refreshTrigger]);
+  }, [view]);
+  //}, [view, refreshTrigger]);
 
   const loadFiles = async () => {
     setLoading(true);
