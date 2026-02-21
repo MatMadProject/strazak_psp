@@ -40,9 +40,10 @@ class SWDRecord(Base):
     p = Column(String(10))  # String bo może być "1" lub inna wartość
     mz = Column(String(10))
     af = Column(String(10))
+    specjalistyczne = Column(String(10))
     zaliczono_do_emerytury = Column(String(10))
     nr_meldunku = Column(String(100))
-    czas_rozp_zdarzenia = Column(String(100))  # ZMIENIONE NA STRING zamiast DateTime
+    czas_rozp_zdarzenia = Column(String(100))  
     funkcja = Column(String(100))
     
     # Metadane - te są automatyczne

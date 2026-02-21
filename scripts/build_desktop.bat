@@ -10,6 +10,17 @@ cd /d "%~dp0\.."
 REM Zapisz ścieżkę do katalogu głównego
 set "PROJECT_ROOT=%CD%"
 
+REM KROK 0: Stwórz czystą bazę danych
+echo.
+echo [KROK 0/3] Tworzenie czystej bazy danych...
+call venv\Scripts\activate
+python backend\create_fresh_db.py
+if %errorlevel% neq 0 (
+    echo BLAD: Nie udalo sie stworzyc bazy danych
+    pause
+    exit /b 1
+)
+
 REM KROK 1: Build React
 echo [KROK 1/3] Budowanie React frontendu...
 cd frontend
