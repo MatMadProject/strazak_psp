@@ -104,13 +104,7 @@ class ExcelProcessor:
                 print(f"[OK]] [EXCEL PROCESSOR] Przetworzono {len(result.items)} rekordów")
             else:
                 print(f"✅ [EXCEL PROCESSOR] Przetworzono {len(result.items)} rekordów")
-            
-            
-            # Debug: pokaż pierwsze 3 rekordy
-            if result.items:
-                for i, item in enumerate(result.items[:3]):
-                    print(f"[EXCEL PROCESSOR] Rekord {i}: {item.nazwisko_imie} - {item.funkcja}")
-            
+                        
             return result
             
         except Exception as e:

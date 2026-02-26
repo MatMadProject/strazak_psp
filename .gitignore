@@ -110,5 +110,6 @@ tmp/
 *.tmp
 *.temp
 .cache/
+TODO.txt
 
 # Scripts

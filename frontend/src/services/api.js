@@ -286,8 +286,6 @@ export const settingsAPI = {
   },
 };
 //System API
-// Na końcu pliku, po settingsAPI:
-
 export const systemAPI = {
   getEnvironment: async () => {
     const response = await api.get("/api/system/environment");

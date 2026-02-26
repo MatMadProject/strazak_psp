@@ -110,7 +110,7 @@ class DeparturesExcelService:
         ws.cell(row=info_row + 1, column=1, value=f"Data eksportu: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         ws.cell(row=info_row + 1, column=1).font = Font(italic=True, size=9, color="666666")
         
-        ws.cell(row=info_row + 2, column=1, value=f"app.straznica.com.pl 2026 wszelkie prawa zastrzeżone")
+        ws.cell(row=info_row + 2, column=1, value=f"MatMad Software 2026 wszelkie prawa zastrzeżone")
         ws.cell(row=info_row + 2, column=1).font = Font(italic=True, size=9, color="666666")
         
         # Zapisz do BytesIO
