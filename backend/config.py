@@ -2,11 +2,12 @@ import sys
 import os
 from pathlib import Path
 import configparser
+import json
 
 class Settings:
     # Podstawowa konfiguracja
     APP_NAME = "Strazak App"
-    VERSION = "0.3.0"
+    VERSION = "0.3.1"
     COMPANY = "MatMad Software"
     
     # Czy aplikacja działa jako exe (PyInstaller)
@@ -23,14 +24,16 @@ class Settings:
         # Upload dir - zawsze obok bazy danych
         self.UPLOAD_DIR = self.DATABASE_PATH.parent / "uploads"
         
-        # Utwórz niezbędne foldery
-        self.DATA_DIR.mkdir(parents=True, exist_ok=True)
+        # Utwórz niezbędne foldery (tylko dla web/dev)
+        if not self.IS_DESKTOP:
+            self.DATA_DIR.mkdir(parents=True, exist_ok=True)
         self.UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
         
         # Debug info
         print(f"[CONFIG] Mode: {'Desktop (PyInstaller)' if self.IS_DESKTOP else 'Web/Development'}")
         print(f"[CONFIG] Base dir: {self.BASE_DIR}")
         print(f"[CONFIG] Database: {self.DATABASE_PATH}")
+        print(f"[CONFIG] Database type: {self.DATABASE_TYPE}")
         print(f"[CONFIG] Upload dir: {self.UPLOAD_DIR}")
     
     def _get_base_dir(self) -> Path:
@@ -46,19 +49,42 @@ class Settings:
         """
         Wczytaj konfigurację bazy danych.
         Priorytet:
-        1. config.ini (desktop z instalatora)
-        2. Domyślna persistent location (desktop bez instalatora)
-        3. Backend/data/app.db (web/development)
+        1. settings.json (zakładka Ustawienia - NAJWYŻSZY)
+        2. config.ini (installer)
+        3. Domyślna lokalizacja
         """
-        # Desktop - sprawdź config.ini
+        
+        # === DESKTOP ===
         if self.IS_DESKTOP:
-            config_path = Path(sys.executable).parent / "config.ini"
+            # PRIORYTET 1: settings.json (zakładka Ustawienia)
+            settings_json_path = self.BASE_DIR / "settings.json"
             
-            if config_path.exists():
-                # Odczytaj config.ini (utworzony przez installer)
+            if settings_json_path.exists():
+                try:
+                    with open(settings_json_path, 'r', encoding='utf-8') as f:
+                        settings_data = json.load(f)
+                    
+                    db_config = settings_data.get('database', {})
+                    db_type = db_config.get('type', 'local')
+                    db_path = db_config.get('path')
+                    
+                    if db_path:
+                        self.DATABASE_PATH = Path(db_path)
+                        self.DATABASE_TYPE = db_type
+                        self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"
+                        
+                        print(f"[CONFIG] ✓ Using database from settings.json ({db_type})")
+                        return
+                except Exception as e:
+                    print(f"[CONFIG] ⚠️ Error reading settings.json: {e}")
+            
+            # PRIORYTET 2: config.ini (installer)
+            config_ini_path = self.BASE_DIR / "config.ini"
+            
+            if config_ini_path.exists():
                 try:
                     config = configparser.ConfigParser()
-                    config.read(config_path, encoding='utf-8')
+                    config.read(config_ini_path, encoding='utf-8')
                     
                     db_type = config.get('Database', 'Type', fallback='local')
                     db_path_str = config.get('Database', 'Path', fallback=None)
@@ -68,15 +94,13 @@ class Settings:
                         self.DATABASE_TYPE = db_type
                         self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"
                         
-                        print(f"[CONFIG] Using database from config.ini: {self.DATABASE_PATH}")
+                        print(f"[CONFIG] ✓ Using database from config.ini ({db_type})")
                         return
                 except Exception as e:
-                    print(f"[CONFIG] Error reading config.ini: {e}, using default")
+                    print(f"[CONFIG] ⚠️ Error reading config.ini: {e}")
             
-            # Desktop BEZ config.ini (testowanie przed instalacją)
-            # Użyj AppData, NIE dist/data
+            # PRIORYTET 3: Domyślna lokalizacja (AppData)
             if sys.platform == "win32":
-                import os
                 appdata = Path(os.environ.get('APPDATA', Path.home()))
                 db_dir = appdata / 'StrazakDesktopApp' / 'data'
             else:
@@ -85,7 +109,7 @@ class Settings:
             db_dir.mkdir(parents=True, exist_ok=True)
             self.DATABASE_PATH = db_dir / "app.db"
             
-            # Jeśli baza nie istnieje, skopiuj z bundle (_MEIPASS)
+            # Jeśli baza nie istnieje, skopiuj z bundle
             if not self.DATABASE_PATH.exists():
                 try:
                     if hasattr(sys, '_MEIPASS'):
@@ -93,20 +117,42 @@ class Settings:
                         if source_db.exists():
                             import shutil
                             shutil.copy2(source_db, self.DATABASE_PATH)
-                            print(f"[CONFIG] Database copied from bundle to: {self.DATABASE_PATH}")
+                            print(f"[CONFIG] ✓ Database copied from bundle")
                 except Exception as e:
-                    print(f"[CONFIG] Error copying database: {e}")
+                    print(f"[CONFIG] ⚠️ Error copying database: {e}")
             
             self.DATABASE_TYPE = 'local'
             self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"
-            print(f"[CONFIG] Desktop test mode - using: {self.DATABASE_PATH}")
+            print(f"[CONFIG] ✓ Using default location (AppData)")
             return
         
-        # Web/Development - domyślna lokalizacja
+        # === WEB/DEVELOPMENT ===
+        # PRIORYTET 1: settings.json w data/
+        settings_json_path = self.DATA_DIR / "settings.json"
+        
+        if settings_json_path.exists():
+            try:
+                with open(settings_json_path, 'r', encoding='utf-8') as f:
+                    settings_data = json.load(f)
+                
+                db_config = settings_data.get('database', {})
+                db_path = db_config.get('path')
+                
+                if db_path:
+                    self.DATABASE_PATH = Path(db_path)
+                    self.DATABASE_TYPE = db_config.get('type', 'local')
+                    self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"
+                    
+                    print(f"[CONFIG] ✓ Using database from settings.json")
+                    return
+            except Exception as e:
+                print(f"[CONFIG] ⚠️ Error reading settings.json: {e}")
+        
+        # PRIORYTET 2: Domyślna - data/app.db
         self.DATABASE_PATH = self.DATA_DIR / "app.db"
         self.DATABASE_TYPE = 'local'
         self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"
-        print(f"[CONFIG] Web/Dev mode - using: {self.DATABASE_PATH}")
+        print(f"[CONFIG] ✓ Using default location (data/)")
     
     # CORS - dla developmentu
     CORS_ORIGINS = [
