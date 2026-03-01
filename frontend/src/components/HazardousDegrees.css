@@ -1,6 +1,8 @@
 /* ==================== HAZARDOUS DEGREES PAGE ==================== */
 .hazardous-degrees-page {
-  max-width: 1200px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .hazardous-degrees-page-header {

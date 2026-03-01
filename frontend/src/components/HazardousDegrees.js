@@ -44,10 +44,10 @@ function HazardousDegrees() {
   return (
     <div className="hazardous-degrees-page">
       <div className="hazardous-degrees-page-header">
-        <div>
+        {/* <div>
           <h1>☣️ Stopnie Szkodliwości</h1>
           <p className="page-subtitle">Zarządzanie stopniami szkodliwości</p>
-        </div>
+        </div> */}
         <div className="header-buttons">
           {/* TODO: podłącz ExportButton z właściwymi filtrami gdy API gotowe */}
           {/* <ExportButton filters={currentFilters} endpoint="hazardous-degrees" /> */}

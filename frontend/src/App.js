@@ -119,15 +119,6 @@ function App() {
             {!sidebarCollapsed && <span className="nav-text">Wyjazdy</span>}
           </button>
 
-          <button
-            className={`nav-item ${activeTab === "firefighters" ? "active" : ""}`}
-            onClick={() => setActiveTab("firefighters")}
-            title="Strażacy"
-          >
-            <span className="nav-icon">👨‍🚒</span>
-            {!sidebarCollapsed && <span className="nav-text">Strażacy</span>}
-          </button>
-
           <div
             className={`nav-group ${isHazardousGroupActive ? "group-active" : ""} ${
               hazardousExpanded && !sidebarCollapsed ? "group-expanded" : ""
@@ -174,6 +165,15 @@ function App() {
             )}
           </div>
 
+          <button
+            className={`nav-item ${activeTab === "firefighters" ? "active" : ""}`}
+            onClick={() => setActiveTab("firefighters")}
+            title="Strażacy"
+          >
+            <span className="nav-icon">👨‍🚒</span>
+            {!sidebarCollapsed && <span className="nav-text">Strażacy</span>}
+          </button>
+
           {(isDesktop || isDev) && (
             <button
               className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
@@ -210,10 +210,10 @@ function App() {
 
         <main className="app-main">
           {activeTab === "departures" && <Departures />}
-          {activeTab === "firefighters" && <Firefighters />}
-          {activeTab === "settings" && <Settings isDesktop={isDesktop} />}
           {activeTab === "hazard-degrees" && <HazardousDegrees />}
           {activeTab === "hazard-addon" && <Hazardous subTab="hazard-addon" />}
+          {activeTab === "firefighters" && <Firefighters />}
+          {activeTab === "settings" && <Settings isDesktop={isDesktop} />}
         </main>
         <Footer />
       </div>
