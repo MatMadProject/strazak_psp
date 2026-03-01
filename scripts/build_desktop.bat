@@ -62,7 +62,6 @@ pyinstaller --clean --noconfirm ^
     --add-data="%PROJECT_ROOT%\frontend\build;frontend/build" ^
     --add-data="%PROJECT_ROOT%\backend;backend" ^
     --add-data="%PROJECT_ROOT%\backend\templates\*;backend/templates" ^
-    --add-data="%PROJECT_ROOT%\data;data" ^
     --hidden-import=uvicorn ^
     --hidden-import=uvicorn.logging ^
     --hidden-import=uvicorn.loops ^

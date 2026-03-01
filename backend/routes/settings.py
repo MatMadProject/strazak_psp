@@ -17,16 +17,24 @@ class AppSettings(BaseModel):
 def get_settings_path() -> Path:
     """Pobierz ścieżkę do pliku ustawień"""
     if getattr(sys, "frozen", False):
-        # Desktop - obok exe
-        return Path(sys.executable).parent / "settings.json"
+        # Desktop - w AppData (NIE w Program Files!)
+        if sys.platform == "win32":
+            appdata = Path(os.environ.get('APPDATA', Path.home()))
+            settings_dir = appdata / 'StrazakDesktopApp'
+        else:
+            settings_dir = Path.home() / '.strazak'
+        
+        settings_dir.mkdir(parents=True, exist_ok=True)
+        return settings_dir / "settings.json"
     else:
         # Web/Development - w folderze data/
         project_root = Path(__file__).parent.parent.parent
         data_dir = project_root / "data"
-        data_dir.mkdir(parents=True, exist_ok=True)  # Utwórz jeśli nie istnieje
+        data_dir.mkdir(parents=True, exist_ok=True)
         return data_dir / "settings.json"
 
 @router.get("/")
+@router.get("")
 async def get_settings():
     """Pobierz aktualne ustawienia"""
     try:
@@ -34,8 +42,8 @@ async def get_settings():
         
         if settings_path.exists():
             with open(settings_path, 'r', encoding='utf-8') as f:
-                settings = json.load(f)
-            return settings
+                settings_data = json.load(f)
+            return settings_data
         else:
             # Domyślne ustawienia
             from config import settings as app_settings
@@ -49,6 +57,7 @@ async def get_settings():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/")
+@router.post("")
 async def update_settings(settings: AppSettings):
     """Zaktualizuj ustawienia"""
     try:
@@ -64,23 +73,27 @@ async def update_settings(settings: AppSettings):
                     status_code=400, 
                     detail="Ścieżka sieciowa musi zaczynać się od \\\\"
                 )
-        
-        # Sprawdź czy folder istnieje
-        db_dir = db_path.parent
-        if not db_dir.exists() and settings.database.type == "local":
-            raise HTTPException(
-                status_code=400,
-                detail=f"Folder nie istnieje: {db_dir}"
-            )
+        else:
+            # Dla lokalnej - sprawdź czy folder istnieje
+            db_dir = db_path.parent
+            if not db_dir.exists():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Folder nie istnieje: {db_dir}"
+                )
         
         # Zapisz ustawienia
         settings_dict = settings.dict()
         with open(settings_path, 'w', encoding='utf-8') as f:
             json.dump(settings_dict, f, indent=2, ensure_ascii=False)
         
+        print(f"[SETTINGS] Saved to: {settings_path}")
+        print(f"[SETTINGS] Type: {settings.database.type}")
+        print(f"[SETTINGS] Path: {settings.database.path}")
+        
         return {
             "success": True,
-            "message": "Ustawienia zapisane. Uruchom ponownie aplikację, aby zastosować zmiany.",
+            "message": "Ustawienia zapisane. URUCHOM PONOWNIE aplikację, aby zastosować zmiany.",
             "settings": settings_dict
         }
     except HTTPException:
@@ -89,6 +102,7 @@ async def update_settings(settings: AppSettings):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/current-database")
+@router.get("/current-database/")
 async def get_current_database():
     """Pobierz aktualnie używaną bazę danych"""
     from config import settings as app_settings
@@ -98,16 +112,20 @@ async def get_current_database():
         "path": str(app_settings.DATABASE_PATH),
         "exists": app_settings.DATABASE_PATH.exists()
     }
+
 @router.get("/browse-database")
 @router.get("/browse-database/")
 async def browse_database():
-    """Otwórz dialog wyboru pliku bazy danych (tylko desktop)"""
+    """
+    Otwórz dialog wyboru pliku bazy danych
+    Działa dla lokalnych i sieciowych (użytkownik może nawigować do zasobów sieciowych)
+    """
     try:
         import webview
         
-        # Otwórz dialog wyboru pliku
         result = webview.windows[0].create_file_dialog(
             webview.OPEN_DIALOG,
+            directory='',
             allow_multiple=False,
             file_types=('Baza danych SQLite (*.db)', 'Wszystkie pliki (*.*)')
         )
@@ -118,6 +136,7 @@ async def browse_database():
             return {"path": None}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Błąd dialogu: {str(e)}")
+    
 
 @router.get("/browse-folder")
 @router.get("/browse-folder/")

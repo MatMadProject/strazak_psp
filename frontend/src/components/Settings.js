@@ -10,8 +10,7 @@ function Settings({ isDesktop }) {
   const [databaseType, setDatabaseType] = useState("local");
   const [databasePath, setDatabasePath] = useState("");
   const [message, setMessage] = useState(null);
-  //TODO W wersji dekstop przy wyborze bazy lokalnej po przyciśnieciu przycisku "Przeglądaj" otwiera się inne okno dialogowe, niż
-  //przy wyborze wersji sieciowej. Bardziej odpowiada wygląd okno dla wersji sieciowej bazy danych.
+
   useEffect(() => {
     loadSettings();
     loadCurrentDatabase();
@@ -78,15 +77,8 @@ function Settings({ isDesktop }) {
     }
 
     try {
-      let result;
-
-      if (databaseType === "network") {
-        // Dla sieci - wybór pliku
-        result = await settingsAPI.browseDatabaseFile();
-      } else {
-        // Dla lokalnej - wybór folderu (automatycznie doda app.db)
-        result = await settingsAPI.browseDatabaseFolder();
-      }
+      // ZMIANA: Ten sam dialog dla obu typów baz
+      const result = await settingsAPI.browseDatabaseFile();
 
       if (result.path) {
         setDatabasePath(result.path);

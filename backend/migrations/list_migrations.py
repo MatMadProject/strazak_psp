@@ -34,7 +34,7 @@ def list_migrations(verbose=False):
     """
     
     print_colored("=" * 70, Colors.BOLD)
-    print_colored("  📋 WYKONANE MIGRACJE", Colors.BOLD + Colors.CYAN)
+    print_colored(" WYKONANE MIGRACJE", Colors.BOLD + Colors.CYAN)
     print_colored("=" * 70, Colors.BOLD)
     print()
     
@@ -46,14 +46,14 @@ def list_migrations(verbose=False):
         migrations = get_executed_migrations()
         
         if not migrations:
-            print_colored("⚠️  Brak wykonanych migracji", Colors.YELLOW)
+            print_colored("Brak wykonanych migracji", Colors.YELLOW)
             print()
-            print("💡 Uruchom pierwszą migrację:")
-            print("   python migrations/001_nazwa_migracji.py")
+            print("Uruchom pierwszą migrację:")
+            print("python migrations/001_nazwa_migracji.py")
             print()
             return
         
-        print_colored(f"✅ Znaleziono {len(migrations)} migracji:", Colors.GREEN)
+        print_colored(f"Znaleziono {len(migrations)} migracji:", Colors.GREEN)
         print()
         
         if verbose:
@@ -101,7 +101,7 @@ def list_migrations(verbose=False):
         print_colored("=" * 70, Colors.BOLD)
         
     except Exception as e:
-        print_colored(f"❌ Błąd: {e}", Colors.RED)
+        print_colored(f"Błąd: {e}", Colors.RED)
         print()
         print("Tabela migration_history prawdopodobnie nie istnieje.")
         print("Uruchom pierwszą migrację aby ją utworzyć.")

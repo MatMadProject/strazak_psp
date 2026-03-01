@@ -7,7 +7,7 @@ import json
 class Settings:
     # Podstawowa konfiguracja
     APP_NAME = "Strazak App"
-    VERSION = "0.3.1"
+    VERSION = "0.3.2"
     COMPANY = "MatMad Software"
     
     # Czy aplikacja działa jako exe (PyInstaller)
@@ -50,14 +50,18 @@ class Settings:
         Wczytaj konfigurację bazy danych.
         Priorytet:
         1. settings.json (zakładka Ustawienia - NAJWYŻSZY)
-        2. config.ini (installer)
-        3. Domyślna lokalizacja
+        2. config.ini (installer - custom instalacja)
+        3. Domyślna lokalizacja (AppData dla desktop, data/ dla web)
         """
         
         # === DESKTOP ===
         if self.IS_DESKTOP:
-            # PRIORYTET 1: settings.json (zakładka Ustawienia)
-            settings_json_path = self.BASE_DIR / "settings.json"
+            # PRIORYTET 1: settings.json w AppData (zakładka Ustawienia)
+            if sys.platform == "win32":
+                appdata = Path(os.environ.get('APPDATA', Path.home()))
+                settings_json_path = appdata / 'StrazakDesktopApp' / 'settings.json'
+            else:
+                settings_json_path = Path.home() / '.strazak' / 'settings.json'
             
             if settings_json_path.exists():
                 try:
@@ -78,7 +82,7 @@ class Settings:
                 except Exception as e:
                     print(f"[CONFIG] ⚠️ Error reading settings.json: {e}")
             
-            # PRIORYTET 2: config.ini (installer)
+            # PRIORYTET 2: config.ini (installer - custom instalacja)
             config_ini_path = self.BASE_DIR / "config.ini"
             
             if config_ini_path.exists():
@@ -99,7 +103,7 @@ class Settings:
                 except Exception as e:
                     print(f"[CONFIG] ⚠️ Error reading config.ini: {e}")
             
-            # PRIORYTET 3: Domyślna lokalizacja (AppData)
+            # PRIORYTET 3: Domyślna lokalizacja - ZAWSZE AppData!
             if sys.platform == "win32":
                 appdata = Path(os.environ.get('APPDATA', Path.home()))
                 db_dir = appdata / 'StrazakDesktopApp' / 'data'
@@ -108,18 +112,6 @@ class Settings:
             
             db_dir.mkdir(parents=True, exist_ok=True)
             self.DATABASE_PATH = db_dir / "app.db"
-            
-            # Jeśli baza nie istnieje, skopiuj z bundle
-            if not self.DATABASE_PATH.exists():
-                try:
-                    if hasattr(sys, '_MEIPASS'):
-                        source_db = Path(sys._MEIPASS) / "data" / "app.db"
-                        if source_db.exists():
-                            import shutil
-                            shutil.copy2(source_db, self.DATABASE_PATH)
-                            print(f"[CONFIG] ✓ Database copied from bundle")
-                except Exception as e:
-                    print(f"[CONFIG] ⚠️ Error copying database: {e}")
             
             self.DATABASE_TYPE = 'local'
             self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"
@@ -148,7 +140,7 @@ class Settings:
             except Exception as e:
                 print(f"[CONFIG] ⚠️ Error reading settings.json: {e}")
         
-        # PRIORYTET 2: Domyślna - data/app.db
+        # PRIORYTET 2: Domyślna - data/app.db (OK dla development)
         self.DATABASE_PATH = self.DATA_DIR / "app.db"
         self.DATABASE_TYPE = 'local'
         self.DATABASE_URL = f"sqlite:///{self.DATABASE_PATH}"

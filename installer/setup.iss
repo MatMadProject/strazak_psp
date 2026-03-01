@@ -1,7 +1,7 @@
 ; Inno Setup Script dla Strazak Desktop App
 
 #define MyAppName "Strażak"
-#define MyAppVersion "0.3.1"
+#define MyAppVersion "0.3.2"
 #define MyAppPublisher "MatMad Software"
 #define MyAppURL "https://straznica.com.pl"
 #define MyAppExeName "Strazak-DesktopApp.exe"
@@ -34,7 +34,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "..\desktop\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\data\app.db"; Flags: dontcopy
+
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
