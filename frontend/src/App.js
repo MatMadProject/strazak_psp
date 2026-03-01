@@ -2,22 +2,30 @@ import React, { useState, useEffect } from "react";
 import Firefighters from "./components/Firefighters";
 import Departures from "./components/Departures";
 import Settings from "./components/Settings";
+import Hazardous from "./components/Hazardous";
+import HazardousDegrees from "./components/HazardousDegrees";
 import Footer from "./components/Footer";
 import { dataAPI, systemAPI } from "./services/api";
 import "./App.css";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("departures"); // 'departures', 'firefighters'
-  //const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeTab, setActiveTab] = useState("departures");
   const [statistics, setStatistics] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [isDev, setIsDev] = useState(false);
+  const [hazardousExpanded, setHazardousExpanded] = useState(false);
 
   useEffect(() => {
     checkEnvironment();
     loadStatistics();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "hazard-degrees" || activeTab === "hazard-addon") {
+      setHazardousExpanded(true);
+    }
+  }, [activeTab]);
 
   const checkEnvironment = async () => {
     try {
@@ -29,6 +37,7 @@ function App() {
       setIsDev(window.location.hostname === "localhost");
     }
   };
+
   const loadStatistics = async () => {
     try {
       const stats = await dataAPI.getStatistics();
@@ -38,9 +47,54 @@ function App() {
     }
   };
 
+  const handleHazardousGroupClick = () => {
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false);
+      setHazardousExpanded(true);
+    } else {
+      setHazardousExpanded((prev) => !prev);
+    }
+  };
+
+  const isHazardousGroupActive =
+    activeTab === "hazard-degrees" || activeTab === "hazard-addon";
+
+  const getHeaderTitle = () => {
+    switch (activeTab) {
+      case "departures":
+        return "🚨 Wyjazdy";
+      case "firefighters":
+        return "👨‍🚒 Strażacy";
+      case "settings":
+        return "⚙️ Ustawienia";
+      case "hazard-degrees":
+        return "☣️ Stopnie Szkodliwości";
+      case "hazard-addon":
+        return "🧪 Dodatek Szkodliwy";
+      default:
+        return "";
+    }
+  };
+
+  const getHeaderSubtitle = () => {
+    switch (activeTab) {
+      case "departures":
+        return "Zarządzanie wyjazdami";
+      case "firefighters":
+        return "Zarządzanie danymi strażaków";
+      case "settings":
+        return "Konfiguracja aplikacji";
+      case "hazard-degrees":
+        return "Zarządzanie stopniami szkodliwości";
+      case "hazard-addon":
+        return "Zarządzanie dodatkami szkodliwymi";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="app">
-      {/* Sidebar */}
       <aside className={`sidebar ${sidebarCollapsed ? "collapsed" : ""}`}>
         <div className="sidebar-header">
           <div className="app-logo">
@@ -73,6 +127,53 @@ function App() {
             <span className="nav-icon">👨‍🚒</span>
             {!sidebarCollapsed && <span className="nav-text">Strażacy</span>}
           </button>
+
+          <div
+            className={`nav-group ${isHazardousGroupActive ? "group-active" : ""} ${
+              hazardousExpanded && !sidebarCollapsed ? "group-expanded" : ""
+            }`}
+          >
+            <button
+              className={`nav-item nav-group-header ${isHazardousGroupActive ? "active" : ""}`}
+              onClick={handleHazardousGroupClick}
+              title="Szkodliwe"
+            >
+              <span className="nav-icon">☣️</span>
+              {!sidebarCollapsed && (
+                <>
+                  <span className="nav-text">Szkodliwe</span>
+                  <span
+                    className={`nav-chevron ${hazardousExpanded ? "chevron-open" : ""}`}
+                  >
+                    ›
+                  </span>
+                </>
+              )}
+            </button>
+
+            {hazardousExpanded && !sidebarCollapsed && (
+              <div className="nav-subitems">
+                <button
+                  className={`nav-subitem ${activeTab === "hazard-degrees" ? "active" : ""}`}
+                  onClick={() => setActiveTab("hazard-degrees")}
+                  title="Stopnie Szkodliwości"
+                >
+                  <span className="nav-icon nav-icon-sm">📊</span>
+                  <span className="nav-text">Stopnie Szkodliwości</span>
+                </button>
+
+                <button
+                  className={`nav-subitem ${activeTab === "hazard-addon" ? "active" : ""}`}
+                  onClick={() => setActiveTab("hazard-addon")}
+                  title="Dodatek Szkodliwy"
+                >
+                  <span className="nav-icon nav-icon-sm">🧪</span>
+                  <span className="nav-text">Dodatek Szkodliwy</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           {(isDesktop || isDev) && (
             <button
               className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
@@ -101,29 +202,18 @@ function App() {
         )}
       </aside>
 
-      {/* Main Content */}
       <div className="main-container">
         <header className="app-header">
-          <h1>
-            {activeTab === "departures" && "🚨 Wyjazdy"}
-            {activeTab === "firefighters" && "👨‍🚒 Strażacy"}
-            {activeTab === "settings" && "⚙️ Ustawienia"}
-          </h1>
-          <p>
-            {activeTab === "departures" && "Zarządzanie wyjazdami"}
-            {activeTab === "firefighters" && "Zarządzanie danymi strażaków"}
-            {activeTab === "settings" && "Konfiguracja aplikacji"}
-          </p>
+          <h1>{getHeaderTitle()}</h1>
+          <p>{getHeaderSubtitle()}</p>
         </header>
 
         <main className="app-main">
-          {activeTab === "departures" && (
-            //<Departures refreshTrigger={refreshTrigger} />
-            <Departures />
-          )}
-
+          {activeTab === "departures" && <Departures />}
           {activeTab === "firefighters" && <Firefighters />}
           {activeTab === "settings" && <Settings isDesktop={isDesktop} />}
+          {activeTab === "hazard-degrees" && <HazardousDegrees />}
+          {activeTab === "hazard-addon" && <Hazardous subTab="hazard-addon" />}
         </main>
         <Footer />
       </div>

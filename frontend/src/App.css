@@ -87,23 +87,19 @@ body {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
-/* Animacja najechania */
 .firetruck-toggle:hover .firetruck-icon {
   transform: scale(1.1);
   animation: shake 0.5s ease-in-out;
 }
 
-/* Animacja wyjazdu (sidebar się składa) */
 .sidebar:not(.collapsed) .firetruck-toggle {
   animation: driveToEdge 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Animacja powrotu (sidebar się rozkłada) */
 .sidebar.collapsed .firetruck-toggle {
   animation: driveToCenter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Animacja "wyjazdu" - wóz jedzie w prawo */
 @keyframes driveToEdge {
   0% {
     transform: translateX(0) scaleX(1);
@@ -116,7 +112,6 @@ body {
   }
 }
 
-/* Animacja "powrotu" - wóz jedzie w lewo */
 @keyframes driveToCenter {
   0% {
     transform: translateX(0) scaleX(-1);
@@ -129,7 +124,6 @@ body {
   }
 }
 
-/* Animacja potrząsania przy hover */
 @keyframes shake {
   0%,
   100% {
@@ -150,6 +144,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-item {
@@ -179,6 +175,7 @@ body {
   font-weight: 600;
 }
 
+/* Niebieska kreska aktywnej pozycji - jednolita dla wszystkich */
 .nav-item.active::before {
   content: "";
   position: absolute;
@@ -195,9 +192,14 @@ body {
   text-align: center;
 }
 
+.nav-icon-sm {
+  font-size: 16px;
+}
+
 .nav-text {
   white-space: nowrap;
   transition: opacity 0.3s ease;
+  flex: 1;
 }
 
 .sidebar.collapsed .nav-item {
@@ -211,7 +213,87 @@ body {
   pointer-events: none;
 }
 
-/* Sidebar Stats */
+/* ==================== NAV GROUP (rozwijana sekcja) ==================== */
+.nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chevron */
+.nav-chevron {
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.5);
+  transition:
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s;
+  display: inline-block;
+  margin-left: auto;
+  padding-right: 4px;
+}
+
+.nav-chevron.chevron-open {
+  transform: rotate(90deg);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-group-header.active .nav-chevron {
+  color: white;
+}
+
+/* Podzakładki */
+.nav-subitems {
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-subitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px 11px 44px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  text-align: left;
+  width: calc(100% - 28px);
+  margin-left: 28px;
+  position: relative;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-subitem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-left-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Aktywna podzakładka - niebieski, spójny z resztą */
+.nav-subitem.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-weight: 600;
+  border-left-color: #3498db;
+}
+
+/* ==================== SIDEBAR STATS ==================== */
 .sidebar-stats {
   padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -246,7 +328,8 @@ body {
   font-weight: 700;
   color: #3498db;
 }
-/*Firetruck smoke animation*/
+
+/* Smoke effect */
 .firetruck-toggle::after {
   content: "💨";
   position: absolute;
@@ -275,20 +358,6 @@ body {
   }
 }
 
-/* Responsive - ukryj statystyki na małych ekranach */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 70px;
-  }
-
-  .sidebar:not(.collapsed) {
-    width: 260px;
-    position: fixed;
-    height: 100vh;
-    z-index: 1000;
-  }
-}
-
 /* ==================== MAIN CONTAINER ==================== */
 .main-container {
   flex: 1;
@@ -297,7 +366,6 @@ body {
   overflow: hidden;
 }
 
-/* Header */
 .app-header {
   background: white;
   padding: 20px 40px;
@@ -316,67 +384,11 @@ body {
   color: #666;
 }
 
-/* Main content */
 .app-main {
   flex: 1;
   overflow-y: auto;
   padding: 30px 40px;
   background: #f5f7fa;
-}
-
-/* ==================== PLACEHOLDER CONTENT ==================== */
-.placeholder-content {
-  background: white;
-  padding: 60px 40px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  max-width: 600px;
-  margin: 60px auto;
-}
-
-.placeholder-icon {
-  font-size: 80px;
-  margin-bottom: 20px;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.placeholder-content h2 {
-  font-size: 28px;
-  color: #2c3e50;
-  margin-bottom: 15px;
-}
-
-.placeholder-content p {
-  font-size: 16px;
-  color: #666;
-  margin-bottom: 30px;
-}
-
-.placeholder-features {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin-top: 30px;
-}
-
-.feature-item {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #555;
-  border-left: 3px solid #3498db;
 }
 
 /* ==================== BUTTONS ==================== */
@@ -395,7 +407,6 @@ body {
 .btn-primary:hover:not(:disabled) {
   background: #2980b9;
 }
-
 .btn-primary:disabled {
   background: #ccc;
   cursor: not-allowed;
@@ -435,26 +446,22 @@ body {
   font-size: 18px;
   margin-bottom: 10px;
 }
-
 .no-data .hint {
   font-size: 14px;
   color: #bbb;
 }
 
-/* ==================== SCROLLBAR STYLING ==================== */
+/* ==================== SCROLLBAR ==================== */
 .app-main::-webkit-scrollbar {
   width: 8px;
 }
-
 .app-main::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
-
 .app-main::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 4px;
 }
-
 .app-main::-webkit-scrollbar-thumb:hover {
   background: #999;
 }
@@ -463,6 +470,13 @@ body {
 @media (max-width: 768px) {
   .sidebar {
     width: 70px;
+  }
+
+  .sidebar:not(.collapsed) {
+    width: 260px;
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
   }
 
   .sidebar .nav-text,
@@ -474,11 +488,9 @@ body {
   .app-main {
     padding: 20px;
   }
-
   .app-header {
     padding: 15px 20px;
   }
-
   .app-header h1 {
     font-size: 20px;
   }
