@@ -294,7 +294,7 @@ class FirefighterExcelService:
         # ws.cell(row=info_row + 2, column=1, value=f"Wyeksportowany przez: {self.user_service.get_current_user().get('name')} {self.user_service.get_current_user().get('last_name')}")
         # ws.cell(row=info_row + 2, column=1).font = Font(italic=True, size=9, color="666666")
         
-        ws.cell(row=info_row + 2, column=1, value=f"app.straznica.com.pl 2026 wszelkie prawa zastrzeżone")
+        ws.cell(row=info_row + 2, column=1, value=f"MatMad Software 2026 wszelkie prawa zastrzeżone")
         ws.cell(row=info_row + 2, column=1).font = Font(italic=True, size=9, color="666666")
         # Zapisz do BytesIO
         output = BytesIO()

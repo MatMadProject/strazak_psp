@@ -23,6 +23,7 @@ app.add_middleware(
 
 # Import routerów
 from routes import firefighters, data, files, settings as settings_route, system as system_route
+from routes import hazardous_degrees
 
 
 # WAŻNE: Wszystkie API routes PRZED catch-all
@@ -31,6 +32,7 @@ app.include_router(data.router, prefix="/api/data", tags=["data"])
 app.include_router(files.router, prefix="/api/files", tags=["files"])
 app.include_router(settings_route.router, prefix="/api/settings", tags=["settings"])
 app.include_router(system_route.router, prefix="/api/system", tags=["system"])
+app.include_router(hazardous_degrees.router, prefix="/api/hazardous-degrees", tags=["hazardous degrees"])
 
 @app.get("/api")
 def root():

@@ -1,3 +1,7 @@
-from .swd_data import ImportedFile, SWDRecord, Firefighter
+from .swd_data import ImportedFile, SWDRecord, Firefighter, HazardousDegree
 
-__all__ = ["ImportedFile", "SWDRecord", "Firefighter"]
+__all__ = [
+    "ImportedFile", 
+    "SWDRecord", 
+    "Firefighter", 
+    "HazardousDegree"]

@@ -6,7 +6,16 @@ MIGRATIONS = [
     # Format: (migration_id, min_version, description)
     # min_version = minimalna wersja aplikacji wymagana do tej migracji
     
-    ("001_swd_record_add_20260221", "0.1.0", "Zmiana nazwy kolumny specjalityczne→specjalistyczne"),
+     (
+        "001_swd_record_add_20260221",
+        "0.1.0",
+        "Dodanie kolumny specjalistyczne do swd_records"
+    ),
+    (
+        "002_hazardous_degrees_add_20260301",
+        "0.3.3",
+        "Dodanie tabeli hazardous_degrees (Stopnie Szkodliwości)"
+    ),
     # Przyszłe migracje:
     # ("003_reports_table", "0.4.0", "Dodanie tabeli raportów"),
 ]

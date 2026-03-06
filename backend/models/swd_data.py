@@ -98,3 +98,38 @@ class Firefighter(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
+class HazardousDegree(Base):
+    """
+    Model dla stopni szkodliwości.
+    stopien i punkt przechowywane jako Integer (cyfry arabskie).
+    Konwersja na cyfry rzymskie / słownie odbywa się na frontendzie.
+    Pole stopien_punkt generowane jako property - brak redundancji danych.
+    """
+    __tablename__ = "hazardous_degrees"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    stopien    = Column(Integer, nullable=False)          # np. 1, 2, 3
+    punkt      = Column(Integer, nullable=False)          # np. 1, 2, 3
+    opis       = Column(Text,    nullable=False)
+    uwagi      = Column(Text,    nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def stopien_punkt(self) -> str:
+        """Pole łączone generowane dynamicznie, np. '1.2'"""
+        return f"{self.stopien}.{self.punkt}"
+
+    def to_dict(self):
+        return {
+            "id":            self.id,
+            "stopien":       self.stopien,
+            "punkt":         self.punkt,
+            "stopien_punkt": self.stopien_punkt,
+            "opis":          self.opis,
+            "uwagi":         self.uwagi,
+            "created_at":    self.created_at.isoformat() if self.created_at else None,
+            "updated_at":    self.updated_at.isoformat() if self.updated_at else None,
+        }    

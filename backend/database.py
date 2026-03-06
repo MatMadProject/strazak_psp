@@ -21,7 +21,7 @@ def init_db():
     - Tworzy bazę jeśli nie istnieje
     - Uruchamia migracje jeśli istnieje
     """
-    from models import SWDRecord, ImportedFile, Firefighter  # Importuj wszystkie modele
+    from models import SWDRecord, ImportedFile, Firefighter, HazardousDegree  # Importuj wszystkie modele
     
     db_path = settings.DATABASE_PATH
     
