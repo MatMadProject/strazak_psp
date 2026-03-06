@@ -302,4 +302,71 @@ export const systemAPI = {
     return response.data;
   },
 };
+
+// Hazardous Degrees API
+export const hazardousDegreesAPI = {
+  getAll: async (params = {}) => {
+    const response = await api.get("/api/hazardous-degrees/", { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await api.get(`/api/hazardous-degrees/${id}`);
+    return response.data;
+  },
+
+  getStatistics: async () => {
+    const response = await api.get("/api/hazardous-degrees/statistics");
+    return response.data;
+  },
+
+  create: async (data) => {
+    const response = await api.post("/api/hazardous-degrees/", data);
+    return response.data;
+  },
+
+  update: async (id, data) => {
+    const response = await api.put(`/api/hazardous-degrees/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/api/hazardous-degrees/${id}`);
+    return response.data;
+  },
+
+  downloadTemplate: async () => {
+    const response = await api.get("/api/hazardous-degrees/template/download", {
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  importFromExcel: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post("/api/hazardous-degrees/import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  exportToExcel: async (filters = {}) => {
+    const response = await api.get("/api/hazardous-degrees/export/excel", {
+      params: filters,
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  exportToCSV: async (filters = {}) => {
+    const response = await api.get("/api/hazardous-degrees/export/csv", {
+      params: filters,
+      responseType: "blob",
+    });
+    return response.data;
+  },
+};
+
 export default api;

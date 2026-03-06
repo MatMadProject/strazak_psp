@@ -1,157 +1,353 @@
-import React, { useState, useEffect } from "react";
-// import { hazardousDegreesAPI } from "../services/api"; // podłącz gdy backend gotowy
+import React, { useState, useEffect, useCallback } from "react";
+import { hazardousDegreesAPI } from "../services/api";
 import "./HazardousDegreesList.css";
 
-/**
- * HazardousDegreesList.js
- * Lista stopni szkodliwości w formie kart.
- * Wzorowany na FirefightersList.js — statystyki, filtry, grid kart, paginacja.
- *
- * Props:
- *   onEditRecord    - callback otwarcia edytora
- *   refreshTrigger  - licznik do wymuszania odświeżenia
- *   onFiltersChange - callback przekazujący aktywne filtry do rodzica
- */
+// ─── Helpers: konwersja cyfr arabskich ────────────────────────────────────────
+
+const ROMAN = [
+  [1000, "M"],
+  [900, "CM"],
+  [500, "D"],
+  [400, "CD"],
+  [100, "C"],
+  [90, "XC"],
+  [50, "L"],
+  [40, "XL"],
+  [10, "X"],
+  [9, "IX"],
+  [5, "V"],
+  [4, "IV"],
+  [1, "I"],
+];
+
+function toRoman(n) {
+  if (!n || n < 1) return String(n);
+  let result = "";
+  for (const [value, numeral] of ROMAN) {
+    while (n >= value) {
+      result += numeral;
+      n -= value;
+    }
+  }
+  return result;
+}
+
+const WORDS_ONES = [
+  "",
+  "pierwszy",
+  "drugi",
+  "trzeci",
+  "czwarty",
+  "piąty",
+  "szósty",
+  "siódmy",
+  "ósmy",
+  "dziewiąty",
+  "dziesiąty",
+  "jedenasty",
+  "dwunasty",
+  "trzynasty",
+  "czternasty",
+  "piętnasty",
+  "szesnasty",
+  "siedemnasty",
+  "osiemnasty",
+  "dziewiętnasty",
+];
+const WORDS_TENS = [
+  "",
+  "",
+  "dwudziesty",
+  "trzydziesty",
+  "czterdziesty",
+  "pięćdziesiąty",
+];
+
+function toWords(n) {
+  if (!n || n < 1) return String(n);
+  if (n < 20) return WORDS_ONES[n];
+  const tens = Math.floor(n / 10);
+  const ones = n % 10;
+  return ones === 0
+    ? WORDS_TENS[tens]
+    : `${WORDS_TENS[tens]} ${WORDS_ONES[ones]}`;
+}
+
+function formatNumber(n, format) {
+  switch (format) {
+    case "roman":
+      return toRoman(n);
+    case "words":
+      return toWords(n);
+    default:
+      return String(n);
+  }
+}
+
+// ─── Komponent ────────────────────────────────────────────────────────────────
+
 function HazardousDegreesList({
   onEditRecord,
   refreshTrigger,
   onFiltersChange,
+  onAddNew,
+  onImportClick,
 }) {
   const [records, setRecords] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  // Filtry
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterDegree, setFilterDegree] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterStopien, setFilterStopien] = useState("");
+
+  // Format wyświetlania cyfr: arabic | roman | words
+  const [numFormat, setNumFormat] = useState("arabic");
+
+  // Widok: cards | list
+  const [viewMode, setViewMode] = useState("list");
+
+  // Paginacja
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage] = useState(50);
-  const [statistics, setStatistics] = useState(null);
 
-  // Unikalne wartości dla filtrów - uzupełniane z danych
-  const [degrees, setDegrees] = useState([]);
-  const [categories, setCategories] = useState([]);
+  // Unikalne stopnie dla filtra selecta
+  const [stopienOptions, setStopienOptions] = useState([]);
 
-  useEffect(() => {
-    loadRecords();
-    loadStatistics();
-  }, [refreshTrigger, searchQuery, filterDegree, filterCategory, currentPage]);
+  // Eksport dropdown
+  const [exportOpen, setExportOpen] = useState(false);
 
-  // Przekazuj filtry do komponentu rodzica (HazardousDegrees)
-  useEffect(() => {
-    if (onFiltersChange) {
-      const filters = {};
-      if (searchQuery) filters.search = searchQuery;
-      if (filterDegree) filters.stopien = filterDegree;
-      if (filterCategory) filters.kategoria = filterCategory;
-      onFiltersChange(filters);
-    }
-  }, [searchQuery, filterDegree, filterCategory, onFiltersChange]);
+  // ── Ładowanie danych ──────────────────────────────────────────────────────
 
-  const loadRecords = async () => {
+  const buildParams = useCallback(() => {
+    const params = { skip: currentPage * itemsPerPage, limit: itemsPerPage };
+    if (searchQuery) params.search = searchQuery;
+    if (filterStopien) params.stopien = filterStopien;
+    return params;
+  }, [currentPage, itemsPerPage, searchQuery, filterStopien]);
+
+  const loadRecords = useCallback(async () => {
     setLoading(true);
     try {
-      // TODO: Zastąp wywołaniem właściwego API
-      // const params = {
-      //   skip: currentPage * itemsPerPage,
-      //   limit: itemsPerPage,
-      //   ...(searchQuery    && { search:    searchQuery }),
-      //   ...(filterDegree   && { stopien:   filterDegree }),
-      //   ...(filterCategory && { kategoria: filterCategory }),
-      // };
-      // const data = await hazardousDegreesAPI.getAll(params);
-      // setRecords(data.records || []);
-      //
-      // Zbierz unikalne wartości do filtrów
-      // const allDegrees    = [...new Set(data.records.map(r => r.stopien))];
-      // const allCategories = [...new Set(data.records.map(r => r.kategoria))];
-      // setDegrees(allDegrees);
-      // setCategories(allCategories);
+      const data = await hazardousDegreesAPI.getAll(buildParams());
+      setRecords(data.records || []);
+      setTotalCount(data.total_count || 0);
 
-      // Tymczasowo puste dane - backend do podłączenia
-      setRecords([]);
-      setDegrees([]);
-      setCategories([]);
+      // Zbierz unikalne stopnie z bieżącej strony
+      const unique = [
+        ...new Set((data.records || []).map((r) => r.stopien)),
+      ].sort((a, b) => a - b);
+      setStopienOptions((prev) =>
+        [...new Set([...prev, ...unique])].sort((a, b) => a - b),
+      );
     } catch (error) {
       console.error("Błąd ładowania stopni szkodliwości:", error);
       alert("Nie udało się załadować danych");
     } finally {
       setLoading(false);
     }
-  };
+  }, [buildParams]);
 
-  const loadStatistics = async () => {
+  const loadStopienOptions = useCallback(async () => {
+    // Pobierz statystyki tylko dla uzupełnienia opcji filtra — nie renderujemy ich
     try {
-      // TODO: await hazardousDegreesAPI.getStatistics();
-      // setStatistics(data);
-
-      // Tymczasowe dane statystyk
-      setStatistics(null);
+      const stats = await hazardousDegreesAPI.getStatistics();
+      const fromStats = (stats.by_degree || [])
+        .map((d) => d.stopien)
+        .sort((a, b) => a - b);
+      setStopienOptions(fromStats);
     } catch (error) {
-      console.error("Błąd ładowania statystyk:", error);
+      console.error("Błąd ładowania opcji stopni:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRecords();
+  }, [refreshTrigger, searchQuery, filterStopien, currentPage]);
+
+  useEffect(() => {
+    loadStopienOptions();
+  }, [refreshTrigger]);
+
+  // Przekaż aktywne filtry do rodzica
+  useEffect(() => {
+    if (onFiltersChange) {
+      const filters = {};
+      if (searchQuery) filters.search = searchQuery;
+      if (filterStopien) filters.stopien = filterStopien;
+      onFiltersChange(filters);
+    }
+  }, [searchQuery, filterStopien, onFiltersChange]);
+
+  // ── Akcje ─────────────────────────────────────────────────────────────────
+
+  const handleDelete = async (record) => {
+    const label = `${formatNumber(record.stopien, numFormat)}.${formatNumber(record.punkt, numFormat)}`;
+    if (!window.confirm(`Czy na pewno chcesz usunąć rekord ${label}?`)) return;
+    try {
+      await hazardousDegreesAPI.delete(record.id);
+      loadRecords();
+      loadStopienOptions();
+    } catch (error) {
+      console.error("Błąd usuwania:", error);
+      alert("Nie udało się usunąć rekordu");
     }
   };
 
-  const handleDeleteRecord = async (recordId, name) => {
-    if (!window.confirm(`Czy na pewno chcesz usunąć rekord: ${name}?`)) return;
+  // Helper: blob → tymczasowy link download (wzorzec z exportDeparturesToExcel)
+  const downloadBlob = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleExportExcel = async () => {
+    setExportOpen(false);
     try {
-      // TODO: await hazardousDegreesAPI.delete(recordId);
-      loadRecords();
-      loadStatistics();
+      const blob = await hazardousDegreesAPI.exportToExcel(currentFilters);
+      downloadBlob(
+        blob,
+        `stopnie_szkodliwosci_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
     } catch (error) {
-      console.error("Błąd usuwania rekordu:", error);
-      alert("Nie udało się usunąć rekordu");
+      console.error("Błąd eksportu XLSX:", error);
+      alert("Nie udało się wyeksportować danych");
+    }
+  };
+
+  const handleExportCsv = async () => {
+    setExportOpen(false);
+    try {
+      const blob = await hazardousDegreesAPI.exportToCSV(currentFilters);
+      downloadBlob(
+        blob,
+        `stopnie_szkodliwosci_${new Date().toISOString().split("T")[0]}.csv`,
+      );
+    } catch (error) {
+      console.error("Błąd eksportu CSV:", error);
+      alert("Nie udało się wyeksportować danych");
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    setExportOpen(false);
+    try {
+      const blob = await hazardousDegreesAPI.downloadTemplate();
+      downloadBlob(blob, "szablon_stopnie_szkodliwosci.xlsx");
+    } catch (error) {
+      console.error("Błąd pobierania szablonu:", error);
+      alert("Nie udało się pobrać szablonu");
     }
   };
 
   const clearFilters = () => {
     setSearchQuery("");
-    setFilterDegree("");
-    setFilterCategory("");
+    setFilterStopien("");
     setCurrentPage(0);
   };
 
-  const hasActiveFilters = searchQuery || filterDegree || filterCategory;
+  const currentFilters = {
+    search: searchQuery || undefined,
+    stopien: filterStopien || undefined,
+  };
+
+  const hasActiveFilters = searchQuery || filterStopien;
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="hazardous-degrees-container">
-      {/* ─── STATYSTYKI ─── */}
-      {statistics && (
-        <div className="stats-cards">
-          <div className="stat-card">
-            <div className="stat-icon">☣️</div>
-            <div className="stat-info">
-              <div className="stat-label">Łącznie rekordów</div>
-              <div className="stat-number">{statistics.total_records}</div>
-            </div>
+      {/* ─── TOOLBAR ─── */}
+      <div className="degrees-toolbar">
+        <div className="degrees-toolbar-left">
+          <h2>Lista stopni szkodliwości</h2>
+        </div>
+
+        <div className="degrees-toolbar-right">
+          {/* Format liczb */}
+          {/* FORMAT SWITCHER — zakomentowane, logika numFormat zachowana na później
+          <div className="format-switcher">
+            <span className="format-label">Format:</span>
+            {[
+              { key: "arabic", label: "1, 2, 3"   },
+              { key: "roman",  label: "I, II, III" },
+              { key: "words",  label: "słownie"    },
+            ].map(f => (
+              <button
+                key={f.key}
+                className={`format-btn ${numFormat === f.key ? "active" : ""}`}
+                onClick={() => setNumFormat(f.key)}
+                title={f.label}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-info">
-              <div className="stat-label">Stopni</div>
-              <div className="stat-number">
-                {statistics.by_degree?.length || 0}
-              </div>
-            </div>
+          */}
+
+          {/* Toggle widoku: kafelki / lista */}
+          <div className="view-switcher">
+            <button
+              className={`view-btn ${viewMode === "cards" ? "active" : ""}`}
+              onClick={() => setViewMode("cards")}
+              title="Widok kafelków"
+            >
+              ⊞
+            </button>
+            <button
+              className={`view-btn ${viewMode === "list" ? "active" : ""}`}
+              onClick={() => setViewMode("list")}
+              title="Widok listy"
+            >
+              ☰
+            </button>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">🗂️</div>
-            <div className="stat-info">
-              <div className="stat-label">Kategorii</div>
-              <div className="stat-number">
-                {statistics.by_category?.length || 0}
+          <div className="degrees-toolbar-actions">
+            {onImportClick && (
+              <button onClick={onImportClick} className="btn-import">
+                📥 Import z Excel
+              </button>
+            )}
+            {onAddNew && (
+              <button onClick={onAddNew} className="btn-add-new">
+                ✚ Dodaj stopień
+              </button>
+            )}
+          </div>
+          {/* Eksport dropdown */}
+          <div className="export-dropdown-wrapper">
+            <button
+              className="btn-export-toggle"
+              onClick={() => setExportOpen((o) => !o)}
+            >
+              📊 Eksportuj ▾
+            </button>
+            {exportOpen && (
+              <div className="export-dropdown">
+                <button onClick={handleExportExcel}>📗 Eksport XLSX</button>
+                <button onClick={handleExportCsv}>📄 Eksport CSV</button>
+                {/* <hr />
+                <button onClick={handleDownloadTemplate}>
+                  📥 Pobierz szablon
+                </button> */}
               </div>
-            </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* ─── KONTROLKI / FILTRY ─── */}
-      <div className="degrees-header">
-        <h2>Lista stopni szkodliwości</h2>
-
-        <div className="degrees-controls">
+      {/* ─── FILTRY ─── */}
+      <div className="degrees-controls">
+        <div className="control-group">
+          <label>🔍 Szukaj:</label>
           <input
             type="text"
-            placeholder="Szukaj..."
+            placeholder="Szukaj w opisie lub uwagach..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -159,114 +355,163 @@ function HazardousDegreesList({
             }}
             className="search-input"
           />
+        </div>
 
+        <div className="control-group">
+          <label>📊 Stopień:</label>
           <select
-            value={filterDegree}
+            value={filterStopien}
             onChange={(e) => {
-              setFilterDegree(e.target.value);
+              setFilterStopien(e.target.value);
               setCurrentPage(0);
             }}
             className="filter-select"
           >
             <option value="">Wszystkie stopnie</option>
-            {degrees.map((d) => (
-              <option key={d} value={d}>
-                {d}
+            {stopienOptions.map((s) => (
+              <option key={s} value={s}>
+                {s} — {toRoman(s)} — {toWords(s)}
               </option>
             ))}
           </select>
-
-          <select
-            value={filterCategory}
-            onChange={(e) => {
-              setFilterCategory(e.target.value);
-              setCurrentPage(0);
-            }}
-            className="filter-select"
-          >
-            <option value="">Wszystkie kategorie</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          {hasActiveFilters && (
-            <button onClick={clearFilters} className="btn-clear-filters">
-              Wyczyść filtry
-            </button>
-          )}
         </div>
+
+        {hasActiveFilters && (
+          <button className="btn-clear-filters" onClick={clearFilters}>
+            ✕ Wyczyść filtry
+          </button>
+        )}
       </div>
 
-      {/* ─── LISTA / STANY ─── */}
+      {/* ─── DANE / STANY ─── */}
       {loading ? (
         <div className="loading">Ładowanie danych...</div>
       ) : records.length === 0 ? (
         <div className="no-data">
+          <div className="no-data-icon">📭</div>
           <p>Brak rekordów do wyświetlenia</p>
-          <p className="hint">Dodaj pierwszy rekord lub podłącz backend</p>
+          <p className="hint">
+            {hasActiveFilters
+              ? "Spróbuj zmienić lub wyczyścić filtry"
+              : "Dodaj pierwszy rekord lub zaimportuj plik xlsx"}
+          </p>
         </div>
       ) : (
         <>
-          {/* ─── GRID KART ─── */}
-          <div className="degrees-grid">
-            {records.map((record) => (
-              <div key={record.id} className="degree-card">
-                {/* Awatar / inicjały */}
-                <div className="degree-avatar">
-                  {record.nazwisko_imie
-                    ? record.nazwisko_imie
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .slice(0, 2)
-                    : "??"}
-                </div>
+          {/* ══ WIDOK KAFELKÓW ══ */}
+          {viewMode === "cards" && (
+            <div className="degrees-grid">
+              {records.map((record) => (
+                <div key={record.id} className="degree-card">
+                  <div className="degree-avatar">
+                    <span className="avatar-arabic">
+                      {record.stopien}.{record.punkt}
+                    </span>
+                    {numFormat !== "arabic" && (
+                      <span className="avatar-secondary">
+                        {formatNumber(record.stopien, numFormat)}.
+                        {formatNumber(record.punkt, numFormat)}
+                      </span>
+                    )}
+                  </div>
 
-                <div className="degree-info">
-                  <h3 className="degree-name">
-                    {/* TODO: Dostosuj pole do modelu danych */}
-                    {record.nazwisko_imie}
-                  </h3>
-                  <div className="degree-details">
-                    <div className="detail-item">
-                      <span className="detail-icon">☣️</span>
-                      <span>{record.stopien}</span>
+                  <div className="degree-info">
+                    <div className="degree-header-row">
+                      <span className="degree-badge">
+                        Stopień {formatNumber(record.stopien, numFormat)}
+                        {" · "}
+                        Punkt {formatNumber(record.punkt, numFormat)}
+                      </span>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-icon">🗂️</span>
-                      <span>{record.kategoria}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-icon">📅</span>
-                      <span>{record.data}</span>
-                    </div>
+                    <p className="degree-opis">{record.opis}</p>
+                    {record.uwagi && (
+                      <p className="degree-uwagi">
+                        <span className="uwagi-label">Uwagi:</span>{" "}
+                        {record.uwagi}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="degree-actions">
+                    <button
+                      onClick={() => onEditRecord(record)}
+                      className="btn-edit"
+                      title="Edytuj"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() => handleDelete(record)}
+                      className="btn-delete"
+                      title="Usuń"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
 
-                <div className="degree-actions">
-                  <button
-                    onClick={() => onEditRecord(record)}
-                    className="btn-edit"
-                    title="Edytuj"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleDeleteRecord(record.id, record.nazwisko_imie)
-                    }
-                    className="btn-delete"
-                    title="Usuń"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* ══ WIDOK LISTY ══ */}
+          {viewMode === "list" && (
+            <div className="table-wrapper">
+              <table className="degrees-table">
+                <thead>
+                  <tr>
+                    <th>Stopień</th>
+                    <th>Punkt</th>
+                    <th>Stopień.Punkt</th>
+                    <th>Opis</th>
+                    <th>Uwagi</th>
+                    <th>Akcje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {records.map((record) => (
+                    <tr key={record.id}>
+                      <td className="center-cell">
+                        <span
+                          title={`${toRoman(record.stopien)} — ${toWords(record.stopien)}`}
+                        >
+                          {formatNumber(record.stopien, numFormat)}
+                        </span>
+                      </td>
+                      <td className="center-cell">
+                        <span
+                          title={`${toRoman(record.punkt)} — ${toWords(record.punkt)}`}
+                        >
+                          {formatNumber(record.punkt, numFormat)}
+                        </span>
+                      </td>
+                      <td className="center-cell code-cell">
+                        {formatNumber(record.stopien, numFormat)}.
+                        {formatNumber(record.punkt, numFormat)}
+                      </td>
+                      <td className="opis-cell">{record.opis}</td>
+                      <td className="uwagi-cell">{record.uwagi || "—"}</td>
+                      <td className="actions-cell">
+                        <button
+                          onClick={() => onEditRecord(record)}
+                          className="btn-edit"
+                          title="Edytuj"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDelete(record)}
+                          className="btn-delete"
+                          title="Usuń"
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* ─── PAGINACJA ─── */}
           <div className="pagination">
@@ -277,7 +522,13 @@ function HazardousDegreesList({
             >
               ← Poprzednia
             </button>
-            <span className="page-info">Strona {currentPage + 1}</span>
+            <span className="page-info">
+              Strona {currentPage + 1} · Wyświetlono {records.length} z{" "}
+              {totalCount} rekordów
+              {hasActiveFilters && (
+                <span className="filter-note"> (filtrowane)</span>
+              )}
+            </span>
             <button
               onClick={() => setCurrentPage((p) => p + 1)}
               disabled={records.length < itemsPerPage}
