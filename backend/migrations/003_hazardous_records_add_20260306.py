@@ -19,24 +19,24 @@ def upgrade():
                 jednostka               VARCHAR(255),
                 nazwisko_imie           VARCHAR(255),
                 stopien                 VARCHAR(100),
-                data_przyjecia          DATETIME,
+                data_przyjecia          VARCHAR(50),
                 p                       VARCHAR(10),
                 mz                      VARCHAR(10),
                 af                      VARCHAR(10),
                 nr_meldunku             VARCHAR(100),
                 funkcja                 VARCHAR(100),
-                czas_od                 DATETIME,
-                czas_do                 DATETIME,
+                czas_od                 VARCHAR(50),
+                czas_do                 VARCHAR(50),
                 czas_udzialu            VARCHAR(50),
                 dodatek_szkodliwy       VARCHAR(10),
                 stopien_szkodliwosci    VARCHAR(50),
                 aktualizowal_szkod      VARCHAR(255),
-                data_aktualizacji_szkod DATETIME,
+                data_aktualizacji_szkod VARCHAR(50),
                 opis_st_szkodliwosci    TEXT,
                 hazardous_degree_id     INTEGER
                                         REFERENCES hazardous_degrees(id) ON DELETE SET NULL,
-                created_at              DATETIME DEFAULT CURRENT_TIMESTAMP,
-                updated_at              DATETIME DEFAULT CURRENT_TIMESTAMP
+                created_at              VARCHAR(50),
+                updated_at              VARCHAR(50)
             )
         """))
 

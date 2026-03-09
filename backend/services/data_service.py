@@ -17,8 +17,16 @@ class DataService:
     
     @staticmethod
     def get_all_files(db: Session) -> List[ImportedFile]:
-        """Pobierz wszystkie zaimportowane pliki"""
-        return db.query(ImportedFile).order_by(ImportedFile.imported_at.desc()).all()
+        """Pobierz wszystkie zaimportowane pliki — tylko Wyjazdy (file_type='departures')"""
+        return (
+            db.query(ImportedFile)
+            .filter(
+                (ImportedFile.file_type == "departures") |
+                (ImportedFile.file_type == None)   # istniejące rekordy przed migracją 004
+            )
+            .order_by(ImportedFile.imported_at.desc())
+            .all()
+        )
     
     @staticmethod
     def get_file_by_id(db: Session, file_id: int) -> Optional[ImportedFile]:
@@ -28,12 +36,13 @@ class DataService:
     @staticmethod
     def create_file_record(db: Session, filename: str, original_filename: str, 
                           file_path: str, rows_count: int) -> ImportedFile:
-        """Utwórz rekord zaimportowanego pliku"""
+        """Utwórz rekord zaimportowanego pliku — oznaczony jako 'departures'"""
         file_record = ImportedFile(
             filename=filename,
             original_filename=original_filename,
             file_path=file_path,
-            rows_count=rows_count
+            rows_count=rows_count,
+            file_type="departures",
         )
         db.add(file_record)
         db.commit()
@@ -59,7 +68,6 @@ class DataService:
         """Pobierz rekordy dla danego pliku z paginacją i sortowaniem"""
         query = db.query(SWDRecord).filter(SWDRecord.file_id == file_id)
         
-        # Sortowanie
         if sort_by:
             column = getattr(SWDRecord, sort_by, None)
             if column is not None:
@@ -81,7 +89,6 @@ class DataService:
             SWDRecord.nazwisko_imie == nazwisko_imie
         )
         
-        # Sortowanie
         if sort_by:
             column = getattr(SWDRecord, sort_by, None)
             if column is not None:
@@ -119,15 +126,13 @@ class DataService:
     @staticmethod
     def create_records(db: Session, file_id: int, records_data) -> int:
         """
-        Utwórz wiele rekordów na raz
-        Akceptuje zarówno CollectionZestawienieWiersz jak i listę słowników
+        Utwórz wiele rekordów na raz.
+        Akceptuje zarówno CollectionZestawienieWiersz jak i listę słowników.
         """
         created_count = 0
         
         try:
-            # Sprawdź czy to CollectionZestawienieWiersz z biblioteki
             if hasattr(records_data, 'items'):
-                # To jest CollectionZestawienieWiersz
                 print(f"[DATA SERVICE] Tworzenie {len(records_data.items)} rekordów z CollectionZestawienieWiersz")
                 
                 for record_data in records_data.items:
@@ -146,7 +151,6 @@ class DataService:
                     db.add(record)
                     created_count += 1
             else:
-                # To jest lista słowników (fallback dla starszego kodu)
                 print(f"[DATA SERVICE] Tworzenie {len(records_data)} rekordów ze słowników")
                 
                 for record_data in records_data:
@@ -204,7 +208,10 @@ class DataService:
     @staticmethod
     def get_statistics(db: Session) -> dict:
         """Pobierz statystyki"""
-        total_files = db.query(ImportedFile).count()
+        total_files = db.query(ImportedFile).filter(
+            (ImportedFile.file_type == "departures") |
+            (ImportedFile.file_type == None)
+        ).count()
         total_records = db.query(SWDRecord).count()
         
         return {
@@ -212,6 +219,7 @@ class DataService:
             "total_records": total_records,
             "avg_records_per_file": total_records / total_files if total_files > 0 else 0
         }
+
     @staticmethod
     def check_duplicate_record(db: Session, file_id: int, nazwisko_imie: str, nr_meldunku: str) -> Optional[SWDRecord]:
         """Sprawdź czy rekord o takich samych danych już istnieje"""
@@ -248,27 +256,19 @@ class DataService:
         sort_by: str = None, 
         sort_order: str = 'asc'
     ) -> List[SWDRecord]:
-        """
-        Pobierz rekordy dla danego pliku z filtrowaniem po dacie i strażaku
-        date_from i date_to w formacie YYYY-MM-DD
-        """
+        """Pobierz rekordy dla danego pliku z filtrowaniem po dacie i strażaku"""
         query = db.query(SWDRecord).filter(SWDRecord.file_id == file_id)
         
-        # Filtrowanie po strażaku
         if firefighter:
             query = query.filter(SWDRecord.nazwisko_imie == firefighter)
         
-        # Filtrowanie po dacie
         if date_from:
-            # Porównaj pierwsze 10 znaków (YYYY-MM-DD) z czas_rozp_zdarzenia
             query = query.filter(SWDRecord.czas_rozp_zdarzenia >= date_from)
         
         if date_to:
-            # Dodaj 23:59:59 do końcowej daty aby uwzględnić cały dzień
             date_to_end = f"{date_to} 23:59:59"
             query = query.filter(SWDRecord.czas_rozp_zdarzenia <= date_to_end)
         
-        # Sortowanie
         if sort_by:
             column = getattr(SWDRecord, sort_by, None)
             if column is not None:
@@ -277,7 +277,8 @@ class DataService:
                 else:
                     query = query.order_by(column.asc())
         
-        return query.offset(skip).limit(limit).all()    
+        return query.offset(skip).limit(limit).all()
+
     @staticmethod
     def count_records_by_file(db: Session, file_id: int) -> int:
         """Policz wszystkie rekordy w pliku"""

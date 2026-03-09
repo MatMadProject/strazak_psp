@@ -368,5 +368,107 @@ export const hazardousDegreesAPI = {
     return response.data;
   },
 };
+export const hazardousRecordsAPI = {
+  // ── Pliki ────────────────────────────────────────────────────────────────
 
+  getAllFiles: async () => {
+    const response = await api.get("/api/hazardous-records/files/");
+    return response.data;
+  },
+
+  getFile: async (fileId) => {
+    const response = await api.get(`/api/hazardous-records/files/${fileId}`);
+    return response.data;
+  },
+
+  deleteFile: async (fileId) => {
+    const response = await api.delete(`/api/hazardous-records/files/${fileId}`);
+    return response.data;
+  },
+
+  uploadFile: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post(
+      "/api/hazardous-records/files/upload",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data;
+  },
+
+  // ── Rekordy ──────────────────────────────────────────────────────────────
+
+  getRecords: async (fileId, params = {}) => {
+    const response = await api.get(
+      `/api/hazardous-records/files/${fileId}/records`,
+      { params },
+    );
+    return response.data;
+  },
+
+  getStatistics: async (fileId) => {
+    const response = await api.get(
+      `/api/hazardous-records/files/${fileId}/statistics`,
+    );
+    return response.data;
+  },
+
+  getFirefighters: async (fileId) => {
+    const response = await api.get(
+      `/api/hazardous-records/files/${fileId}/firefighters`,
+    );
+    return response.data;
+  },
+
+  createRecord: async (data) => {
+    const response = await api.post("/api/hazardous-records/records/", data);
+    return response.data;
+  },
+  getRecord: async (recordId) => {
+    const response = await api.get(
+      `/api/hazardous-records/records/${recordId}`,
+    );
+    return response.data;
+  },
+
+  updateRecord: async (recordId, data) => {
+    const response = await api.put(
+      `/api/hazardous-records/records/${recordId}`,
+      data,
+    );
+    return response.data;
+  },
+
+  deleteRecord: async (recordId) => {
+    const response = await api.delete(
+      `/api/hazardous-records/records/${recordId}`,
+    );
+    return response.data;
+  },
+
+  // ── Przypisanie stopnia szkodliwości ─────────────────────────────────────
+
+  assignDegree: async (recordId, hazardousDegreeId) => {
+    // hazardousDegreeId = null → odepnij stopień
+    const response = await api.patch(
+      `/api/hazardous-records/records/${recordId}/assign-degree`,
+      { hazardous_degree_id: hazardousDegreeId ?? null },
+    );
+    return response.data;
+  },
+
+  assignDegreeBulk: async (recordIds, hazardousDegreeId) => {
+    const response = await api.post(
+      "/api/hazardous-records/records/assign-degree-bulk",
+      {
+        record_ids: recordIds,
+        hazardous_degree_id: hazardousDegreeId ?? null,
+      },
+    );
+    return response.data;
+  },
+};
 export default api;

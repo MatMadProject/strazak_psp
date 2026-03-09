@@ -1,358 +1,440 @@
-/* ==================== HAZARDOUS LIST ==================== */
-.hazardous-list-container {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+/* ================================================================
+   HazardousList.css
+   Wszystkie klasy z prefiksem .hl- — izolacja od innych komponentów.
+   Nie używamy generycznych nazw: .btn-back, .loading, .pagination,
+   .table-wrapper, .sort-icon itp. — każda klasa jest unikalna.
+   ================================================================ */
+
+.hl-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
 }
 
 /* ─── HEADER ─── */
-.list-header {
+.hl-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.header-left {
+.hl-header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
-  flex: 1;
+  gap: 16px;
 }
 
-.header-info h2 {
-  font-size: 22px;
+.hl-header-info h2 {
+  font-size: 20px;
   color: #2c3e50;
-  margin-bottom: 5px;
+  margin: 0 0 4px;
 }
 
-.file-meta-info {
-  font-size: 13px;
+.hl-file-badge {
+  font-size: 12px;
   color: #666;
+  background: #f0f4f8;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
-.header-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* ─── PRZYCISKI NAGŁÓWKA ─── */
-.btn-back {
-  background: #e0e0e0;
-  color: #333;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
+/* ─── PRZYCISKI ─── */
+.hl-btn-back {
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  padding: 9px 18px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  color: #333;
   white-space: nowrap;
 }
-.btn-back:hover {
-  background: #d0d0d0;
+.hl-btn-back:hover {
+  background: #e9ecef;
+  border-color: #ccc;
 }
 
-.btn-create-doc {
-  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+.hl-btn-add {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 10px 18px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
-  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.25);
+  white-space: nowrap;
 }
-.btn-create-doc:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-}
-
-.btn-export {
-  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
-}
-.btn-export:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(23, 162, 184, 0.4);
-}
-
-.btn-add {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-}
-.btn-add:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+.hl-btn-add:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(52, 152, 219, 0.35);
 }
 
 /* ─── FILTRY ─── */
-.list-controls {
+.hl-controls {
+  background: white;
+  border-radius: 10px;
+  padding: 14px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.control-group {
+.hl-control-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-.control-group label {
-  font-size: 14px;
+.hl-control-group label {
+  font-size: 13px;
   font-weight: 600;
-  color: #333;
+  color: #444;
   white-space: nowrap;
 }
 
-.filter-input {
-  min-width: 200px;
-  padding: 10px 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  background: white;
-  transition: border-color 0.3s;
-}
-.filter-input:focus {
-  outline: none;
-  border-color: #3498db;
-}
-
-.date-filter {
+.hl-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-.date-input {
-  padding: 10px 12px;
+.hl-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #3498db;
+}
+
+.hl-filter-select {
+  padding: 8px 12px;
   border: 2px solid #e0e0e0;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   background: white;
-  transition: border-color 0.3s;
+  cursor: pointer;
+  min-width: 180px;
+  transition: border-color 0.2s;
 }
-.date-input:focus {
+.hl-filter-select:focus {
   outline: none;
   border-color: #3498db;
 }
 
-.btn-clear-filter {
-  padding: 10px 20px;
+.hl-btn-clear {
+  padding: 8px 14px;
   background: #ffc107;
   color: #333;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.2s;
+  white-space: nowrap;
 }
-.btn-clear-filter:hover {
+.hl-btn-clear:hover {
   background: #ffb300;
 }
 
-/* ─── TABELA ─── */
-.table-wrapper {
-  overflow-x: auto;
-  margin-bottom: 25px;
-}
-
-.hazardous-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.hazardous-table thead {
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-  color: white;
-}
-
-.hazardous-table th {
-  padding: 14px 12px;
-  text-align: left;
-  font-weight: 600;
+.hl-records-count {
+  margin-left: auto;
   font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.hazardous-table th.sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.2s;
-}
-.hazardous-table th.sortable:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.hazardous-table td {
-  padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.hazardous-table tbody tr {
-  transition: background 0.2s;
-}
-.hazardous-table tbody tr:hover {
-  background: #fff8f3;
-}
-
-.name-cell {
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.actions-cell {
-  text-align: center;
+  color: #888;
   white-space: nowrap;
 }
 
-.btn-edit,
-.btn-delete {
+/* ─── TABELA ─── */
+.hl-table-wrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  flex: 1;
+}
+
+.hl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.hl-table thead {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.hl-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.hl-table th.hl-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.hl-table th.hl-sortable:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.hl-col-degree {
+  min-width: 280px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.hl-sort-icon {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+.hl-sort-icon--active {
+  opacity: 1;
+}
+
+.hl-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.hl-table tbody tr {
+  transition: background 0.15s;
+}
+.hl-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.hl-row-unassigned td:first-child {
+  border-left: 3px solid #ffc107;
+}
+
+/* ─── KOMÓRKI ─── */
+.hl-cell-name {
+  font-weight: 600;
+  color: #2c3e50;
+  white-space: nowrap;
+}
+.hl-cell-mono {
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  color: #555;
+}
+.hl-cell-date {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+}
+.hl-cell-center {
+  text-align: center;
+  font-weight: 600;
+}
+.hl-cell-flags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+.hl-flag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.hl-flag-p {
+  background: #d4edda;
+  color: #155724;
+}
+.hl-flag-mz {
+  background: #cce5ff;
+  color: #004085;
+}
+.hl-flag-af {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* ─── STOPIEŃ SZKODLIWOŚCI ─── */
+.hl-cell-degree {
+  min-width: 280px;
+}
+
+.hl-degree-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hl-degree-select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 12px;
+  background: white;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+  max-width: 100%;
+}
+.hl-degree-select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+.hl-degree-select--assigned {
+  border-color: #28a745;
+  background: #f0fff4;
+  color: #155724;
+  font-weight: 600;
+}
+.hl-degree-select--empty {
+  border-color: #ffc107;
+  background: #fffdf0;
+  color: #856404;
+}
+.hl-degree-select:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.hl-saving {
+  font-size: 14px;
+  animation: hl-spin 1s linear infinite;
+}
+
+@keyframes hl-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── AKCJE ─── */
+.hl-cell-actions {
+  white-space: nowrap;
+  text-align: center;
+}
+
+.hl-btn-edit,
+.hl-btn-delete {
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
-  padding: 6px 8px;
-  opacity: 0.6;
+  padding: 5px 7px;
+  opacity: 0.5;
   transition:
-    opacity 0.3s,
+    opacity 0.2s,
     transform 0.2s;
+  border-radius: 4px;
 }
-.btn-edit:hover {
+.hl-btn-edit:hover,
+.hl-btn-delete:hover {
   opacity: 1;
   transform: scale(1.2);
-}
-.btn-delete:hover {
-  opacity: 1;
-  transform: scale(1.2);
-}
-
-/* ─── BRAK DANYCH ─── */
-.no-data {
-  text-align: center;
-  padding: 60px 40px;
-  color: #999;
-}
-.no-data-icon {
-  font-size: 56px;
-  margin-bottom: 16px;
-}
-.no-data p {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-.no-data .hint {
-  font-size: 14px;
-  color: #bbb;
-}
-
-/* ─── LOADING ─── */
-.loading {
-  text-align: center;
-  padding: 60px;
-  color: #666;
-  font-size: 16px;
 }
 
 /* ─── PAGINACJA ─── */
-.pagination {
+.hl-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 20px;
-  margin-top: 25px;
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
 
-.btn-page {
-  padding: 10px 20px;
+.hl-btn-page {
+  padding: 8px 18px;
   border: 2px solid #e0e0e0;
   background: white;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s;
+  font-size: 13px;
+  transition: all 0.2s;
 }
-.btn-page:hover:not(:disabled) {
+.hl-btn-page:hover:not(:disabled) {
   border-color: #3498db;
   color: #3498db;
 }
-.btn-page:disabled {
-  opacity: 0.5;
+.hl-btn-page:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.page-info {
-  font-size: 14px;
+.hl-page-info {
+  font-size: 13px;
   color: #666;
+}
+
+/* ─── STANY ─── */
+.hl-loading {
+  background: white;
+  border-radius: 12px;
+  padding: 60px;
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+}
+
+.hl-empty {
+  background: white;
+  border-radius: 12px;
+  padding: 60px 40px;
+  text-align: center;
+  color: #999;
+}
+.hl-empty-icon {
+  font-size: 52px;
+  margin-bottom: 14px;
+}
+.hl-empty p {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+.hl-empty-hint {
+  font-size: 13px;
+  color: #bbb;
 }
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
-  .list-header {
+  .hl-controls {
     flex-direction: column;
     align-items: flex-start;
   }
-  .header-left {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .header-buttons {
+  .hl-filter-select {
+    min-width: auto;
     width: 100%;
   }
-  .header-buttons button {
-    flex: 1;
-  }
-  .control-group {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-  }
-  .filter-input {
-    width: 100%;
-  }
-  .hazardous-table {
-    font-size: 12px;
-  }
-  .hazardous-table th,
-  .hazardous-table td {
-    padding: 8px 6px;
+  .hl-records-count {
+    margin-left: 0;
   }
 }

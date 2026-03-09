@@ -9,21 +9,27 @@ sys.path.append(str(Path(__file__).parent.parent))
 from database import Base
 
 class ImportedFile(Base):
-    """Model dla zaimportowanych plików Excel"""
     __tablename__ = "imported_files"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String(255), nullable=False)
+
+    id                = Column(Integer, primary_key=True, index=True)
+    filename          = Column(String(255), nullable=False)
     original_filename = Column(String(255), nullable=False)
-    file_path = Column(String(500))
-    imported_at = Column(DateTime, default=datetime.utcnow)
-    rows_count = Column(Integer, default=0)
-    status = Column(String(50), default="completed")  # completed, processing, error
-    notes = Column(Text)
-    
-    # Relacja do danych
-    swd_records = relationship("SWDRecord", back_populates="file", cascade="all, delete-orphan")
-    hazardous_records = relationship("HazardousRecord",back_populates="file",cascade="all, delete-orphan")
+    file_path         = Column(String(500))
+    imported_at       = Column(DateTime, default=datetime.utcnow)
+    rows_count        = Column(Integer, default=0)
+    status            = Column(String(50), default="completed")
+    notes             = Column(Text)
+
+    # NOWE POLE — odróżnia pliki Wyjazdów od Dodatku Szkodliwego
+    # "departures" | "hazardous"
+    file_type = Column(String(50), default="departures")
+
+    swd_records = relationship(
+        "SWDRecord", back_populates="file", cascade="all, delete-orphan"
+    )
+    hazardous_records = relationship(
+        "HazardousRecord", back_populates="file", cascade="all, delete-orphan"
+    )
 
 class SWDRecord(Base):
     """
@@ -135,45 +141,39 @@ class HazardousDegree(Base):
             "updated_at":    self.updated_at.isoformat() if self.updated_at else None,
         }    
 class HazardousRecord(Base):
-    """
-    Model dla rekordów Dodatku Szkodliwego.
-    Osobny model — niezależny od SWDRecord.
-    Pola dobrane z ModelZestawienieWiersz pod kątem dodatku szkodliwego.
-    hazardous_degree_id — nullable, przypisywany ręcznie przez użytkownika.
-    """
     __tablename__ = "hazardous_records"
 
     id          = Column(Integer, primary_key=True, index=True)
     file_id     = Column(Integer, ForeignKey("imported_files.id"), nullable=False)
 
-    jednostka                  = Column(String(255))
-    nazwisko_imie              = Column(String(255))
-    stopien                    = Column(String(100))        # stopień służbowy (string)
-    data_przyjecia             = Column(DateTime)
-    p                          = Column(String(10))
-    mz                         = Column(String(10))
-    af                         = Column(String(10))
-    nr_meldunku                = Column(String(100))
-    funkcja                    = Column(String(100))
-    czas_od                    = Column(DateTime)
-    czas_do                    = Column(DateTime)
-    czas_udzialu               = Column(String(50))         # np. "02:30"
-    dodatek_szkodliwy          = Column(String(10))         # wartość z pliku
-    stopien_szkodliwosci       = Column(String(50))         # wartość tekstowa z pliku
-    aktualizowal_szkod         = Column(String(255))
-    data_aktualizacji_szkod    = Column(DateTime)
-    opis_st_szkodliwosci       = Column(Text)
+    # Pola tekstowe z ModelZestawienieWiersz
+    jednostka               = Column(String(255))
+    nazwisko_imie           = Column(String(255))
+    stopien                 = Column(String(100))
+    data_przyjecia          = Column(String(50))   # String — jak SWDRecord
+    p                       = Column(String(10))
+    mz                      = Column(String(10))
+    af                      = Column(String(10))
+    nr_meldunku             = Column(String(100))
+    funkcja                 = Column(String(100))
+    czas_od                 = Column(String(50))   # String — jak SWDRecord
+    czas_do                 = Column(String(50))   # String — jak SWDRecord
+    czas_udzialu            = Column(String(50))
+    dodatek_szkodliwy       = Column(String(10))
+    stopien_szkodliwosci    = Column(String(50))
+    aktualizowal_szkod      = Column(String(255))
+    data_aktualizacji_szkod = Column(String(50))   # String — jak SWDRecord
+    opis_st_szkodliwosci    = Column(Text)
 
-    # Powiązanie ze stopniem szkodliwości — przypisywane ręcznie
-    # nullable=True: przy imporcie jeszcze nie przypisane
+    # Przypisywane ręcznie przez użytkownika — nullable przy imporcie
     hazardous_degree_id = Column(
         Integer,
         ForeignKey("hazardous_degrees.id"),
         nullable=True
     )
 
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(String(50))
+    updated_at = Column(String(50))
 
     # Relacje
     file             = relationship("ImportedFile", back_populates="hazardous_records")
@@ -186,23 +186,22 @@ class HazardousRecord(Base):
             "jednostka":                self.jednostka,
             "nazwisko_imie":            self.nazwisko_imie,
             "stopien":                  self.stopien,
-            "data_przyjecia":           self.data_przyjecia.isoformat() if self.data_przyjecia else None,
+            "data_przyjecia":           self.data_przyjecia,       # już string
             "p":                        self.p,
             "mz":                       self.mz,
             "af":                       self.af,
             "nr_meldunku":              self.nr_meldunku,
             "funkcja":                  self.funkcja,
-            "czas_od":                  self.czas_od.isoformat() if self.czas_od else None,
-            "czas_do":                  self.czas_do.isoformat() if self.czas_do else None,
+            "czas_od":                  self.czas_od,              # już string
+            "czas_do":                  self.czas_do,              # już string
             "czas_udzialu":             self.czas_udzialu,
             "dodatek_szkodliwy":        self.dodatek_szkodliwy,
             "stopien_szkodliwosci":     self.stopien_szkodliwosci,
             "aktualizowal_szkod":       self.aktualizowal_szkod,
-            "data_aktualizacji_szkod":  self.data_aktualizacji_szkod.isoformat() if self.data_aktualizacji_szkod else None,
+            "data_aktualizacji_szkod":  self.data_aktualizacji_szkod,  # już string
             "opis_st_szkodliwosci":     self.opis_st_szkodliwosci,
             "hazardous_degree_id":      self.hazardous_degree_id,
-            # Zagnieżdżony stopień szkodliwości jeśli przypisany
             "hazardous_degree":         self.hazardous_degree.to_dict() if self.hazardous_degree else None,
-            "created_at":               self.created_at.isoformat() if self.created_at else None,
-            "updated_at":               self.updated_at.isoformat() if self.updated_at else None,
+            "created_at":               self.created_at,
+            "updated_at":               self.updated_at,
         }

@@ -2,33 +2,42 @@ import React, { useState } from "react";
 import { filesAPI } from "../services/api";
 import "./FileUpload.css";
 
-function FileUpload({ onUploadSuccess, headerText }) {
+/**
+ * FileUpload.js
+ * Prop `uploadFn` pozwala przekazać dowolną funkcję uploadu.
+ * Domyślnie używa filesAPI.uploadFile — zachowanie Departures bez zmian.
+ *
+ * Użycie dla Hazardous:
+ *   <FileUpload
+ *     uploadFn={hazardousRecordsAPI.uploadFile}
+ *     onUploadSuccess={handleUploadSuccess}
+ *     headerText="Import danych: Dodatek Szkodliwy"
+ *   />
+ */
+function FileUpload({ onUploadSuccess, headerText, uploadFn }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
+  // Domyślnie filesAPI.uploadFile — Departures działa bez zmian
+  const doUpload = uploadFn || filesAPI.uploadFile;
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
+    if (selectedFile) setFile(selectedFile);
   };
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setFile(e.dataTransfer.files[0]);
     }
@@ -39,15 +48,12 @@ function FileUpload({ onUploadSuccess, headerText }) {
       alert("Wybierz plik Excel (.xlsx)");
       return;
     }
-
     setUploading(true);
     try {
-      const result = await filesAPI.uploadFile(file);
+      const result = await doUpload(file);
       alert(`Sukces! Zaimportowano ${result.records_imported} rekordów`);
       setFile(null);
-      if (onUploadSuccess) {
-        onUploadSuccess(result);
-      }
+      if (onUploadSuccess) onUploadSuccess(result);
     } catch (error) {
       console.error("Błąd uploadu:", error);
       alert(`Błąd: ${error.response?.data?.detail || error.message}`);

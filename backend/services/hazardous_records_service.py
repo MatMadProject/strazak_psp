@@ -30,7 +30,7 @@ class HazardousRecordsService:
 
     @staticmethod
     def get_all_files(db: Session) -> List[ImportedFile]:
-        return db.query(ImportedFile).order_by(ImportedFile.imported_at.desc()).all()
+        return db.query(ImportedFile).filter(ImportedFile.file_type == "hazardous").order_by(ImportedFile.imported_at.desc()).all()
 
     @staticmethod
     def get_file_by_id(db: Session, file_id: int) -> Optional[ImportedFile]:
@@ -49,6 +49,7 @@ class HazardousRecordsService:
             original_filename=original_filename,
             file_path=file_path,
             rows_count=rows_count,
+            file_type="hazardous",   # odróżnia od plików Wyjazdów
         )
         db.add(file_record)
         db.commit()
@@ -149,22 +150,24 @@ class HazardousRecordsService:
                 for row in records_data.items:
                     record = HazardousRecord(
                         file_id=file_id,
+                        # Wszystkie pola dat konwertowane do str() —
+                        # identycznie jak DataService (SWDRecord używa String(100) dla dat)
                         jednostka               = str(row.jednostka)               if row.jednostka               else None,
                         nazwisko_imie           = str(row.nazwisko_imie)           if row.nazwisko_imie           else None,
                         stopien                 = str(row.stopien)                 if row.stopien                 else None,
-                        data_przyjecia          = row.data_przyjecia               if row.data_przyjecia           else None,
+                        data_przyjecia          = str(row.data_przyjecia)          if row.data_przyjecia           else None,
                         p                       = str(row.p)                       if row.p                       else None,
                         mz                      = str(row.mz)                      if row.mz                      else None,
                         af                      = str(row.af)                      if row.af                      else None,
                         nr_meldunku             = str(row.nr_meldunku)             if row.nr_meldunku             else None,
                         funkcja                 = str(row.funkcja)                 if row.funkcja                 else None,
-                        czas_od                 = row.czas_od                      if row.czas_od                 else None,
-                        czas_do                 = row.czas_do                      if row.czas_do                 else None,
+                        czas_od                 = str(row.czas_od)                 if row.czas_od                 else None,
+                        czas_do                 = str(row.czas_do)                 if row.czas_do                 else None,
                         czas_udzialu            = str(row.czas_udzialu)            if row.czas_udzialu            else None,
                         dodatek_szkodliwy       = str(row.dodatek_szkodliwy)       if row.dodatek_szkodliwy       else None,
                         stopien_szkodliwosci    = str(row.stopien_szkodliwosci)    if row.stopien_szkodliwosci    else None,
                         aktualizowal_szkod      = str(row.aktualizowal_szkod)      if row.aktualizowal_szkod      else None,
-                        data_aktualizacji_szkod = row.data_aktualizacji_szkod      if row.data_aktualizacji_szkod else None,
+                        data_aktualizacji_szkod = str(row.data_aktualizacji_szkod) if row.data_aktualizacji_szkod else None,
                         opis_st_szkodliwosci    = str(row.opis_st_szkodliwosci)    if row.opis_st_szkodliwosci    else None,
                         # hazardous_degree_id — None przy imporcie, przypisywane ręcznie
                         hazardous_degree_id     = None,

@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from "react";
-// import { filesAPI } from "../services/api";   // odkomentuj gdy API będzie gotowe
+import { hazardousRecordsAPI } from "../services/api";
 import FileUpload from "./FileUpload";
 import HazardousList from "./HazardousList";
-// import HazardousDataEditor from "./HazardousDataEditor"; // przyszła edycja rekordów
+import HazardousRecordEditor from "./HazardousRecordEditor";
 import "./Hazardous.css";
 
-/**
- * Hazardous.js
- * Wrapper komponent dla sekcji "Szkodliwe".
- * Analogiczny do Departures.js - zarządza widokami (menu, import, lista plików, lista rekordów).
- *
- * Props:
- *   subTab - aktywna podzakładka przekazana z App.js
- *             "hazard-degrees" => Stopnie Szkodliwości
- */
 function Hazardous({ subTab }) {
   const storageKeyView = `hazardous_${subTab}_view`;
   const storageKeyFile = `hazardous_${subTab}_selectedFile`;
@@ -24,18 +15,15 @@ function Hazardous({ subTab }) {
   });
 
   const [files, setFiles] = useState([]);
-
   const [selectedFile, setSelectedFile] = useState(() => {
     const saved = localStorage.getItem(storageKeyFile);
     return saved ? JSON.parse(saved) : null;
   });
-
   const [editingRecord, setEditingRecord] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Persist view & selected file
   useEffect(() => {
     localStorage.setItem(storageKeyView, view);
   }, [view, storageKeyView]);
@@ -49,20 +37,14 @@ function Hazardous({ subTab }) {
   }, [selectedFile, storageKeyFile]);
 
   useEffect(() => {
-    if (view === "file-list") {
-      loadFiles();
-    }
+    if (view === "file-list") loadFiles();
   }, [view]);
 
   const loadFiles = async () => {
     setLoading(true);
     try {
-      // TODO: Zastąp wywołaniem właściwego API dla Szkodliwych
-      // const data = await hazardousAPI.getAllFiles(subTab);
-      // setFiles(data.files || []);
-
-      // Tymczasowo pusta lista - backend do podłączenia
-      setFiles([]);
+      const data = await hazardousRecordsAPI.getAllFiles();
+      setFiles(data.files || []);
     } catch (error) {
       console.error("Błąd ładowania plików:", error);
       alert("Nie udało się załadować listy plików");
@@ -82,24 +64,16 @@ function Hazardous({ subTab }) {
     setSelectedFile(file);
     setView("records-list");
   };
-
   const handleBackFromList = () => {
     setSelectedFile(null);
     setView("file-list");
   };
-
   const handleBackToMenu = () => {
     setSelectedFile(null);
     setView("menu");
   };
-
-  const handleEditRecord = (record) => {
-    setEditingRecord(record);
-  };
-
-  const handleAddRecord = () => {
-    setIsAddingNew(true);
-  };
+  const handleEditRecord = (rec) => setEditingRecord(rec);
+  const handleAddRecord = () => setIsAddingNew(true);
 
   const handleCloseEditor = () => {
     setEditingRecord(null);
@@ -117,11 +91,10 @@ function Hazardous({ subTab }) {
       !window.confirm(
         `Czy na pewno chcesz usunąć plik "${filename}" i wszystkie jego dane?`,
       )
-    ) {
+    )
       return;
-    }
     try {
-      // TODO: await hazardousAPI.deleteFile(fileId);
+      await hazardousRecordsAPI.deleteFile(fileId);
       alert("Plik usunięty pomyślnie");
       loadFiles();
     } catch (error) {
@@ -130,14 +103,12 @@ function Hazardous({ subTab }) {
     }
   };
 
-  const subTabLabel = "Stopnie Szkodliwości";
-
   // ─── WIDOK MENU ──────────────────────────────────────────────────────────────
   if (view === "menu") {
     return (
       <div className="hazardous-container">
         <div className="hazardous-menu">
-          <h2>☣️ {subTabLabel}</h2>
+          <h2>☣️ Dodatek Szkodliwy</h2>
           <p className="menu-subtitle">Wybierz akcję aby rozpocząć</p>
 
           <div className="menu-cards">
@@ -189,12 +160,12 @@ function Hazardous({ subTab }) {
           <button className="btn-back" onClick={handleBackToMenu}>
             ← Powrót
           </button>
-          <h2>📥 Import pliku Excel — {subTabLabel}</h2>
+          <h2>📥 Import pliku Excel — Dodatek Szkodliwy</h2>
         </div>
-
         <FileUpload
+          uploadFn={hazardousRecordsAPI.uploadFile}
           onUploadSuccess={handleUploadSuccess}
-          headerText={`Import danych: ${subTabLabel}`}
+          headerText="Import danych: Dodatek Szkodliwy"
         />
       </div>
     );
@@ -208,7 +179,7 @@ function Hazardous({ subTab }) {
           <button className="btn-back" onClick={handleBackToMenu}>
             ← Powrót
           </button>
-          <h2>📂 Zaimportowane pliki — {subTabLabel}</h2>
+          <h2>📂 Zaimportowane pliki — Dodatek Szkodliwy</h2>
         </div>
 
         {loading ? (
@@ -297,16 +268,14 @@ function Hazardous({ subTab }) {
           onAddRecord={handleAddRecord}
         />
 
-        {/* TODO: Podłącz HazardousDataEditor gdy będzie gotowy */}
-        {/* {(editingRecord || isAddingNew) && (
-          <HazardousDataEditor
+        {(editingRecord || isAddingNew) && (
+          <HazardousRecordEditor
             record={editingRecord}
-            isAddingNew={isAddingNew}
             fileId={selectedFile?.id}
             onClose={handleCloseEditor}
             onSave={handleSaveRecord}
           />
-        )} */}
+        )}
       </>
     );
   }

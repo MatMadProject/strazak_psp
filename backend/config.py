@@ -7,7 +7,7 @@ import json
 class Settings:
     # Podstawowa konfiguracja
     APP_NAME = "Strazak App"
-    VERSION = "0.4.0"
+    VERSION = "0.4.1"
     COMPANY = "MatMad Software"
     
     # Czy aplikacja działa jako exe (PyInstaller)

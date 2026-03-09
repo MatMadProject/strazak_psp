@@ -1,0 +1,246 @@
+/* ================================================================
+   HazardousRecordEditor.css
+   Prefix hre- — pełna izolacja od innych komponentów.
+   ================================================================ */
+
+/* ─── OVERLAY ─── */
+.hre-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* ─── MODAL ─── */
+.hre-modal {
+  background: white;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  animation: hre-slide-in 0.25s ease-out;
+}
+
+@keyframes hre-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── NAGŁÓWEK ─── */
+.hre-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 2px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.hre-header h2 {
+  font-size: 18px;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.hre-btn-close {
+  background: #f0f0f0;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  color: #555;
+}
+.hre-btn-close:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+/* ─── FORMULARZ ─── */
+.hre-form {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Tytuł sekcji */
+.hre-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #3498db;
+  margin: 14px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e8f4fd;
+}
+
+/* Rząd pól */
+.hre-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.hre-row--flags {
+  align-items: flex-end;
+}
+
+/* Pole formularza */
+.hre-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.hre-group--wide {
+  flex: 2;
+}
+.hre-group--narrow {
+  flex: 0 0 90px;
+  min-width: 90px;
+}
+
+.hre-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.hre-required {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
+/* Input / select / textarea */
+.hre-input {
+  padding: 9px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 7px;
+  font-size: 13px;
+  color: #333;
+  background: white;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hre-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.12);
+}
+
+.hre-textarea {
+  resize: vertical;
+  min-height: 76px;
+  font-family: inherit;
+}
+
+/* Select kolorowanie */
+.hre-select--assigned {
+  border-color: #28a745;
+  background: #f0fff4;
+  color: #155724;
+  font-weight: 600;
+}
+
+.hre-select--empty {
+  border-color: #ffc107;
+  background: #fffdf0;
+  color: #856404;
+}
+
+/* ─── PRZYCISKI AKCJI ─── */
+.hre-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.hre-btn-cancel {
+  padding: 10px 22px;
+  background: #f8f9fa;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s;
+}
+.hre-btn-cancel:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #ccc;
+}
+.hre-btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hre-btn-save {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
+}
+.hre-btn-save:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(52, 152, 219, 0.4);
+}
+.hre-btn-save:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .hre-row {
+    flex-direction: column;
+  }
+  .hre-group--narrow {
+    flex: 1;
+    min-width: auto;
+  }
+  .hre-modal {
+    max-height: 95vh;
+  }
+}

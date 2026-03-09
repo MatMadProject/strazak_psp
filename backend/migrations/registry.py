@@ -21,6 +21,11 @@ MIGRATIONS = [
         "0.4.0",
         "Dodanie tabeli hazardous_records (Dodatek szkodliwy)"
     ),
+    (
+        "004_imported_files_add_type_20260309",
+        "0.4.1",
+        "Dodanie kolumny file_type do imported_files"
+    ),
     # Przyszłe migracje:
     # ("003_reports_table", "0.4.0", "Dodanie tabeli raportów"),
 ]

@@ -37,6 +37,25 @@ class AssignDegreeBulkRequest(BaseModel):
     record_ids: List[int]
     hazardous_degree_id: Optional[int] = None
 
+class RecordCreate(BaseModel):
+    file_id:                 int
+    jednostka:               Optional[str] = None
+    nazwisko_imie:           Optional[str] = None
+    stopien:                 Optional[str] = None
+    p:                       Optional[str] = None
+    mz:                      Optional[str] = None
+    af:                      Optional[str] = None
+    nr_meldunku:             Optional[str] = None
+    funkcja:                 Optional[str] = None
+    czas_od:                 Optional[str] = None
+    czas_do:                 Optional[str] = None
+    czas_udzialu:            Optional[str] = None
+    dodatek_szkodliwy:       Optional[str] = None
+    stopien_szkodliwosci:    Optional[str] = None
+    opis_st_szkodliwosci:    Optional[str] = None
+    hazardous_degree_id:     Optional[int] = None
+
+
 class RecordUpdate(BaseModel):
     jednostka:               Optional[str] = None
     nazwisko_imie:           Optional[str] = None
@@ -46,6 +65,8 @@ class RecordUpdate(BaseModel):
     af:                      Optional[str] = None
     nr_meldunku:             Optional[str] = None
     funkcja:                 Optional[str] = None
+    czas_od:                 Optional[str] = None
+    czas_do:                 Optional[str] = None
     czas_udzialu:            Optional[str] = None
     dodatek_szkodliwy:       Optional[str] = None
     stopien_szkodliwosci:    Optional[str] = None
@@ -213,6 +234,16 @@ def get_firefighters(file_id: int, db: Session = Depends(get_db)):
     """Unikalne nazwiska w pliku — do filtra dropdownu w HazardousList"""
     names = HazardousRecordsService.get_unique_firefighters_in_file(db, file_id)
     return {"firefighters": names}
+
+
+@router.post("/records/")
+def create_record(data: RecordCreate, db: Session = Depends(get_db)):
+    from models.swd_data import HazardousRecord
+    record = HazardousRecord(**data.dict())
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return {"success": True, "record": record.to_dict()}
 
 
 @router.get("/records/{record_id}")
