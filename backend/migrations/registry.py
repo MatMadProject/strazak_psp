@@ -16,6 +16,11 @@ MIGRATIONS = [
         "0.3.3",
         "Dodanie tabeli hazardous_degrees (Stopnie Szkodliwości)"
     ),
+    (
+        "003_hazardous_records_add_20260306",
+        "0.4.0",
+        "Dodanie tabeli hazardous_records (Dodatek szkodliwy)"
+    ),
     # Przyszłe migracje:
     # ("003_reports_table", "0.4.0", "Dodanie tabeli raportów"),
 ]

@@ -23,6 +23,7 @@ class ImportedFile(Base):
     
     # Relacja do danych
     swd_records = relationship("SWDRecord", back_populates="file", cascade="all, delete-orphan")
+    hazardous_records = relationship("HazardousRecord",back_populates="file",cascade="all, delete-orphan")
 
 class SWDRecord(Base):
     """
@@ -133,3 +134,75 @@ class HazardousDegree(Base):
             "created_at":    self.created_at.isoformat() if self.created_at else None,
             "updated_at":    self.updated_at.isoformat() if self.updated_at else None,
         }    
+class HazardousRecord(Base):
+    """
+    Model dla rekordów Dodatku Szkodliwego.
+    Osobny model — niezależny od SWDRecord.
+    Pola dobrane z ModelZestawienieWiersz pod kątem dodatku szkodliwego.
+    hazardous_degree_id — nullable, przypisywany ręcznie przez użytkownika.
+    """
+    __tablename__ = "hazardous_records"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    file_id     = Column(Integer, ForeignKey("imported_files.id"), nullable=False)
+
+    jednostka                  = Column(String(255))
+    nazwisko_imie              = Column(String(255))
+    stopien                    = Column(String(100))        # stopień służbowy (string)
+    data_przyjecia             = Column(DateTime)
+    p                          = Column(String(10))
+    mz                         = Column(String(10))
+    af                         = Column(String(10))
+    nr_meldunku                = Column(String(100))
+    funkcja                    = Column(String(100))
+    czas_od                    = Column(DateTime)
+    czas_do                    = Column(DateTime)
+    czas_udzialu               = Column(String(50))         # np. "02:30"
+    dodatek_szkodliwy          = Column(String(10))         # wartość z pliku
+    stopien_szkodliwosci       = Column(String(50))         # wartość tekstowa z pliku
+    aktualizowal_szkod         = Column(String(255))
+    data_aktualizacji_szkod    = Column(DateTime)
+    opis_st_szkodliwosci       = Column(Text)
+
+    # Powiązanie ze stopniem szkodliwości — przypisywane ręcznie
+    # nullable=True: przy imporcie jeszcze nie przypisane
+    hazardous_degree_id = Column(
+        Integer,
+        ForeignKey("hazardous_degrees.id"),
+        nullable=True
+    )
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relacje
+    file             = relationship("ImportedFile", back_populates="hazardous_records")
+    hazardous_degree = relationship("HazardousDegree", foreign_keys=[hazardous_degree_id])
+
+    def to_dict(self):
+        return {
+            "id":                       self.id,
+            "file_id":                  self.file_id,
+            "jednostka":                self.jednostka,
+            "nazwisko_imie":            self.nazwisko_imie,
+            "stopien":                  self.stopien,
+            "data_przyjecia":           self.data_przyjecia.isoformat() if self.data_przyjecia else None,
+            "p":                        self.p,
+            "mz":                       self.mz,
+            "af":                       self.af,
+            "nr_meldunku":              self.nr_meldunku,
+            "funkcja":                  self.funkcja,
+            "czas_od":                  self.czas_od.isoformat() if self.czas_od else None,
+            "czas_do":                  self.czas_do.isoformat() if self.czas_do else None,
+            "czas_udzialu":             self.czas_udzialu,
+            "dodatek_szkodliwy":        self.dodatek_szkodliwy,
+            "stopien_szkodliwosci":     self.stopien_szkodliwosci,
+            "aktualizowal_szkod":       self.aktualizowal_szkod,
+            "data_aktualizacji_szkod":  self.data_aktualizacji_szkod.isoformat() if self.data_aktualizacji_szkod else None,
+            "opis_st_szkodliwosci":     self.opis_st_szkodliwosci,
+            "hazardous_degree_id":      self.hazardous_degree_id,
+            # Zagnieżdżony stopień szkodliwości jeśli przypisany
+            "hazardous_degree":         self.hazardous_degree.to_dict() if self.hazardous_degree else None,
+            "created_at":               self.created_at.isoformat() if self.created_at else None,
+            "updated_at":               self.updated_at.isoformat() if self.updated_at else None,
+        }
