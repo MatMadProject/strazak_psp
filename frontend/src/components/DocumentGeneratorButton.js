@@ -2,19 +2,32 @@ import React, { useState } from "react";
 import { dataAPI } from "../services/api";
 import "./ExportButton.css";
 
-function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
+function DocumentGeneratorButton({
+  fileId,
+  firefighter,
+  filters = {},
+  disabled = false,
+  disabledTooltip = "",
+}) {
   const [showMenu, setShowMenu] = useState(false);
   const [generating, setGenerating] = useState(false);
 
+  // Jeśli przycisk wyłączony — pokaż tooltip zamiast menu
+  const handleClick = () => {
+    if (disabled) {
+      alert(disabledTooltip || "Funkcja niedostępna");
+      return;
+    }
+    setShowMenu(!showMenu);
+  };
+
   const handleGenerate = async (format) => {
-    // Walidacja - strażak
     if (!firefighter) {
       alert("⚠️ Musisz wybrać strażaka, aby wygenerować dokument!");
       setShowMenu(false);
       return;
     }
 
-    // Walidacja - daty (obie muszą być wybrane)
     if (!filters.date_from || !filters.date_to) {
       alert("⚠️ Musisz wybrać zakres dat (od - do), aby wygenerować dokument!");
       setShowMenu(false);
@@ -27,16 +40,13 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
     try {
       const response = await dataAPI.generateDocument(fileId, format, filters);
 
-      // Sprawdź czy to aplikacja desktopowa
       const isDesktop = typeof window.pywebview !== "undefined";
 
       if (format === "html" && !isDesktop) {
-        // HTML w przeglądarce (webowa) - otwórz w nowej karcie
         const url = window.URL.createObjectURL(response.blob);
         window.open(url, "_blank");
         setTimeout(() => window.URL.revokeObjectURL(url), 1000);
       } else {
-        // HTML w desktop LUB PDF/DOCX - pobierz jako plik
         const url = window.URL.createObjectURL(response.blob);
         const link = document.createElement("a");
         link.href = url;
@@ -45,12 +55,9 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
-
-        // alert(`✅ Dokument ${response.filename} został pobrany pomyślnie!`);
       }
     } catch (error) {
       console.error("Błąd generowania dokumentu:", error);
-
       if (error.response?.status === 400) {
         alert(`⚠️ ${error.response.data.detail}`);
       } else {
@@ -67,8 +74,10 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
     <div className="export-button-container">
       <button
         className="btn-create-doc"
-        onClick={() => setShowMenu(!showMenu)}
+        onClick={handleClick}
         disabled={generating}
+        title={disabled ? disabledTooltip : ""}
+        style={disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}}
       >
         {generating ? "⏳ Generowanie..." : "📄 Utwórz dokument"}
       </button>
@@ -82,13 +91,6 @@ function DocumentGeneratorButton({ fileId, firefighter, filters = {} }) {
             <span className="menu-icon">📝</span>
             <span>Word (.docx)</span>
           </button>
-          {/* <button
-            className="export-menu-item"
-            onClick={() => handleGenerate("pdf")}
-          >
-            <span className="menu-icon">📕</span>
-            <span>PDF (.pdf)</span>
-          </button> */}
           <button
             className="export-menu-item"
             onClick={() => handleGenerate("html")}

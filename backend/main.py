@@ -33,7 +33,7 @@ app.include_router(files.router, prefix="/api/files", tags=["files"])
 app.include_router(settings_route.router, prefix="/api/settings", tags=["settings"])
 app.include_router(system_route.router, prefix="/api/system", tags=["system"])
 app.include_router(hazardous_degrees.router, prefix="/api/hazardous-degrees", tags=["hazardous degrees"])
-app.include_router(hazardous_records.router,prefix="/api/hazardous-records",tags=["Hazardous Records"])
+app.include_router(hazardous_records.router,prefix="/api/hazardous-records",tags=["hazardous records"])
 @app.get("/api")
 def root():
     return {

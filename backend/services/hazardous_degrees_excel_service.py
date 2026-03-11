@@ -2,7 +2,6 @@
 backend/services/hazardous_degrees_excel_service.py
 
 Import/eksport stopni szkodliwości z/do Excel i CSV.
-Wzorowany na FirefighterExcelService - zachowuje identyczny styl.
 """
 import pandas as pd
 from pathlib import Path

@@ -27,6 +27,12 @@
   gap: 16px;
 }
 
+.hl-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .hl-header-info h2 {
   font-size: 20px;
   color: #2c3e50;

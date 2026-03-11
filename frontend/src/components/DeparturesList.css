@@ -43,9 +43,9 @@
   background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -63,15 +63,16 @@
   background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition:
     transform 0.2s,
     box-shadow 0.2s;
   box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+  width: 100%;
 }
 
 .btn-export:hover {
@@ -83,9 +84,9 @@
   background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   color: white;
   border: none;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -355,10 +356,6 @@
   .header-left {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .btn-export {
-    width: 100%;
   }
 
   .control-group {

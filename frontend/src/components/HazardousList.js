@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { hazardousRecordsAPI } from "../services/api";
 import { hazardousDegreesAPI } from "../services/api";
+import DocumentGeneratorButton from "./DocumentGeneratorButton";
+import HazardousExportButton from "./HazardousExportButton";
 import "./HazardousList.css";
 
 function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
@@ -156,6 +158,14 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
     dateFrom ||
     dateTo;
 
+  const currentFilters = {
+    firefighter: filterFirefighter || undefined,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
+    only_unassigned: filterUnassigned || undefined,
+    only_eligible: filterEligible || undefined,
+  };
+
   const formatDateTime = (iso) => {
     if (!iso) return "—";
     try {
@@ -185,6 +195,14 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
           </div>
         </div>
         <div className="hl-header-right">
+          <DocumentGeneratorButton
+            fileId={file?.id}
+            firefighter={filterFirefighter}
+            filters={currentFilters}
+            disabled={true}
+            disabledTooltip="Generowanie dokumentów będzie dostępne po przygotowaniu szablonów"
+          />
+          <HazardousExportButton fileId={file?.id} filters={currentFilters} />
           <button className="hl-btn-add" onClick={onAddRecord}>
             ✚ Dodaj rekord
           </button>
@@ -317,7 +335,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
                     className="hl-sortable"
                     onClick={() => handleSort("czas_udzialu")}
                   >
-                    Czas udziału <SortIcon col="czas_udzialu" />
+                    Czas szkodliwego <SortIcon col="czas_udzialu" />
                   </th>
                   <th>P / MZ / AF</th>
                   <th className="hl-col-degree">Stopień szkodliwości</th>
@@ -348,7 +366,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
                       {formatDateTime(record.czas_do)}
                     </td>
                     <td className="hl-cell-center">
-                      {record.czas_udzialu || "—"}
+                      {record.dodatek_szkodliwy || "—"}
                     </td>
                     <td className="hl-cell-flags">
                       {record.p && (

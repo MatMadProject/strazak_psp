@@ -1,19 +1,14 @@
 """
 backend/routes/hazardous_records.py
-
-Wzorowany na routes/files.py — identyczny styl uploadowania pliku.
-Kluczowa różnica: używa ExcelProcessor.process_excel_file() →
-get_zestawienie_szkodliwosci() (ten sam co Departures).
-
-Zarejestruj w main.py:
-  from routes.hazardous_records import router as hazardous_records_router
-  app.include_router(hazardous_records_router, prefix="/api/hazardous-records", tags=["Hazardous Records"])
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
 from pathlib import Path
+from urllib.parse import quote
+from datetime import datetime
 import shutil
 import uuid
 import sys
@@ -31,7 +26,7 @@ excel_processor = ExcelProcessor()
 # ── Pydantic schemas ─────────────────────────────────────────────────────────
 
 class AssignDegreeRequest(BaseModel):
-    hazardous_degree_id: Optional[int] = None  # None = odepnij
+    hazardous_degree_id: Optional[int] = None
 
 class AssignDegreeBulkRequest(BaseModel):
     record_ids: List[int]
@@ -55,7 +50,6 @@ class RecordCreate(BaseModel):
     opis_st_szkodliwosci:    Optional[str] = None
     hazardous_degree_id:     Optional[int] = None
 
-
 class RecordUpdate(BaseModel):
     jednostka:               Optional[str] = None
     nazwisko_imie:           Optional[str] = None
@@ -72,6 +66,31 @@ class RecordUpdate(BaseModel):
     stopien_szkodliwosci:    Optional[str] = None
     opis_st_szkodliwosci:    Optional[str] = None
     hazardous_degree_id:     Optional[int] = None
+
+
+# ── Helper ───────────────────────────────────────────────────────────────────
+
+def _encode_filename(filename: str) -> str:
+    return f"attachment; filename*=UTF-8''{quote(filename)}"
+
+def _build_filename(prefix: str, firefighter: str, date_from: str, date_to: str,
+                    only_unassigned: bool, only_eligible: bool, ext: str) -> str:
+    """Buduje nazwę pliku uwzględniając aktywne filtry"""
+    parts = [prefix]
+    if firefighter:
+        parts.append(firefighter.replace(" ", "_"))
+    if date_from and date_to:
+        parts.append(f"{date_from}_do_{date_to}")
+    elif date_from:
+        parts.append(f"od_{date_from}")
+    elif date_to:
+        parts.append(f"do_{date_to}")
+    if only_unassigned:
+        parts.append("bez_stopnia")
+    if only_eligible:
+        parts.append("zaliczone")
+    parts.append(datetime.now().strftime("%Y%m%d_%H%M%S"))
+    return "_".join(parts) + ext
 
 
 # ── PLIKI ────────────────────────────────────────────────────────────────────
@@ -123,50 +142,31 @@ async def upload_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    """
-    Import pliku xlsx — identyczny flow jak routes/files.py:
-      1. Zapisz plik tymczasowo
-      2. ExcelProcessor.process_excel_file() → get_zestawienie_szkodliwosci()
-      3. Utwórz ImportedFile
-      4. HazardousRecordsService.create_records() z innymi polami niż DataService
-      5. Usuń plik tymczasowy
-    """
     file_path = None
     try:
-        print(f"[HAZARDOUS UPLOAD] Plik: {file.filename}")
-
         file_ext = Path(file.filename).suffix.lower()
         if file_ext not in [".xlsx", ".xls"]:
-            raise HTTPException(
-                status_code=400,
-                detail="Nieprawidłowe rozszerzenie. Dozwolone: .xlsx, .xls"
-            )
+            raise HTTPException(status_code=400, detail="Dozwolone: .xlsx, .xls")
 
-        # Zapisz tymczasowo — identycznie jak routes/files.py
         unique_filename = f"hazardous_{uuid.uuid4()}{file_ext}"
         file_path = Path(settings.UPLOAD_DIR) / unique_filename
 
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # Przetwórz — ten sam ExcelProcessor co Departures
         records_data = excel_processor.process_excel_file(file_path)
 
         if not records_data or not hasattr(records_data, "items") or len(records_data.items) == 0:
             raise HTTPException(status_code=400, detail="Nie znaleziono danych w pliku")
 
-        records_count = len(records_data.items)
-
-        # Utwórz rekord pliku
         file_record = HazardousRecordsService.create_file_record(
             db,
             filename=file.filename,
             original_filename=file.filename,
             file_path=str(file_path),
-            rows_count=records_count,
+            rows_count=len(records_data.items),
         )
 
-        # Zapisz rekordy z mapowaniem pól szkodliwości
         created = HazardousRecordsService.create_records(db, file_record.id, records_data)
 
         return {
@@ -180,12 +180,9 @@ async def upload_file(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[HAZARDOUS UPLOAD] BŁĄD: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        # Zawsze usuń plik tymczasowy — identycznie jak routes/files.py
         if file_path and Path(file_path).exists():
             Path(file_path).unlink()
 
@@ -240,7 +237,6 @@ def get_statistics(file_id: int, db: Session = Depends(get_db)):
 
 @router.get("/files/{file_id}/firefighters")
 def get_firefighters(file_id: int, db: Session = Depends(get_db)):
-    """Unikalne nazwiska w pliku — do filtra dropdownu w HazardousList"""
     names = HazardousRecordsService.get_unique_firefighters_in_file(db, file_id)
     return {"firefighters": names}
 
@@ -283,15 +279,7 @@ def delete_record(record_id: int, db: Session = Depends(get_db)):
 
 
 @router.patch("/records/{record_id}/assign-degree")
-def assign_degree(
-    record_id: int,
-    data: AssignDegreeRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    Przypisz stopień szkodliwości do rekordu.
-    hazardous_degree_id=null → odepnij stopień.
-    """
+def assign_degree(record_id: int, data: AssignDegreeRequest, db: Session = Depends(get_db)):
     record = HazardousRecordsService.assign_degree(db, record_id, data.hazardous_degree_id)
     if not record:
         raise HTTPException(status_code=404, detail="Rekord nie znaleziony")
@@ -300,8 +288,97 @@ def assign_degree(
 
 @router.post("/records/assign-degree-bulk")
 def assign_degree_bulk(data: AssignDegreeBulkRequest, db: Session = Depends(get_db)):
-    """Przypisz stopień szkodliwości do wielu rekordów naraz"""
     updated = HazardousRecordsService.assign_degree_bulk(
         db, data.record_ids, data.hazardous_degree_id
     )
     return {"success": True, "updated_count": updated}
+
+
+# ── EKSPORT ───────────────────────────────────────────────────────────────────
+
+@router.get("/files/{file_id}/export/excel")
+def export_to_excel(
+    file_id: int,
+    firefighter:     Optional[str] = None,
+    only_unassigned: bool = False,
+    only_eligible:   bool = False,
+    date_from:       Optional[str] = None,
+    date_to:         Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    try:
+        from services.hazardous_excel_service import HazardousExcelService
+        records = HazardousRecordsService.get_records_by_file(
+            db, file_id, skip=0, limit=100000,
+            firefighter=firefighter,
+            only_unassigned=only_unassigned,
+            only_eligible=only_eligible,
+            date_from=date_from,
+            date_to=date_to,
+        )
+        if not records:
+            raise HTTPException(status_code=404, detail="Brak danych do eksportu")
+
+        filename = _build_filename(
+            "dodatek_szkodliwy", firefighter, date_from, date_to,
+            only_unassigned, only_eligible, ".xlsx"
+        )
+        file_content = HazardousExcelService().export_to_excel([r.to_dict() for r in records])
+
+        return StreamingResponse(
+            file_content,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": _encode_filename(filename),
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/files/{file_id}/export/csv")
+def export_to_csv(
+    file_id: int,
+    firefighter:     Optional[str] = None,
+    only_unassigned: bool = False,
+    only_eligible:   bool = False,
+    date_from:       Optional[str] = None,
+    date_to:         Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    try:
+        from services.hazardous_excel_service import HazardousExcelService
+        records = HazardousRecordsService.get_records_by_file(
+            db, file_id, skip=0, limit=100000,
+            firefighter=firefighter,
+            only_unassigned=only_unassigned,
+            only_eligible=only_eligible,
+            date_from=date_from,
+            date_to=date_to,
+        )
+        if not records:
+            raise HTTPException(status_code=404, detail="Brak danych do eksportu")
+
+        filename = _build_filename(
+            "dodatek_szkodliwy", firefighter, date_from, date_to,
+            only_unassigned, only_eligible, ".csv"
+        )
+        file_content = HazardousExcelService().export_to_csv([r.to_dict() for r in records])
+
+        return StreamingResponse(
+            file_content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": _encode_filename(filename),
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
