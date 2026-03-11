@@ -152,6 +152,26 @@
   background: #ffb300;
 }
 
+.hl-date-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hl-date-input {
+  padding: 8px 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+.hl-date-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
 .hl-records-count {
   margin-left: auto;
   font-size: 13px;
@@ -288,7 +308,7 @@
 }
 
 .hl-degree-select {
-  flex: 1;
+  width: 100%;
   padding: 6px 10px;
   border: 2px solid #e0e0e0;
   border-radius: 6px;
@@ -298,7 +318,6 @@
   transition:
     border-color 0.2s,
     background 0.2s;
-  max-width: 100%;
 }
 .hl-degree-select:focus {
   outline: none;

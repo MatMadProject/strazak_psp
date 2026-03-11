@@ -197,6 +197,8 @@ def get_records(
     file_id: int,
     firefighter: Optional[str] = None,
     only_unassigned: bool = False,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     sort_by: Optional[str] = None,
@@ -208,12 +210,16 @@ def get_records(
         skip=skip, limit=limit,
         firefighter=firefighter,
         only_unassigned=only_unassigned,
+        date_from=date_from,
+        date_to=date_to,
         sort_by=sort_by, sort_order=sort_order,
     )
     total = HazardousRecordsService.count_records_by_file(
         db, file_id,
         firefighter=firefighter,
         only_unassigned=only_unassigned,
+        date_from=date_from,
+        date_to=date_to,
     )
     return {
         "records":     [r.to_dict() for r in records],

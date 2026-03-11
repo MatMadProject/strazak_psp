@@ -16,6 +16,8 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
   const [sortBy, setSortBy] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
   const [assigningId, setAssigningId] = useState(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const loadRecords = useCallback(async () => {
     if (!file?.id) return;
@@ -26,6 +28,8 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
         limit: itemsPerPage,
         ...(filterFirefighter && { firefighter: filterFirefighter }),
         ...(filterUnassigned && { only_unassigned: true }),
+        ...(dateFrom && { date_from: dateFrom }),
+        ...(dateTo && { date_to: dateTo }),
         ...(sortBy && { sort_by: sortBy, sort_order: sortOrder }),
       };
       const data = await hazardousRecordsAPI.getRecords(file.id, params);
@@ -43,6 +47,8 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
     itemsPerPage,
     filterFirefighter,
     filterUnassigned,
+    dateFrom,
+    dateTo,
     sortBy,
     sortOrder,
   ]);
@@ -134,10 +140,13 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
   const clearFilters = () => {
     setFilterFirefighter("");
     setFilterUnassigned(false);
+    setDateFrom("");
+    setDateTo("");
     setCurrentPage(0);
   };
 
-  const hasActiveFilters = filterFirefighter || filterUnassigned;
+  const hasActiveFilters =
+    filterFirefighter || filterUnassigned || dateFrom || dateTo;
 
   const formatDateTime = (iso) => {
     if (!iso) return "—";
@@ -207,6 +216,29 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
             />
             Tylko bez stopnia szkodliwości
           </label>
+        </div>
+
+        <div className="hl-control-group hl-date-filter">
+          <label>📅 Data od:</label>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              setCurrentPage(0);
+            }}
+            className="hl-date-input"
+          />
+          <label>do:</label>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => {
+              setDateTo(e.target.value);
+              setCurrentPage(0);
+            }}
+            className="hl-date-input"
+          />
         </div>
 
         {hasActiveFilters && (

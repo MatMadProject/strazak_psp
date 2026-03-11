@@ -75,6 +75,8 @@ class HazardousRecordsService:
         limit: int = 100,
         firefighter: str = None,
         only_unassigned: bool = False,
+        date_from: str = None,
+        date_to: str = None,
         sort_by: str = None,
         sort_order: str = "asc",
     ) -> List[HazardousRecord]:
@@ -85,6 +87,13 @@ class HazardousRecordsService:
 
         if only_unassigned:
             query = query.filter(HazardousRecord.hazardous_degree_id == None)
+
+        if date_from:
+            query = query.filter(HazardousRecord.czas_od >= date_from)
+
+        if date_to:
+            date_to_end = f"{date_to} 23:59:59"
+            query = query.filter(HazardousRecord.czas_od <= date_to_end)
 
         if sort_by:
             col = getattr(HazardousRecord, sort_by, None)
@@ -99,6 +108,8 @@ class HazardousRecordsService:
         file_id: int,
         firefighter: str = None,
         only_unassigned: bool = False,
+        date_from: str = None,
+        date_to: str = None,
     ) -> int:
         query = db.query(func.count(HazardousRecord.id)).filter(
             HazardousRecord.file_id == file_id
@@ -107,6 +118,11 @@ class HazardousRecordsService:
             query = query.filter(HazardousRecord.nazwisko_imie == firefighter)
         if only_unassigned:
             query = query.filter(HazardousRecord.hazardous_degree_id == None)
+        if date_from:
+            query = query.filter(HazardousRecord.czas_od >= date_from)
+        if date_to:
+            date_to_end = f"{date_to} 23:59:59"
+            query = query.filter(HazardousRecord.czas_od <= date_to_end)
         return query.scalar()
 
     @staticmethod

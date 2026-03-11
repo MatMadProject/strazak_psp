@@ -307,18 +307,6 @@ function HazardousDegreesList({
               ☰
             </button>
           </div>
-          <div className="degrees-toolbar-actions">
-            {onImportClick && (
-              <button onClick={onImportClick} className="btn-import">
-                📥 Import z Excel
-              </button>
-            )}
-            {onAddNew && (
-              <button onClick={onAddNew} className="btn-add-new">
-                ✚ Dodaj stopień
-              </button>
-            )}
-          </div>
           {/* Eksport dropdown */}
           <div className="export-dropdown-wrapper">
             <button
@@ -336,6 +324,18 @@ function HazardousDegreesList({
                   📥 Pobierz szablon
                 </button> */}
               </div>
+            )}
+          </div>
+          <div className="degrees-toolbar-actions">
+            {onImportClick && (
+              <button onClick={onImportClick} className="btn-import">
+                📥 Import z Excel
+              </button>
+            )}
+            {onAddNew && (
+              <button onClick={onAddNew} className="btn-add-new">
+                ✚ Dodaj stopień
+              </button>
             )}
           </div>
         </div>
