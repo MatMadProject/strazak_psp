@@ -197,6 +197,7 @@ def get_records(
     file_id: int,
     firefighter: Optional[str] = None,
     only_unassigned: bool = False,
+    only_eligible: bool = False,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
     skip: int = Query(0, ge=0),
@@ -210,6 +211,7 @@ def get_records(
         skip=skip, limit=limit,
         firefighter=firefighter,
         only_unassigned=only_unassigned,
+        only_eligible=only_eligible,
         date_from=date_from,
         date_to=date_to,
         sort_by=sort_by, sort_order=sort_order,
@@ -218,6 +220,7 @@ def get_records(
         db, file_id,
         firefighter=firefighter,
         only_unassigned=only_unassigned,
+        only_eligible=only_eligible,
         date_from=date_from,
         date_to=date_to,
     )

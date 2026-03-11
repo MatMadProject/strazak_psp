@@ -75,6 +75,7 @@ class HazardousRecordsService:
         limit: int = 100,
         firefighter: str = None,
         only_unassigned: bool = False,
+        only_eligible: bool = False,
         date_from: str = None,
         date_to: str = None,
         sort_by: str = None,
@@ -87,6 +88,14 @@ class HazardousRecordsService:
 
         if only_unassigned:
             query = query.filter(HazardousRecord.hazardous_degree_id == None)
+
+        if only_eligible:
+            # Zaliczone do dodatku: af != "1" (lub NULL) AND czas_udzialu > "00:30"
+            from sqlalchemy import or_
+            query = query.filter(
+                or_(HazardousRecord.af != "1", HazardousRecord.af == None),
+                HazardousRecord.czas_udzialu > "00:30",
+            )
 
         if date_from:
             query = query.filter(HazardousRecord.czas_od >= date_from)
@@ -108,6 +117,7 @@ class HazardousRecordsService:
         file_id: int,
         firefighter: str = None,
         only_unassigned: bool = False,
+        only_eligible: bool = False,
         date_from: str = None,
         date_to: str = None,
     ) -> int:
@@ -118,6 +128,12 @@ class HazardousRecordsService:
             query = query.filter(HazardousRecord.nazwisko_imie == firefighter)
         if only_unassigned:
             query = query.filter(HazardousRecord.hazardous_degree_id == None)
+        if only_eligible:
+            from sqlalchemy import or_
+            query = query.filter(
+                or_(HazardousRecord.af != "1", HazardousRecord.af == None),
+                HazardousRecord.czas_udzialu > "00:30",
+            )
         if date_from:
             query = query.filter(HazardousRecord.czas_od >= date_from)
         if date_to:

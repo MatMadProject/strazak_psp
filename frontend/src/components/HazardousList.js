@@ -18,6 +18,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
   const [assigningId, setAssigningId] = useState(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [filterEligible, setFilterEligible] = useState(false);
 
   const loadRecords = useCallback(async () => {
     if (!file?.id) return;
@@ -28,6 +29,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
         limit: itemsPerPage,
         ...(filterFirefighter && { firefighter: filterFirefighter }),
         ...(filterUnassigned && { only_unassigned: true }),
+        ...(filterEligible && { only_eligible: true }),
         ...(dateFrom && { date_from: dateFrom }),
         ...(dateTo && { date_to: dateTo }),
         ...(sortBy && { sort_by: sortBy, sort_order: sortOrder }),
@@ -47,6 +49,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
     itemsPerPage,
     filterFirefighter,
     filterUnassigned,
+    filterEligible,
     dateFrom,
     dateTo,
     sortBy,
@@ -140,13 +143,18 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
   const clearFilters = () => {
     setFilterFirefighter("");
     setFilterUnassigned(false);
+    setFilterEligible(false);
     setDateFrom("");
     setDateTo("");
     setCurrentPage(0);
   };
 
   const hasActiveFilters =
-    filterFirefighter || filterUnassigned || dateFrom || dateTo;
+    filterFirefighter ||
+    filterUnassigned ||
+    filterEligible ||
+    dateFrom ||
+    dateTo;
 
   const formatDateTime = (iso) => {
     if (!iso) return "—";
@@ -215,6 +223,20 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
               }}
             />
             Tylko bez stopnia szkodliwości
+          </label>
+        </div>
+
+        <div className="hl-control-group">
+          <label className="hl-checkbox-label">
+            <input
+              type="checkbox"
+              checked={filterEligible}
+              onChange={(e) => {
+                setFilterEligible(e.target.checked);
+                setCurrentPage(0);
+              }}
+            />
+            Tylko zaliczone do dodatku
           </label>
         </div>
 
