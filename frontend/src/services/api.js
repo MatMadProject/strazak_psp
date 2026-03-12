@@ -470,7 +470,44 @@ export const hazardousRecordsAPI = {
     );
     return response.data;
   },
+  // ── Generowanie dokumentu ─────────────────────────────────────────────────
 
+  generateDocument: async (fileId, filters = {}) => {
+    const params = {};
+    if (filters.firefighter) params.firefighter = filters.firefighter;
+    if (filters.date_from) params.date_from = filters.date_from;
+    if (filters.date_to) params.date_to = filters.date_to;
+    if (filters.only_unassigned) params.only_unassigned = true;
+    if (filters.only_eligible) params.only_eligible = true;
+
+    const response = await api.get(
+      `/api/hazardous-records/files/${fileId}/generate-document`,
+      { params, responseType: "blob" },
+    );
+    return response.data; // Blob HTML
+  },
+
+  generateDocumentDocx: async (fileId, filters = {}) => {
+    const params = { format: "docx" };
+    if (filters.firefighter) params.firefighter = filters.firefighter;
+    if (filters.date_from) params.date_from = filters.date_from;
+    if (filters.date_to) params.date_to = filters.date_to;
+    if (filters.only_unassigned) params.only_unassigned = true;
+    if (filters.only_eligible) params.only_eligible = true;
+
+    const response = await api.get(
+      `/api/hazardous-records/files/${fileId}/generate-document`,
+      { params, responseType: "blob" },
+    );
+
+    const contentDisposition = response.headers["content-disposition"] || "";
+    const match = contentDisposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
+    const filename = match
+      ? decodeURIComponent(match[1].replace(/['"]/g, ""))
+      : `zestawienie_${fileId}.docx`;
+
+    return { blob: response.data, filename };
+  },
   // ── Eksport ──────────────────────────────────────────────────────────────
 
   exportToExcel: async (fileId, filters = {}) => {

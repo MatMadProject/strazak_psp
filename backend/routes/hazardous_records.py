@@ -382,3 +382,91 @@ def export_to_csv(
     except Exception as e:
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/files/{file_id}/generate-document")
+def generate_document(
+    file_id: int,
+    firefighter:     Optional[str] = None,
+    only_unassigned: bool = False,
+    only_eligible:   bool = False,
+    date_from:       Optional[str] = None,
+    date_to:         Optional[str] = None,
+    polrocze:        Optional[str] = None,
+    jednostka:       Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Generuje zestawienie czynności w warunkach szkodliwych w formacie HTML.
+    Stosuje te same filtry co eksport Excel/CSV.
+    """
+    try:
+        from services.hazardous_document_service import HazardousDocumentService
+
+        if not firefighter:
+            raise HTTPException(status_code=400, detail="Musisz wybrać strażaka")
+
+        records = HazardousRecordsService.get_records_by_file(
+            db, file_id, skip=0, limit=100000,
+            firefighter=firefighter,
+            only_unassigned=only_unassigned,
+            only_eligible=only_eligible,
+            date_from=date_from,
+            date_to=date_to,
+        )
+        if not records:
+            raise HTTPException(status_code=404, detail="Brak danych do wygenerowania dokumentu")
+
+        records_data = [r.to_dict() for r in records]
+
+        # Dane strażaka — z pierwszego rekordu jako fallback
+        firefighter_data = None
+        try:
+            from services.firefighter_service import FirefighterService
+            ffs = FirefighterService.search_firefighters(db, firefighter, skip=0, limit=1)
+            if ffs:
+                ff = ffs[0]
+                firefighter_data = {
+                    'stopien':      ff.stopien,
+                    'nazwisko_imie': ff.nazwisko_imie,
+                    'stanowisko':   ff.stanowisko,
+                }
+        except Exception:
+            pass
+
+        if not firefighter_data and records:
+            r = records[0]
+            firefighter_data = {
+                'stopien':      r.stopien or '.....................',
+                'nazwisko_imie': r.nazwisko_imie or firefighter,
+                'stanowisko':   '.....................',
+            }
+
+        jednostka_val = jednostka
+        if not jednostka_val and records:
+            jednostka_val = records[0].jednostka or '.....................'
+
+        doc_service = HazardousDocumentService()
+        html_content = doc_service.generate_html(
+            firefighter_name=firefighter,
+            records=records_data,
+            firefighter_data=firefighter_data,
+            polrocze=polrocze,
+            jednostka=jednostka_val,
+            filters={
+                'only_eligible':   only_eligible,
+                'only_unassigned': only_unassigned,
+            },
+        )
+
+        return StreamingResponse(
+            iter([html_content.encode('utf-8')]),
+            media_type="text/html",
+            headers={"Content-Type": "text/html; charset=utf-8"},
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))

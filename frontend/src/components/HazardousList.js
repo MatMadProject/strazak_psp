@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { hazardousRecordsAPI } from "../services/api";
 import { hazardousDegreesAPI } from "../services/api";
-import DocumentGeneratorButton from "./DocumentGeneratorButton";
+import HazardousDocumentButton from "./HazardousDocumentButton";
 import HazardousExportButton from "./HazardousExportButton";
 import "./HazardousList.css";
 
@@ -195,12 +195,10 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
           </div>
         </div>
         <div className="hl-header-right">
-          <DocumentGeneratorButton
+          <HazardousDocumentButton
             fileId={file?.id}
             firefighter={filterFirefighter}
             filters={currentFilters}
-            disabled={true}
-            disabledTooltip="Generowanie dokumentów będzie dostępne po przygotowaniu szablonów"
           />
           <HazardousExportButton fileId={file?.id} filters={currentFilters} />
           <button className="hl-btn-add" onClick={onAddRecord}>
