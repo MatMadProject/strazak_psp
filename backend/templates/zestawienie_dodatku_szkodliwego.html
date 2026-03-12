@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      Zestawienie czynności w warunkach szkodliwych - {{ firefighter_name }}
+    </title>
+    <style>
+      @page {
+        size: A4 landscape;
+        margin: 1.2cm 1.5cm;
+      }
+
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        .page-break {
+          page-break-after: always;
+        }
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 9pt;
+        margin: 0;
+        padding: 1.2cm 1.5cm;
+      }
+
+      /* ── NAGŁÓWEK STRONY 1 ─────────────────────────── */
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 6px;
+      }
+
+      .header-zatwierdzam {
+        width: 10%;
+        font-size: 8pt;
+        text-align: center;
+        border-bottom: 1px dotted #000;
+        padding: 4px 6px;
+        min-height: 60px;
+      }
+
+      .header-title-block {
+        width: 74%;
+        text-align: center;
+      }
+
+      .header-title-block .title {
+        font-size: 10pt;
+        font-weight: bold;
+        line-height: 1.4;
+        text-transform: uppercase;
+      }
+
+      .header-page-no {
+        width: 10%;
+        text-align: right;
+        font-size: 8pt;
+        padding-top: 4px;
+      }
+
+      /* ── TABELA DANYCH STRAŻAKA ────────────────────── */
+      table.firefighter-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 6px;
+        table-layout: fixed;
+      }
+
+      table.firefighter-table td {
+        border: none;
+        padding: 3px 5px;
+        font-size: 8pt;
+        text-align: center;
+      }
+
+      table.firefighter-table tr:first-child td {
+        font-weight: bold;
+        font-size: 9pt;
+      }
+
+      table.firefighter-table tr:last-child td {
+        font-size: 7pt;
+        font-style: italic;
+        color: #555;
+      }
+
+      /* ── TABELA GŁÓWNA ─────────────────────────────── */
+      table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 8px;
+        table-layout: fixed;
+      }
+
+      table.data-table th {
+        border: 1px solid #000;
+        background-color: #d3d3d3;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 6.5pt;
+        padding: 2px 3px;
+        line-height: 1.3;
+      }
+
+      table.data-table td {
+        border: 1px solid #000;
+        text-align: center;
+        vertical-align: middle;
+        font-size: 7pt;
+        padding: 2px 3px;
+        height: 16px;
+      }
+
+      /* Szerokości kolumn wzorowane 1:1 na .docx */
+      .col-lp {
+        width: 3%;
+      }
+      .col-data {
+        width: 8%;
+      }
+      .col-meldunek {
+        width: 10%;
+      }
+      .col-rodzaj {
+        width: 7%;
+      }
+      .col-wskazanie {
+        width: 26%;
+      }
+      .col-stopien {
+        width: 9%;
+      }
+      .col-czas1 {
+        width: 9%;
+      }
+      .col-czas2 {
+        width: 9%;
+      }
+      .col-podpis1 {
+        width: 9%;
+      }
+      .col-podpis2 {
+        width: 9%;
+      }
+
+      /* ── STOPKA ────────────────────────────────────── */
+      .page-footer {
+        margin-top: 14px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .footer-sign {
+        text-align: center;
+        width: 10%;
+      }
+
+      .footer-sign .sign-line {
+        border-bottom: 1px dotted #000;
+        height: 40px;
+      }
+
+      .footer-sign .sign-label {
+        font-size: 7pt;
+        font-style: italic;
+        color: #555;
+        margin-top: 3px;
+      }
+
+      .page-break {
+        page-break-after: always;
+      }
+    </style>
+  </head>
+  <body>
+    {% for page in pages %} {% if page.page_number == 1 %}
+    <!-- ══ STRONA 1 — pełny nagłówek ══════════════════════════ -->
+    <div class="header-top">
+      <div class="header-zatwierdzam">ZATWIERDZAM</div>
+
+      <div class="header-title-block">
+        <div class="title">
+          Półroczne zestawienie czynności (prac) uzasadniających przyznanie<br />
+          dodatku za służbę w warunkach szkodliwych dla zdrowia i uciążliwych
+        </div>
+      </div>
+
+      <div class="header-page-no">Strona nr {{ page.page_number }}</div>
+    </div>
+
+    <!-- Tabela danych strażaka -->
+    <table class="firefighter-table">
+      <tr>
+        <td>Nr</td>
+        <td>{{ polrocze }}</td>
+        <td>{{ stopien }}</td>
+        <td>{{ nazwisko_imie }}</td>
+        <td>{{ stanowisko }}</td>
+        <td>{{ jednostka }}</td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>Półrocze, rok</td>
+        <td>Stopień</td>
+        <td>Nazwisko i imię</td>
+        <td>Stanowisko</td>
+        <td>Jednostka</td>
+      </tr>
+    </table>
+
+    {% else %} {% endif %}
+
+    <!-- ══ TABELA GŁÓWNA ═══════════════════════════════════════ -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-lp">Lp.</th>
+          <th class="col-data">Data zdarzenia</th>
+          <th class="col-meldunek">Nr meldunku</th>
+          <th class="col-rodzaj">Rodzaj zdarzenia P/MZ</th>
+          <th class="col-wskazanie">
+            Wskazanie paragrafu lub opis czynności uzasadniającego przyznanie
+            dodatku zgodnie z załącznikiem nr 5 Rozporządzenia MSWiA z dnia 13
+            września 2021 r. w sprawie uposażenia strażaków PSP
+          </th>
+          <th class="col-stopien">Stopień szkodliwości</th>
+          <th class="col-czas1">
+            Czas służby w warunkach szkodliwych (od wyjazdu z jednostki do
+            zakończenia na terenie akcji) § 9 ust. 3
+          </th>
+          <th class="col-czas2">
+            Czas służby w warunkach szkodliwych w zaokrągleniu (pow. 30 min. do
+            pełnej godziny) § 9 ust. 3
+          </th>
+          <th class="col-podpis1">Podpis strażaka</th>
+          <th class="col-podpis2">Podpis D-cy Zmiany</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in page.records %}
+        <tr>
+          <td>{{ record.lp }}</td>
+          <td>{{ record.data }}</td>
+          <td>{{ record.nr_meldunku }}</td>
+          <td>{{ record.rodzaj_zagrozenia }}</td>
+          <td>{{ record.opis_czynnosci }}</td>
+          <td>{{ record.stopien_szkodliwosci }}</td>
+          <td>{{ record.czas_udzialu }}</td>
+          <td>{{ record.czas_udzialu_zaokraglony }}</td>
+          <td></td>
+          <td></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- ══ STOPKA ══════════════════════════════════════════════ -->
+    <div class="page-footer">
+      <div class="footer-sign">
+        <div class="sign-line"></div>
+        <div class="sign-label">Dowódca JRG</div>
+      </div>
+    </div>
+
+    {% if not page.is_last_page %}
+    <div class="page-break"></div>
+    {% endif %} {% endfor %}
+  </body>
+</html>
