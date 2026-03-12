@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { hazardousRecordsAPI } from "../services/api";
 import FileUpload from "./FileUpload";
 import HazardousList from "./HazardousList";
@@ -22,7 +22,9 @@ function Hazardous({ subTab }) {
   const [editingRecord, setEditingRecord] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Ref do callbacku refresh z HazardousList — nie powoduje re-renderu
+  const refreshListRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem(storageKeyView, view);
@@ -72,8 +74,17 @@ function Hazardous({ subTab }) {
     setSelectedFile(null);
     setView("menu");
   };
-  const handleEditRecord = (rec) => setEditingRecord(rec);
-  const handleAddRecord = () => setIsAddingNew(true);
+
+  // Przyjmuje opcjonalny refresh callback z HazardousList
+  const handleEditRecord = (rec, refreshFn) => {
+    if (refreshFn) refreshListRef.current = refreshFn;
+    setEditingRecord(rec);
+  };
+
+  const handleAddRecord = (refreshFn) => {
+    if (refreshFn) refreshListRef.current = refreshFn;
+    setIsAddingNew(true);
+  };
 
   const handleCloseEditor = () => {
     setEditingRecord(null);
@@ -83,7 +94,8 @@ function Hazardous({ subTab }) {
   const handleSaveRecord = () => {
     setEditingRecord(null);
     setIsAddingNew(false);
-    setRefreshKey((prev) => prev + 1);
+    // Odśwież listę bez resetowania filtrów
+    refreshListRef.current?.();
   };
 
   const handleDeleteFile = async (fileId, filename) => {
@@ -110,7 +122,6 @@ function Hazardous({ subTab }) {
         <div className="hazardous-menu">
           <h2>☣️ Dodatek Szkodliwy</h2>
           <p className="menu-subtitle">Wybierz akcję aby rozpocząć</p>
-
           <div className="menu-cards">
             <div
               className="menu-card import-card"
@@ -121,7 +132,6 @@ function Hazardous({ subTab }) {
               <p>Zaimportuj dane z pliku Excel</p>
               <div className="card-badge">Nowy plik</div>
             </div>
-
             <div
               className="menu-card open-card"
               onClick={() => setView("file-list")}
@@ -132,7 +142,6 @@ function Hazardous({ subTab }) {
               <div className="card-badge">Istniejące pliki</div>
             </div>
           </div>
-
           <div className="menu-info">
             <div className="info-item">
               <span className="info-icon">ℹ️</span>
@@ -203,7 +212,6 @@ function Hazardous({ subTab }) {
                     {file.status === "completed" ? "✓" : "⏳"}
                   </div>
                 </div>
-
                 <div className="file-card-body">
                   <h3 className="file-title">{file.filename}</h3>
                   <div className="file-meta">
@@ -218,10 +226,7 @@ function Hazardous({ subTab }) {
                       <span>
                         {new Date(file.imported_at).toLocaleTimeString(
                           "pl-PL",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
+                          { hour: "2-digit", minute: "2-digit" },
                         )}
                       </span>
                     </div>
@@ -231,7 +236,6 @@ function Hazardous({ subTab }) {
                     </div>
                   </div>
                 </div>
-
                 <div className="file-card-actions">
                   <button
                     className="btn-open"
@@ -259,8 +263,8 @@ function Hazardous({ subTab }) {
   if (view === "records-list") {
     return (
       <>
+        {/* Usunięty key={refreshKey} — nie resetujemy komponentu przy zapisie */}
         <HazardousList
-          key={refreshKey}
           file={selectedFile}
           subTab={subTab}
           onBack={handleBackFromList}

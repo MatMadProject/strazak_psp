@@ -419,30 +419,35 @@ def generate_document(
 
         records_data = [r.to_dict() for r in records]
 
-        # Dane strażaka — z pierwszego rekordu jako fallback
+        # Dane strażaka — pobierz z tabeli firefighters (stopien, stanowisko, jednostka)
         firefighter_data = None
+        jednostka_val = jednostka  # opcjonalny override z query param
         try:
             from services.firefighter_service import FirefighterService
             ffs = FirefighterService.search_firefighters(db, firefighter, skip=0, limit=1)
             if ffs:
                 ff = ffs[0]
                 firefighter_data = {
-                    'stopien':      ff.stopien,
-                    'nazwisko_imie': ff.nazwisko_imie,
-                    'stanowisko':   ff.stanowisko,
+                    'stopien':       ff.stopien       or '.....................',
+                    'nazwisko_imie': ff.nazwisko_imie or firefighter,
+                    'stanowisko':    ff.stanowisko    or '.....................',
                 }
-        except Exception:
-            pass
+                # jednostka z tabeli firefighters jeśli nie podana w query
+                if not jednostka_val:
+                    jednostka_val = getattr(ff, 'jednostka', None) or ''
+        except Exception as e:
+            print(f"[WARN] Nie znaleziono strażaka w firefighters: {e}")
 
+        # Fallback — dane z pierwszego rekordu SWD
         if not firefighter_data and records:
             r = records[0]
             firefighter_data = {
-                'stopien':      r.stopien or '.....................',
+                'stopien':       r.stopien       or '.....................',
                 'nazwisko_imie': r.nazwisko_imie or firefighter,
-                'stanowisko':   '.....................',
+                'stanowisko':    '.....................',
             }
 
-        jednostka_val = jednostka
+        # jednostka — fallback z rekordu SWD
         if not jednostka_val and records:
             jednostka_val = records[0].jednostka or '.....................'
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { hazardousRecordsAPI } from "../services/api";
 import { hazardousDegreesAPI } from "../services/api";
 import HazardousDocumentButton from "./HazardousDocumentButton";
@@ -21,6 +21,13 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [filterEligible, setFilterEligible] = useState(false);
+
+  // Ref do wymuszenia odświeżenia bez czyszczenia filtrów
+  const [refreshToken, setRefreshToken] = useState(0);
+
+  const refresh = useCallback(() => {
+    setRefreshToken((t) => t + 1);
+  }, []);
 
   const loadRecords = useCallback(async () => {
     if (!file?.id) return;
@@ -56,6 +63,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
     dateTo,
     sortBy,
     sortOrder,
+    refreshToken,
   ]);
 
   const loadAuxData = useCallback(async () => {
@@ -134,12 +142,23 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
       return;
     try {
       await hazardousRecordsAPI.deleteRecord(record.id);
-      loadRecords();
+      // Odśwież bez czyszczenia filtrów
+      refresh();
       loadAuxData();
     } catch (error) {
       console.error("Błąd usuwania:", error);
       alert("Nie udało się usunąć rekordu");
     }
+  };
+
+  // Przekazujemy do rodzica callback który po zapisie odświeży listę
+  // bez resetowania filtrów
+  const handleEditRecord = (record) => {
+    onEditRecord(record, refresh);
+  };
+
+  const handleAddRecord = () => {
+    onAddRecord(refresh);
   };
 
   const clearFilters = () => {
@@ -201,7 +220,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
             filters={currentFilters}
           />
           <HazardousExportButton fileId={file?.id} filters={currentFilters} />
-          <button className="hl-btn-add" onClick={onAddRecord}>
+          <button className="hl-btn-add" onClick={handleAddRecord}>
             ✚ Dodaj rekord
           </button>
         </div>
@@ -415,7 +434,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
                     </td>
                     <td className="hl-cell-actions">
                       <button
-                        onClick={() => onEditRecord(record)}
+                        onClick={() => handleEditRecord(record)}
                         className="hl-btn-edit"
                         title="Edytuj"
                       >
