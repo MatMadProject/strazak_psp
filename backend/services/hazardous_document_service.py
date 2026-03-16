@@ -158,7 +158,7 @@ class HazardousDocumentService:
         remaining = all_records[:]
 
         while remaining:
-            limit = 16 if page_number == 1 else 20
+            limit = 12 if page_number == 1 else 16
             page_records = remaining[:limit]
             remaining    = remaining[limit:]
             pages.append({

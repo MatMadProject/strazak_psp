@@ -190,8 +190,7 @@
           dodatku za służbę w warunkach szkodliwych dla zdrowia i uciążliwych
         </div>
       </div>
-
-      <div class="header-page-no">Strona nr {{ page.page_number }}</div>
+      <div class="header-page-no"></div>
     </div>
 
     <!-- Tabela danych strażaka -->
@@ -214,7 +213,7 @@
       </tr>
     </table>
 
-    {% else %} {% endif %}
+    {% endif %}
 
     <!-- ══ TABELA GŁÓWNA ═══════════════════════════════════════ -->
     <table class="data-table">
@@ -259,6 +258,7 @@
         {% endfor %}
       </tbody>
     </table>
+    {% endfor %}
 
     <!-- ══ STOPKA ══════════════════════════════════════════════ -->
     <div class="page-footer">
@@ -267,9 +267,5 @@
         <div class="sign-label">Dowódca JRG</div>
       </div>
     </div>
-
-    {% if not page.is_last_page %}
-    <div class="page-break"></div>
-    {% endif %} {% endfor %}
   </body>
 </html>

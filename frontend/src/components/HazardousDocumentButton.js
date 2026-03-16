@@ -13,6 +13,12 @@ function HazardousDocumentButton({ fileId, firefighter, filters = {} }) {
       return;
     }
 
+    if (!filters.date_from || !filters.date_to) {
+      alert("⚠️ Musisz wybrać zakres dat (od - do), aby wygenerować dokument!");
+      setShowMenu(false);
+      return;
+    }
+
     setGenerating(true);
     setShowMenu(false);
 

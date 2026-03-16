@@ -406,6 +406,21 @@ def generate_document(
         if not firefighter:
             raise HTTPException(status_code=400, detail="Musisz wybrać strażaka")
 
+        if not date_from or not date_to:
+            raise HTTPException(
+                status_code=400,
+                detail="Musisz wybrać zakres dat (od - do) aby wygenerować dokument"
+            )
+
+        # Oblicz półrocze na podstawie daty
+        if not polrocze:
+            try:
+                from datetime import date as date_type
+                d = date_type.fromisoformat(date_from[:10])
+                polrocze = f"{'I' if d.month <= 6 else 'II'} półrocze {d.year}"
+            except Exception:
+                polrocze = '.....................'
+
         records = HazardousRecordsService.get_records_by_file(
             db, file_id, skip=0, limit=100000,
             firefighter=firefighter,
