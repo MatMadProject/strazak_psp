@@ -392,14 +392,11 @@ def generate_document(
     only_eligible:   bool = False,
     date_from:       Optional[str] = None,
     date_to:         Optional[str] = None,
+    format:          str = Query("html", regex="^(html|docx)$"),
     polrocze:        Optional[str] = None,
     jednostka:       Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """
-    Generuje zestawienie czynności w warunkach szkodliwych w formacie HTML.
-    Stosuje te same filtry co eksport Excel/CSV.
-    """
     try:
         from services.hazardous_document_service import HazardousDocumentService
 
@@ -467,7 +464,8 @@ def generate_document(
             jednostka_val = records[0].jednostka or '.....................'
 
         doc_service = HazardousDocumentService()
-        html_content = doc_service.generate_html(
+
+        common_kwargs = dict(
             firefighter_name=firefighter,
             records=records_data,
             firefighter_data=firefighter_data,
@@ -479,11 +477,29 @@ def generate_document(
             },
         )
 
-        return StreamingResponse(
-            iter([html_content.encode('utf-8')]),
-            media_type="text/html",
-            headers={"Content-Type": "text/html; charset=utf-8"},
-        )
+        firefighter_clean = firefighter.replace(" ", "_")
+
+        if format == "html":
+            html_content = doc_service.generate_html(**common_kwargs)
+            return StreamingResponse(
+                iter([html_content.encode('utf-8')]),
+                media_type="text/html",
+                headers={"Content-Type": "text/html; charset=utf-8"},
+            )
+
+        elif format == "docx":
+            file_content = doc_service.generate_docx(**common_kwargs)
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"zestawienie_{firefighter_clean}_{timestamp}.docx"
+            return StreamingResponse(
+                file_content,
+                media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                headers={
+                    "Content-Disposition": _encode_filename(filename),
+                    "Access-Control-Expose-Headers": "Content-Disposition",
+                },
+            )
 
     except HTTPException:
         raise

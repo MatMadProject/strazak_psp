@@ -152,7 +152,7 @@ class HazardousDocumentService:
         return result
 
     def _paginate(self, all_records: List[Dict]) -> List[Dict]:
-        """Strona 1 = 16 wierszy, kolejne = 20 wierszy"""
+        """Strona 1 = 12 wierszy, kolejne = 16 wierszy"""
         pages = []
         page_number = 1
         remaining = all_records[:]
@@ -202,7 +202,7 @@ class HazardousDocumentService:
             only_unassigned=filters.get('only_unassigned', False),
         )
 
-        pages = self._paginate(all_records)
+        # pages = self._paginate(all_records)
 
         return template.render(
             firefighter_name=firefighter_name,
@@ -211,5 +211,63 @@ class HazardousDocumentService:
             nazwisko_imie=nazwisko_imie,
             stanowisko=stanowisko,
             jednostka=jednostka,
-            pages=pages,
+            records=all_records,
         )
+
+    # ── Generowanie DOCX ──────────────────────────────────────────────────────
+
+    def generate_docx(
+            self,
+            firefighter_name: str,
+            records: List[Dict[str, Any]],
+            firefighter_data: Dict[str, str] = None,
+            polrocze: str = None,
+            jednostka: str = None,
+            filters: Dict[str, Any] = None,
+        ) -> BytesIO:
+            """
+            Generuje zestawienie w formacie DOCX używając szablonu
+            zestawienie_dodatku_szkodliwego.docx (docxtpl).
+            Bez paginacji — jedna tabela, Word sam łamie strony
+            i powtarza nagłówek (Repeat Header Row w szablonie).
+            """
+            from docxtpl import DocxTemplate
+    
+            template_path = self.templates_dir / "zestawienie_dodatku_szkodliwego.docx"
+            if not template_path.exists():
+                raise FileNotFoundError(f"Szablon DOCX nie znaleziony: {template_path}")
+    
+            filters = filters or {}
+    
+            fd = firefighter_data or {}
+            stopien       = fd.get('stopien',       '.....................')
+            nazwisko_imie = fd.get('nazwisko_imie',  firefighter_name)
+            stanowisko    = fd.get('stanowisko',    '.....................')
+            jednostka     = jednostka or fd.get('jednostka', '.....................')
+            polrocze      = polrocze  or '.....................'
+    
+            # Płaska lista rekordów — bez paginacji
+            all_records = self._prepare_records(
+                records,
+                only_eligible=filters.get('only_eligible', False),
+                only_unassigned=filters.get('only_unassigned', False),
+            )
+    
+            context = {
+                'firefighter_name': firefighter_name,
+                'polrocze':         polrocze,
+                'stopien':          stopien,
+                'nazwisko_imie':    nazwisko_imie,
+                'stanowisko':       stanowisko,
+                'jednostka':        jednostka,
+                'records':          all_records,   
+            }
+    
+            doc = DocxTemplate(template_path)
+            doc.render(context)
+    
+            output = BytesIO()
+            doc.save(output)
+            output.seek(0)
+            return output
+ 

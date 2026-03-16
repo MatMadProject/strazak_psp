@@ -179,7 +179,6 @@
     </style>
   </head>
   <body>
-    {% for page in pages %} {% if page.page_number == 1 %}
     <!-- ══ STRONA 1 — pełny nagłówek ══════════════════════════ -->
     <div class="header-top">
       <div class="header-zatwierdzam">ZATWIERDZAM</div>
@@ -213,36 +212,33 @@
       </tr>
     </table>
 
-    {% endif %}
-
     <!-- ══ TABELA GŁÓWNA ═══════════════════════════════════════ -->
     <table class="data-table">
-      <thead>
-        <tr>
-          <th class="col-lp">Lp.</th>
-          <th class="col-data">Data zdarzenia</th>
-          <th class="col-meldunek">Nr meldunku</th>
-          <th class="col-rodzaj">Rodzaj zdarzenia P/MZ</th>
-          <th class="col-wskazanie">
-            Wskazanie paragrafu lub opis czynności uzasadniającego przyznanie
-            dodatku zgodnie z załącznikiem nr 5 Rozporządzenia MSWiA z dnia 13
-            września 2021 r. w sprawie uposażenia strażaków PSP
-          </th>
-          <th class="col-stopien">Stopień szkodliwości</th>
-          <th class="col-czas1">
-            Czas służby w warunkach szkodliwych (od wyjazdu z jednostki do
-            zakończenia na terenie akcji) § 9 ust. 3
-          </th>
-          <th class="col-czas2">
-            Czas służby w warunkach szkodliwych w zaokrągleniu (pow. 30 min. do
-            pełnej godziny) § 9 ust. 3
-          </th>
-          <th class="col-podpis1">Podpis strażaka</th>
-          <th class="col-podpis2">Podpis D-cy Zmiany</th>
-        </tr>
-      </thead>
+      <tr>
+        <th class="col-lp">Lp.</th>
+        <th class="col-data">Data zdarzenia</th>
+        <th class="col-meldunek">Nr meldunku</th>
+        <th class="col-rodzaj">Rodzaj zdarzenia P/MZ</th>
+        <th class="col-wskazanie">
+          Wskazanie paragrafu lub opis czynności uzasadniającego przyznanie
+          dodatku zgodnie z załącznikiem nr 5 Rozporządzenia MSWiA z dnia 13
+          września 2021 r. w sprawie uposażenia strażaków PSP
+        </th>
+        <th class="col-stopien">Stopień szkodliwości</th>
+        <th class="col-czas1">
+          Czas służby w warunkach szkodliwych (od wyjazdu z jednostki do
+          zakończenia na terenie akcji) § 9 ust. 3
+        </th>
+        <th class="col-czas2">
+          Czas służby w warunkach szkodliwych w zaokrągleniu (pow. 30 min. do
+          pełnej godziny) § 9 ust. 3
+        </th>
+        <th class="col-podpis1">Podpis strażaka</th>
+        <th class="col-podpis2">Podpis D-cy Zmiany</th>
+      </tr>
+
       <tbody>
-        {% for record in page.records %}
+        {% for record in records %}
         <tr>
           <td>{{ record.lp }}</td>
           <td>{{ record.data }}</td>
@@ -258,7 +254,6 @@
         {% endfor %}
       </tbody>
     </table>
-    {% endfor %}
 
     <!-- ══ STOPKA ══════════════════════════════════════════════ -->
     <div class="page-footer">

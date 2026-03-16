@@ -87,12 +87,13 @@ function HazardousDocumentButton({ fileId, firefighter, filters = {} }) {
             <span className="menu-icon">🌐</span>
             <span>HTML (.html)</span>
           </button>
-          {/* DOCX — będzie dostępne po przygotowaniu szablonu
-          <button className="export-menu-item" onClick={() => handleGenerate("docx")}>
+          <button
+            className="export-menu-item"
+            onClick={() => handleGenerate("docx")}
+          >
             <span className="menu-icon">📝</span>
             <span>Word (.docx)</span>
           </button>
-          */}
         </div>
       )}
 
