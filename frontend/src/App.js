@@ -145,21 +145,20 @@ function App() {
             {hazardousExpanded && !sidebarCollapsed && (
               <div className="nav-subitems">
                 <button
-                  className={`nav-subitem ${activeTab === "hazard-degrees" ? "active" : ""}`}
-                  onClick={() => setActiveTab("hazard-degrees")}
-                  title="Stopnie Szkodliwości"
-                >
-                  <span className="nav-icon nav-icon-sm">📊</span>
-                  <span className="nav-text">Stopnie Szkodliwości</span>
-                </button>
-
-                <button
                   className={`nav-subitem ${activeTab === "hazard-addon" ? "active" : ""}`}
                   onClick={() => setActiveTab("hazard-addon")}
                   title="Dodatek Szkodliwy"
                 >
                   <span className="nav-icon nav-icon-sm">🧪</span>
                   <span className="nav-text">Dodatek Szkodliwy</span>
+                </button>
+                <button
+                  className={`nav-subitem ${activeTab === "hazard-degrees" ? "active" : ""}`}
+                  onClick={() => setActiveTab("hazard-degrees")}
+                  title="Stopnie Szkodliwości"
+                >
+                  <span className="nav-icon nav-icon-sm">📊</span>
+                  <span className="nav-text">Stopnie Szkodliwości</span>
                 </button>
               </div>
             )}

@@ -105,38 +105,6 @@ function FirefightersList({
 
   return (
     <div className="firefighters-container">
-      {/* Statystyki */}
-      {statistics && (
-        <div className="stats-cards">
-          <div className="stat-card">
-            <div className="stat-icon">👨‍🚒</div>
-            <div className="stat-info">
-              <div className="stat-label">Łącznie strażaków</div>
-              <div className="stat-number">{statistics.total_firefighters}</div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">🏢</div>
-            <div className="stat-info">
-              <div className="stat-label">Jednostek</div>
-              <div className="stat-number">
-                {statistics.by_unit?.length || 0}
-              </div>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">⭐</div>
-            <div className="stat-info">
-              <div className="stat-label">Różnych stopni</div>
-              <div className="stat-number">
-                {statistics.by_rank?.length || 0}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Kontrolki */}
       <div className="firefighters-header">
         <h2>Lista strażaków</h2>
 

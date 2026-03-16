@@ -263,7 +263,6 @@ function Hazardous({ subTab }) {
   if (view === "records-list") {
     return (
       <>
-        {/* Usunięty key={refreshKey} — nie resetujemy komponentu przy zapisie */}
         <HazardousList
           file={selectedFile}
           subTab={subTab}

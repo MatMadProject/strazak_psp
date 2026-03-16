@@ -1,7 +1,7 @@
 ; Inno Setup Script dla Strazak Desktop App
 
 #define MyAppName "Strażak"
-#define MyAppVersion "0.3.2"
+#define MyAppVersion "0.5.0"
 #define MyAppPublisher "MatMad Software"
 #define MyAppURL "https://straznica.com.pl"
 #define MyAppExeName "Strazak-DesktopApp.exe"

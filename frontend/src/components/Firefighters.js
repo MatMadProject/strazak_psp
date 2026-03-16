@@ -40,10 +40,10 @@ function Firefighters() {
   return (
     <div className="firefighters-page">
       <div className="firefighters-page-header">
-        <div>
+        {/* <div>
           <h1>👨‍🚒 Strażacy</h1>
           <p className="page-subtitle">Zarządzanie danymi strażaków</p>
-        </div>
+        </div> */}
         <div className="header-buttons">
           <ExportButton filters={currentFilters} />
           <button onClick={handleImport} className="btn-import">
