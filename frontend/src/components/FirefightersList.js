@@ -15,17 +15,17 @@ function FirefightersList({
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage] = useState(50);
   const [statistics, setStatistics] = useState(null);
-
-  // Unikalne jednostki i stopnie dla filtrów
   const [units, setUnits] = useState([]);
   const [ranks, setRanks] = useState([]);
+
+  // Widok: list | cards — domyślnie lista
+  const [viewMode, setViewMode] = useState("list");
 
   useEffect(() => {
     loadFirefighters();
     loadStatistics();
   }, [refreshTrigger, searchQuery, filterUnit, filterRank, currentPage]);
 
-  // Przekazuj filtry do komponentu rodzica
   useEffect(() => {
     if (onFiltersChange) {
       const filters = {};
@@ -39,25 +39,14 @@ function FirefightersList({
   const loadFirefighters = async () => {
     setLoading(true);
     try {
-      const params = {
-        skip: currentPage * itemsPerPage,
-        limit: itemsPerPage,
-      };
-
-      if (searchQuery) {
-        params.search = searchQuery;
-      }
-      if (filterUnit) {
-        params.jednostka = filterUnit;
-      }
-      if (filterRank) {
-        params.stopien = filterRank;
-      }
+      const params = { skip: currentPage * itemsPerPage, limit: itemsPerPage };
+      if (searchQuery) params.search = searchQuery;
+      if (filterUnit) params.jednostka = filterUnit;
+      if (filterRank) params.stopien = filterRank;
 
       const data = await firefightersAPI.getAllFirefighters(params);
       setFirefighters(data.firefighters || []);
 
-      // Zbierz unikalne jednostki i stopnie
       const allUnits = [
         ...new Set(data.firefighters.map((ff) => ff.jednostka)),
       ];
@@ -82,10 +71,8 @@ function FirefightersList({
   };
 
   const handleDeleteFirefighter = async (firefighterId, name) => {
-    if (!window.confirm(`Czy na pewno chcesz usunąć strażaka: ${name}?`)) {
+    if (!window.confirm(`Czy na pewno chcesz usunąć strażaka: ${name}?`))
       return;
-    }
-
     try {
       await firefightersAPI.deleteFirefighter(firefighterId);
       loadFirefighters();
@@ -103,8 +90,11 @@ function FirefightersList({
     setCurrentPage(0);
   };
 
+  const hasActiveFilters = searchQuery || filterUnit || filterRank;
+
   return (
     <div className="firefighters-container">
+      {/* ─── TOOLBAR ─── */}
       <div className="firefighters-header">
         <h2>Lista strażaków</h2>
 
@@ -152,15 +142,33 @@ function FirefightersList({
             ))}
           </select>
 
-          {(searchQuery || filterUnit || filterRank) && (
+          {hasActiveFilters && (
             <button onClick={clearFilters} className="btn-clear-filters">
               Wyczyść filtry
             </button>
           )}
+
+          {/* ─── PRZEŁĄCZNIK WIDOKU ─── */}
+          <div className="fl-view-switcher">
+            <button
+              className={`fl-view-btn ${viewMode === "list" ? "active" : ""}`}
+              onClick={() => setViewMode("list")}
+              title="Widok listy"
+            >
+              ☰
+            </button>
+            <button
+              className={`fl-view-btn ${viewMode === "cards" ? "active" : ""}`}
+              onClick={() => setViewMode("cards")}
+              title="Widok kafelków"
+            >
+              ⊞
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Tabela/karty */}
+      {/* ─── STANY ─── */}
       {loading ? (
         <div className="loading">Ładowanie danych...</div>
       ) : firefighters.length === 0 ? (
@@ -172,60 +180,112 @@ function FirefightersList({
         </div>
       ) : (
         <>
-          <div className="firefighters-grid">
-            {firefighters.map((firefighter) => (
-              <div key={firefighter.id} className="firefighter-card">
-                <div className="firefighter-avatar">
-                  {firefighter.nazwisko_imie
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .slice(0, 2)}
-                </div>
-                <div className="firefighter-info">
-                  <h3 className="firefighter-name">
-                    {firefighter.nazwisko_imie}
-                  </h3>
-                  <div className="firefighter-details">
-                    <div className="detail-item">
-                      <span className="detail-icon">⭐</span>
-                      <span>{firefighter.stopien}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-icon">💼</span>
-                      <span>{firefighter.stanowisko}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-icon">🏢</span>
-                      <span>{firefighter.jednostka}</span>
+          {/* ══ WIDOK LISTY ══ */}
+          {viewMode === "list" && (
+            <div className="table-wrapper">
+              <table className="firefighters-table">
+                <thead>
+                  <tr>
+                    <th>Nazwisko i imię</th>
+                    <th>Stopień</th>
+                    <th>Stanowisko</th>
+                    <th>Jednostka</th>
+                    <th>Akcje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {firefighters.map((firefighter) => (
+                    <tr key={firefighter.id}>
+                      <td>{firefighter.nazwisko_imie}</td>
+                      <td>{firefighter.stopien}</td>
+                      <td>{firefighter.stanowisko}</td>
+                      <td>{firefighter.jednostka}</td>
+                      <td className="actions-cell">
+                        <button
+                          onClick={() => onEditFirefighter(firefighter)}
+                          className="btn-edit"
+                          title="Edytuj"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeleteFirefighter(
+                              firefighter.id,
+                              firefighter.nazwisko_imie,
+                            )
+                          }
+                          className="btn-delete"
+                          title="Usuń"
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* ══ WIDOK KAFELKÓW ══ */}
+          {viewMode === "cards" && (
+            <div className="firefighters-grid">
+              {firefighters.map((firefighter) => (
+                <div key={firefighter.id} className="firefighter-card">
+                  <div className="firefighter-avatar">
+                    {firefighter.nazwisko_imie
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)}
+                  </div>
+                  <div className="firefighter-info">
+                    <h3 className="firefighter-name">
+                      {firefighter.nazwisko_imie}
+                    </h3>
+                    <div className="firefighter-details">
+                      <div className="detail-item">
+                        <span className="detail-icon">⭐</span>
+                        <span>{firefighter.stopien}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-icon">💼</span>
+                        <span>{firefighter.stanowisko}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-icon">🏢</span>
+                        <span>{firefighter.jednostka}</span>
+                      </div>
                     </div>
                   </div>
+                  <div className="firefighter-actions">
+                    <button
+                      onClick={() => onEditFirefighter(firefighter)}
+                      className="btn-edit"
+                      title="Edytuj"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleDeleteFirefighter(
+                          firefighter.id,
+                          firefighter.nazwisko_imie,
+                        )
+                      }
+                      className="btn-delete"
+                      title="Usuń"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
-                <div className="firefighter-actions">
-                  <button
-                    onClick={() => onEditFirefighter(firefighter)}
-                    className="btn-edit"
-                    title="Edytuj"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleDeleteFirefighter(
-                        firefighter.id,
-                        firefighter.nazwisko_imie,
-                      )
-                    }
-                    className="btn-delete"
-                    title="Usuń"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
+          {/* ─── PAGINACJA ─── */}
           <div className="pagination">
             <button
               onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}

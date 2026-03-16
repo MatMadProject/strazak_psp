@@ -147,7 +147,7 @@ function DeparturesList({ file, onBack, onEditRecord, onAddRecord }) {
 
       <div className="list-controls">
         <div className="control-group">
-          <label htmlFor="firefighter-filter">🔍 Strażak:</label>
+          <label htmlFor="firefighter-filter">👨‍🚒 Strażak:</label>
           <select
             id="firefighter-filter"
             value={selectedFirefighter}

@@ -229,7 +229,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
       {/* ─── FILTRY ─── */}
       <div className="hl-controls">
         <div className="hl-control-group">
-          <label>👤 Osoba:</label>
+          <label>👨‍🚒 Strażak:</label>
           <select
             value={filterFirefighter}
             onChange={(e) => {
