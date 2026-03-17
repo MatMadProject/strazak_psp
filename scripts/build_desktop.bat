@@ -22,7 +22,7 @@ REM     exit /b 1
 REM )
 
 REM KROK 1: Build React
-echo [KROK 1/3] Budowanie React frontendu...
+echo [KROK 1/4] Budowanie React frontendu...
 cd frontend
 call npm run build
 if %errorlevel% neq 0 (
@@ -32,20 +32,20 @@ if %errorlevel% neq 0 (
 )
 cd ..
 
-REM KROK 2: Zainstaluj PyInstaller
+REM KROK 2: Zainstaluj PyInstaller i Pillow
 echo.
-echo [KROK 2/3] Instalacja PyInstaller...
+echo [KROK 2/4] Instalacja zaleznosci (PyInstaller, Pillow)...
 call venv\Scripts\activate
-pip install pyinstaller
+pip install pyinstaller Pillow
 if %errorlevel% neq 0 (
-    echo BLAD: Instalacja PyInstaller nie powiodla sie!
+    echo BLAD: Instalacja nie powiodla sie!
     pause
     exit /b 1
 )
 
 REM KROK 3: Pakowanie
 echo.
-echo [KROK 3/3] Pakowanie aplikacji...
+echo [KROK 3/4] Pakowanie aplikacji...
 echo To moze potrwac 2-5 minut...
 
 REM Usuń stare pliki .spec
@@ -62,6 +62,7 @@ pyinstaller --clean --noconfirm ^
     --add-data="%PROJECT_ROOT%\frontend\build;frontend/build" ^
     --add-data="%PROJECT_ROOT%\backend;backend" ^
     --add-data="%PROJECT_ROOT%\backend\templates\*;backend/templates" ^
+    --add-data="%PROJECT_ROOT%\desktop\splash.png;." ^
     --hidden-import=uvicorn ^
     --hidden-import=uvicorn.logging ^
     --hidden-import=uvicorn.loops ^
@@ -87,12 +88,16 @@ pyinstaller --clean --noconfirm ^
     --hidden-import=reportlab.platypus ^
     --hidden-import=reportlab.pdfbase ^
     --hidden-import=xhtml2pdf ^
+    --hidden-import=PIL ^
+    --hidden-import=PIL.Image ^
+    --hidden-import=PIL.ImageTk ^
     --collect-all=uvicorn ^
     --collect-all=fastapi ^
     --collect-all=sqlalchemy ^
     --collect-all=reportlab ^
     --collect-all=xhtml2pdf ^
     --collect-all=docxtpl ^
+    --collect-all=PIL ^
     "%PROJECT_ROOT%\desktop\app.py"
 
 if %errorlevel% neq 0 (
@@ -101,9 +106,9 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM Czyszczenie
+REM KROK 4: Czyszczenie
 echo.
-echo Czyszczenie plikow tymczasowych...
+echo [KROK 4/4] Czyszczenie plikow tymczasowych...
 rmdir /s /q "%PROJECT_ROOT%\desktop\build" 2>nul
 
 echo.
