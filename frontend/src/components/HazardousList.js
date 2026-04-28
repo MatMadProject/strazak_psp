@@ -355,6 +355,7 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
                     Czas szkodliwego <SortIcon col="czas_udzialu" />
                   </th>
                   <th>P / MZ / AF</th>
+                  <th>Stopień SWD</th>
                   <th className="hl-col-degree">Stopień szkodliwości</th>
                   <th>Akcje</th>
                 </tr>
@@ -401,6 +402,9 @@ function HazardousList({ file, subTab, onBack, onEditRecord, onAddRecord }) {
                           AF
                         </span>
                       )}
+                    </td>
+                    <td className="hl-cell-mono">
+                      {record.stopien_szkodliwosci || "—"}
                     </td>
                     <td className="hl-cell-degree">
                       <div className="hl-degree-wrapper">
